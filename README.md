@@ -5,7 +5,7 @@ Webserver made from scratch in c++
 - [ ] PARSER
 - [ ] SERVER
 - [ ] CGI
-- [ ] HTTP REEQUEST
+- [ ] HTTP REQUEST
 - [ ] HTTP RESPONSE
 - [ ] COOKIES
 - [ ] SESSIONS
