@@ -8,4 +8,4 @@ Webserver made from scratch in c++
 - [ ] HTTP REEQUEST
 - [ ] HTTP RESPONSE
 - [ ] COOKIES
-- [ ] PLUGINS
+- [ ] SESSIONS
