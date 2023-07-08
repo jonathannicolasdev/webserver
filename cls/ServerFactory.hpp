@@ -13,7 +13,7 @@
 #ifndef SERVER_FACTORY_HPP
 # define SERVER_FACTORY_HPP
 
-# include "Server.hpp"
+# include "IServer.hpp"
 
 // Implement more as needed
 enum    e_srv_type

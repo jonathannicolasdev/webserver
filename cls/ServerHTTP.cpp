@@ -12,6 +12,54 @@
 
 #include "ServerHTTP.hpp"
 
+// Give the a stream containing the raw request from the client and an empty string
+// object. The dummy response will be put in this empty string object.
+std::string&	get_dummy_response(std::ostringstream& raw_request, std::string& response)
+{
+//	char	receive_buff[4096];
+//	ssize_t	nchr;
+	std::ifstream			file;
+	std::string				header;
+	std::string				dummy;
+	std::ostringstream		ss;
+	std::ostringstream		content_lenght_str;
+
+	std::cout << "Getting dummy response" << std::endl;
+	ss.clear();
+	response.clear();
+	
+	(void)raw_request;
+	file.open("./www/index.html");
+	if (!file.is_open())
+	{
+		std::cerr << "File failed to open with error : " << strerror(errno)  << std::endl;
+		dummy = "<h1>HELLO WORLD</h1>";
+	}
+	else
+	{
+		ss << file.rdbuf();
+		dummy = ss.str();
+	}
+
+	// Prepare DUMMY header ()
+	header = "HTTP/1.0 200 OK\n";
+	header += "Server: Jambon_foret_sauvage\n";
+	header += "Date: Tuesday, 25-Nov-97 01:22:04 GMT\n";
+	header += "Last-modified: Thursday, 20-Nov-97 10:44:53 GMT\n";
+	header += "Content-type: text/html\n";
+
+	header += "Content-length: ";
+	content_lenght_str << dummy.length();
+	header += content_lenght_str.str();
+	header += "\r\n\r\n";
+
+	response = header + dummy;
+	
+	std::cout << "Sending response : \n" << std::endl;
+	std::cout << response << std::endl;
+	return (response);
+}
+
 //ServerHTTP::ServerHTTP(uint16_t port=PORT_HTTP, const std::string &rootdir="./"):
 ServerHTTP::ServerHTTP(const std::string& addr, uint16_t port, const std::string &rootdir):
 	AServerReactive(htons(port), false, false, SRV_UNBOUND), _rootdir(rootdir)
@@ -66,15 +114,19 @@ ServerHTTP::bind_server(void)
 	std::cout << "ServerHTTP bind to port : " << this->_port << std::endl;
 	if ((this->_sockfd = socket(AF_INET, SOCK_STREAM, 0)) < 0)
 	{
-		std::cerr << "Socket creation failed with error " << std::strerror(errno) << std::endl;
+		Logger::log(LOG_ERROR, std::string("Socket creation failed with error ") + std::strerror(errno));
+//		std::cerr << "Socket creation failed with error " << std::strerror(errno) << std::endl;
 		return (-1);
 	}
-	std::cout << "Socket created SUCCESSFULLY!\nsockfd before bind : " << this->_sockfd << std::endl;
+//	std::cout << "Socket created SUCCESSFULLY!\nsockfd before bind : " << this->_sockfd << std::endl;
 	if (bind(this->_sockfd, (struct sockaddr *)&this->_server_addr, sizeof(this->_server_addr)) < 0)
 	{
 		shutdown(this->_sockfd, 2);
-		std::cerr << "Binding socket to ip address " << inet_ntoa(this->_server_addr.sin_addr)
-			<< " failed with error : " << std::strerror(errno) << std::endl;
+		close(this->_sockfd);
+		Logger::log(LOG_ERROR, std::string("Binding socket to ip address ") + inet_ntoa(this->_server_addr.sin_addr)
+			+ " failed with error : " + std::strerror(errno));
+	//	std::cerr << "Binding socket to ip address " << inet_ntoa(this->_server_addr.sin_addr)
+	//		<< " failed with error : " << std::strerror(errno) << std::endl;
 		return (-1);
 	}
 	std::cout << "sockfd after bind : " << this->_sockfd << std::endl;
@@ -92,68 +144,78 @@ ServerHTTP::start(bool self_managed)
 	int					connfd;
 	struct sockaddr_in	conn_addr;
 	socklen_t			addr_len;
+	std::ostringstream	err_msg;
 
 	if (!this->_sockfd)
 	{
-		std::cerr << "Server has no socket yet. Call the bind_server() method first to create an AF_INET socket and bind the " << std::endl;
+		Logger::log(LOG_WARNING, "Server has no socket yet. Call the bind_server() method first to create an AF_INET socket and bind its address and port.");
+		return (-1);
 	}
 
 	std::cout << "ServerHTTP listen to port : " << this->_port << std::endl;
-
-
 	//listen
-	std::cout << "sockfd after bind : " << this->_sockfd << std::endl;
 	if (listen(this->_sockfd, MAX_PENDING_CONN) < 0)
 	{
-		std::cerr << "Failed to start listening to port " << ntohs(this->_port)
-			<< " on address " << inet_ntoa(this->_server_addr.sin_addr)
-			<< " with error : " << std::strerror(errno) << std::endl;
+		err_msg << "Failed to start listening to port " <<  ntohs(this->_port);
+		err_msg << " on address " << inet_ntoa(this->_server_addr.sin_addr);
+		err_msg << " with error : " << std::strerror(errno);
+		Logger::log(LOG_ERROR, err_msg.str());
 		return (-1);
 	}
 	this->_status = SRV_LISTENING;
-	this->_is_running = true;
 
 	if (!self_managed)
 		return (this->_sockfd);
 	
+	this->_is_running = true;
 	while (!this->_close_request)
 	{
 		std::memset(&conn_addr, 0, sizeof(conn_addr));
-
 		addr_len = sizeof(conn_addr);
+
+		std::cout << "\n\n\nAccepting new connections" << std::endl;
 		if ((connfd = accept(this->_sockfd, (struct sockaddr*)&conn_addr, &addr_len)) < 0)
 		{
-			std::cerr << "accept called failed with error : " << std::strerror(errno) << std::endl;
+			Logger::log(LOG_ERROR, std::string("accept called failed with error : ")
+				+ std::strerror(errno));
+//			std::cerr << "accept called failed with error : " << std::strerror(errno) << std::endl;
 			break ;
 		}
 		else
 			std::cout << "accepted client connection with ip addr : " << inet_ntoa(conn_addr.sin_addr)
 				<< " with fd : " << connfd << std::endl;
+		
 		if (!this->_validate_client_connection(conn_addr))
 		{
 			shutdown(connfd, 2);
+			close(connfd);
 			continue ;
 		}
-		std::cout << "flushing client connection down the drain" << std::endl;
+		char					request_buffer[4097];
+		ssize_t					nc;
+		std::ostringstream		raw_request;
+		std::string				response;
+		std::cout << "reading from client socket while recv > 0" << std::endl;
+		nc = read(connfd, request_buffer, 4096);
+		std::cout << "nc : " << nc;
+//		while ((nc = recv(connfd, request_buffer, 4096, MSG_DONTWAIT)) > 0)
+//		std::cout << "start while " << std::endl;
+//		while (nc > 0)
+//		{
+			std::cout << "wop" << std::endl;
+			request_buffer[nc] = '\0';
+			raw_request << request_buffer;
+//		}
+		get_dummy_response(raw_request, response);
+
+//		std::cout << "flushing client connection down the drain" << std::endl;
 //		this->_active_connections[connfd].clt_fd = connfd;
 //		this->_active_connections[connfd].conn_status = CLT_ACCEPTED;
 //		this->_active_connections[connfd].clt_addr = conn_addr;
 //		this->_active_connections[connfd].init_conn_time = std::time(NULL);
+		std::cout << "shuting down client connection and fd" << std::endl;
+		send(connfd, response.c_str(), response.length(), 0);
 
-		char	receive_buff[4096];
-
-		ssize_t	nchr = read(connfd, receive_buff, 4096);
-		receive_buff[nchr] = '\0';
-		std::string recv_str = receive_buff;
-		std::cout << "Request received : \n" << std::endl;
-		std::cout << recv_str << std::endl;
-		// Send dummy response
-		std::string	dummy = "HTTP/1.0 200 OK\r\n\r\n";
-		dummy += "<h1>HELLO WORLD</h1>";
-		std::cout << "Sending response : \n" << std::endl;
-		std::cout << dummy << std::endl;
-
-		send(connfd, dummy.c_str(), dummy.length(), 0);
 		shutdown(connfd, 2);// FOR DEBUG ONLY !!
 		close(connfd);
 	}

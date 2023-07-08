@@ -15,6 +15,7 @@
 
 # include <string>
 # include <iostream>
+# include <csignal>
 # include <map>
 # include <stdint.h>
 # include <sys/socket.h>
@@ -42,7 +43,7 @@ typedef struct s_server_state
 {
 	bool					is_running;
 	uint16_t				port;
-	std::string				address;
+	std::string				address;// as string. ex : "127.0.0.1"
 	std::string				status;// set with srv_status_to_str(enum status) call
 	
 	// allows for specific server types to add a pointer to a struct of relevant data to this type.

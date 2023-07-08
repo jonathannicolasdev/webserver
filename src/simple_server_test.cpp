@@ -35,8 +35,21 @@ int	map_test()
 }
 */
 
+ServerHTTP	*g_srv_ref = NULL;
+
+void	sigint_handler(int signum)
+{
+	(void)signum;
+	std::cerr << "EXIT WITH SIGINT !!" << std::endl;
+	if (g_srv_ref)
+		g_srv_ref->stop();
+	exit(1);
+}
+
+
 int	main()
 {
+	signal(SIGINT, sigint_handler);
 	std::string	log_filepath = "logs/webserv.log";
 	Logger::init(&log_filepath);
 
@@ -44,12 +57,19 @@ int	main()
 	//ServerHTTP	srv("", PORT_HTTP, "./www");
 	ServerHTTP	srv("", 3738, "./www");
 
+	g_srv_ref = &srv;
 	if (srv.bind_server() < 0)
+	{
 		std::cerr << "Binding server failed hard" << std::endl;
+		return (1);
+	}
 
 	std::cout << srv << std::endl;
 	if (srv.start(true) < 0)
+	{
 		std::cerr << "Starting server failed hard" << std::endl;
+		return (1);
+	}
 	Logger::close();
 
 	return (0);
