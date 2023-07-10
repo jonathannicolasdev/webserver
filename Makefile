@@ -1,5 +1,6 @@
 
 CLS_DIR		:= cls/
+SRC_DIR		:= src/
 
 CLS_FILES	:= IServer.cpp			\
 			   AServerReactive.cpp	\
@@ -14,16 +15,16 @@ ST_CLS_FILES	:= IServer.cpp			\
 				   ServerHTTP.cpp		\
 				   Logger.cpp
 
-			   
+SRC_FILES		:= main.cpp
+
+ST_SRC_FILES	:= simple_server_test.cpp	\
+				   signal_handlers.cpp		\
+				   webserv_utils.cpp		
+		   
 
 CLS			:= $(addprefix $(CLS_DIR), $(CLS_FILES))
-ST_CLS			:= $(addprefix $(CLS_DIR), $(ST_CLS_FILES))
-
-SRC_DIR		:= src/
-SRC_FILES	:= main.cpp
-ST_SRC_FILES	:= simple_server_test.cpp
-
 SRCS		:= $(addprefix $(SRC_DIR), $(SRC_FILES))
+ST_CLS		:= $(addprefix $(CLS_DIR), $(ST_CLS_FILES))
 ST_SRCS		:= $(addprefix $(SRC_DIR), $(ST_SRC_FILES))
 
 OBJS		:= $(CLS:.cpp=.o) $(SRCS:.cpp=.o)
@@ -53,7 +54,7 @@ $(NAME): $(OBJS) $(LIBS)
 all:	$(NAME)
 
 simple_test_server: $(ST_OBJS) $(LIBS)
-	rm $(ST_NAME)
+	#rm $(ST_NAME)
 	$(CC) $(CFLAGS) $(INCLS) -o $(ST_NAME) $(ST_OBJS) $(LIBS)
 	./$(ST_NAME)
 

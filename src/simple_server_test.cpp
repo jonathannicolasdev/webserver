@@ -10,6 +10,8 @@
 /*                                                                            */
 /* ************************************************************************** */
 
+#include "webserv.hpp"
+
 #include "Logger.hpp"
 #include "ServerHTTP.hpp"
 #include <iostream>
@@ -35,42 +37,38 @@ int	map_test()
 }
 */
 
-ServerHTTP	*g_srv_ref = NULL;
-
-void	sigint_handler(int signum)
-{
-	(void)signum;
-	std::cerr << "EXIT WITH SIGINT !!" << std::endl;
-	if (g_srv_ref)
-		g_srv_ref->stop();
-	exit(1);
-}
+//ServerHTTP	*g_srv_ref = NULL;
 
 
 int	main()
 {
-	signal(SIGINT, sigint_handler);
+	t_webs	*webs = get_webserv_main_struct();
+
+	signal(SIGINT, webs_sigint_handler);
+
+	///// Logger init
 	std::string	log_filepath = "logs/webserv.log";
 	Logger::init(&log_filepath);
-
 	Logger::log(LOG_DEBUG, "Web Server starts ....... rrrrrrrright now.");
+
+
+	///// Server init
 	//ServerHTTP	srv("", PORT_HTTP, "./www");
-	ServerHTTP	srv("", 3738, "./www");
+	ServerHTTP	srv("Les Jamboni Sapristi inc.", "", 80, "./www/");
+	webs->srv = &srv;
 
-	g_srv_ref = &srv;
+	///// Server bind and start
 	if (srv.bind_server() < 0)
-	{
-		std::cerr << "Binding server failed hard" << std::endl;
+//	{
+//		std::cerr << "Binding server failed hard" << std::endl;
 		return (1);
-	}
-
+//	}
 	std::cout << srv << std::endl;
 	if (srv.start(true) < 0)
-	{
-		std::cerr << "Starting server failed hard" << std::endl;
+//	{
+//		std::cerr << "Starting server failed hard" << std::endl;
 		return (1);
-	}
+//	}
 	Logger::close();
-
 	return (0);
 }

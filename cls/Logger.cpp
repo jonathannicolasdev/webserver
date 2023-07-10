@@ -10,26 +10,11 @@
 /*                                                                            */
 /* ************************************************************************** */
 
+#include "webserv.hpp"
 #include "Logger.hpp"
 
 bool			Logger::_is_init = false;
 std::ofstream	Logger::_logfile;
-
-void    gen_timestamp(std::string& ret)
-{
-	char					time_buff[128];
-	struct tm				*timeinfo;
-//	std::stringstream       timestamp;
-	std::time_t				t;
-	
-	std::time(&t);
-	timeinfo = localtime (&t);
-	strftime(time_buff, 80, "%H:%M:%S %d/%m/%Y", timeinfo);
-	ret = time_buff;
-//        timestamp << std::put_time(std::localtime(&t), "%Y%m%d_%H%M%S");
-//	timestamp << std::put_time(std::localtime(&t), "%H:%M:%S %d/%m/%Y");
-//	ret = timestamp.str();
-}
 
 std::string	log_level_to_string(enum e_log_level lvl)
 {

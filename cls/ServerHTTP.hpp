@@ -77,14 +77,16 @@ class	ServerHTTP: public AServerReactive
 		bool	_validate_client_connection(struct sockaddr_in& addr);
 
 	public:
-		ServerHTTP(const std::string& addr, uint16_t port=PORT_HTTP, const std::string &rootdir="./");
+		ServerHTTP(const std::string& srv_name, const std::string& addr, uint16_t port=PORT_HTTP, const std::string &rootdir="./");
 		~ServerHTTP();
 	
-		int			bind_server();
-		int			start(bool self_managed);
-		void		stop();
-		void		disconnect(int clt_fd);
-		t_srv_state	*get_srv_state();
+		int				bind_server();
+		int				start(bool self_managed);
+		void			stop();
+		void			disconnect(int clt_fd);
+		t_srv_state		*get_srv_state();
+		const std::string&	get_server_name(void) const;
+		const std::string&	get_rootdir(void) const;
 };
 
 std::ostream&	operator<<(std::ostream& ostream, ServerHTTP& srv);
