@@ -44,6 +44,7 @@ enum e_conn_status
 
 typedef struct s_client_connection_state
 {
+//	int						sock_fd;
 	int						clt_fd;
 	struct sockaddr_in		clt_addr;
 	enum e_conn_status		conn_status;
@@ -92,9 +93,10 @@ class	AServerDispatchSwitch: public AServerReactive
 		int		bind_server();
 		int		start(bool self_managed);
 		void	stop();
-		void	disconnect(int clt_fd);
-		void	disconnect_all(void);
+		void	disconnect(int clt_fd, bool force);
+		void	disconnect_all(bool force);
 		void	switch_connection_persistance(void);
+		bool	is_serving(int client_fd) const;
 };
 
 #endif

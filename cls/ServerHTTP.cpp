@@ -12,9 +12,37 @@
 
 #include <vector>
 #include <string>
+#include <dirent.h>
 
 #include "webserv.hpp"
 #include "ServerHTTP.hpp"
+
+/*
+void	print_current_dir_files()
+{
+	DIR				*dir;
+	struct dirent	*direntry;
+	std::ifstream	wow;
+
+	dir = opendir("./www/assets");
+	if (!dir)
+		return ;
+	
+	while ((direntry = readdir(dir)))
+	{
+		std::cout << direntry->d_name << std::endl;
+		// if (std::string(direntry->d_name) == "asdf.jpg")
+		// {
+		// 	wow.open(std::string("./www/assets/") + direntry->d_name,
+		// 	std::ios::in | std::ios::binary);
+		// 	if (!wow.is_open())
+		// 		std::cout << "wow " << std::string("./www/assets/") + direntry->d_name
+		// 			<< " failed to load." << std::endl;
+		// 	else
+		// 		std::cout << wow.rdbuf();
+		// }
+	}
+}
 
 int	process_request_header(std::stringstream &file, std::vector<std::string> &header_tab,
 	std::string &method, std::string &path, std::string &protocol)
@@ -33,11 +61,12 @@ int	process_request_header(std::stringstream &file, std::vector<std::string> &he
 		method = temp.substr(0, p);
 		std::cout << "method : " << method << std::endl;
 		p2 = temp.find(" ", p + 1);
-		path = temp.substr(p + 1, p2 - p);
+		path = temp.substr(p + 1, p2 - p - 1);
 		p = p2;
 		std::cout << "path : " << path << std::endl;
+		std::cout << "path lenght : " << path.length() << std::endl;
 		p2 = temp.find_first_of(" \t\n\r", p + 1);
-		protocol = temp.substr(p + 1, p2 - p);
+		protocol = temp.substr(p + 1, p2 - p - 1);
 		std::cout << "protocol : " << protocol << std::endl;
 
 	}
@@ -101,21 +130,31 @@ std::string&	get_dummy_response(ServerHTTP &srv, std::stringstream& raw_request,
 	if (method == "GET")
 	{
 		std::cout << "path.find(.jpg) : " << path.find(".jpg") << std::endl;
-		std::cout << "path compare last char to / : " << (path.at(path.length() - 2) == '/') << std::endl;
+		std::cout << "path compare last char to / : " << (path.at(path.length() - 1) == '/') << std::endl;
 		std::cout << "last path char : " << path.at(path.length() - 1) << std::endl;
-		if (path.at(path.length() - 2) == '/')
+		if (path.at(path.length() - 1) == '/')
 //		if (*(path.end() - 1).base() == '/')// && path == "/")
-			filepath = srv.get_rootdir() + "index.html";
+			filepath = srv.get_rootdir() + "/index.html";
+		else if (path == "/favicon.ico")
+		{
+			filepath = srv.get_rootdir() + path;
+			content_type = "image/x-icon";
+		}
 		else if (path.find(".jpg") != path.npos)
 		{
-			filepath = srv.get_rootdir() + "assets" + path;
+			filepath = srv.get_rootdir() + "/assets" + path;
 			content_type = "image/jpeg";
-		}
+		}		
 		else
 			filepath = srv.get_rootdir() + path;
 
+		std::cout << "PWD : " << get_working_path() << std::endl;
+		if (access(filepath.c_str(), F_OK) < 0)
+			std::cout << "file path " << filepath.c_str() << "cannot be found." << std::endl;
+		if (access(filepath.c_str(), R_OK) < 0)
+			std::cout << "file path " << filepath.c_str() << "cannot be read." << std::endl;
 		std::cout << "open response filepath : " << filepath << std::endl;
-		file.open(filepath);//"index.html");
+		file.open(filepath, std::ios::in | std::ios::binary);//"index.html");
 	}
 //	else
 		// RESPONDE WITH GENERIC 404 ERROR PAGE
@@ -143,19 +182,19 @@ std::string&	get_dummy_response(ServerHTTP &srv, std::stringstream& raw_request,
 	// header += "Last-modified: Thursday, 20-Nov-97 10:44:53 GMT\n";
 	// header += "Content-type: text/html\n";
 
-
-
 	response = header + content;
 	
-	std::cout << "Sending response : \n" << std::endl;
-	std::cout << response << std::endl;
+//	std::cout << "Sending response : \n" << std::endl;
+//	std::cout << response << std::endl;
 	return (response);
 }
+*/
 
 //ServerHTTP::ServerHTTP(uint16_t port=PORT_HTTP, const std::string &rootdir="./"):
 ServerHTTP::ServerHTTP(const std::string& srv_name, const std::string& addr, 
 	uint16_t port, const std::string &rootdir):
-	AServerReactive(port, false, false, SRV_UNBOUND), _rootdir(rootdir), _server_name(srv_name)
+	AServerReactive(port, false, false, SRV_UNBOUND),
+	_rootdir(get_working_path() + rootdir), _server_name(srv_name)
 {
 	(void)addr;
 	this->_sockfd = 0;
@@ -235,9 +274,13 @@ ServerHTTP::bind_server(void)
 	}
 	std::cout << "sockfd after bind : " << this->_sockfd << std::endl;
 	this->_status = SRV_IDLE;
+
+
+	//// DEBUG 
+//	print_current_dir_files();
+
 	return (0);
 }
-
 
 // If self_managed is true, this server starts a while (1) loop and
 // waits for client connections.
@@ -274,6 +317,7 @@ ServerHTTP::start(bool self_managed)
 		addr_len = sizeof(conn_addr);
 
 		std::cout << "\n\n\nAccepting new connections" << std::endl;
+		
 		if ((connfd = accept(this->_sockfd, (struct sockaddr*)&conn_addr, &addr_len)) < 0)
 		{
 			Logger::log(LOG_ERROR, std::string("accept called failed with error : ")
@@ -285,12 +329,11 @@ ServerHTTP::start(bool self_managed)
 			std::cout << "accepted client connection with ip addr : " << inet_ntoa(conn_addr.sin_addr)
 				<< " with fd : " << connfd << std::endl;
 		
-		// if (!this->_validate_client_connection(conn_addr))
-		// {
-		// 	shutdown(connfd, 2);
-		// 	close(connfd);
-		// 	continue ;
-		// }
+		if (!this->_validate_client_connection(conn_addr) && (close(connfd), 1))
+//		{
+//			close(connfd);
+			continue ;
+//		}
 
 		char					request_buffer[4097];
 		ssize_t					nc;
@@ -304,9 +347,8 @@ ServerHTTP::start(bool self_managed)
 			std::cout << "READ RECEIVED ZERO CHARS" << std::endl;
 		if (nc > 0)
 		{
-
-//			if (request_buffer[0] == '\0')
-//				std::cout << "READ RECEIVED NULL CHARS" << std::endl;
+			if (request_buffer[0] == '\0')
+				std::cout << "READ RECEIVED NULL CHARS" << std::endl;
 
 	//		while ((nc = recv(connfd, request_buffer, 4096, MSG_DONTWAIT)) > 0)
 	//		std::cout << "start while " << std::endl;
@@ -327,9 +369,9 @@ ServerHTTP::start(bool self_managed)
 	//		this->_active_connections[connfd].init_conn_time = std::time(NULL);
 			send(connfd, response.c_str(), response.length(), 0);
 		}
-		std::cout << "shuting down client connection and fd" << std::endl;
+//		std::cout << "shuting down client connection and fd" << std::endl;
 //		shutdown(connfd, 2);// FOR DEBUG ONLY !!
-		close(connfd);
+//		close(connfd);
 	}
 	return (0);
 }
@@ -371,6 +413,7 @@ ServerHTTP::get_srv_state(void)
 	this->_srv_state_view.port = this->_port;
 	this->_srv_state_view.address = inet_ntoa(this->_server_addr.sin_addr);
 	this->_srv_state_view.is_running = this->_is_running;
+	this->_srv_state_view.status_code = this->_status;
 	srv_status_to_str(this->_status, this->_srv_state_view.status);
 	this->_srv_state_view.extra = NULL;
 	return (&this->_srv_state_view);
@@ -378,6 +421,13 @@ ServerHTTP::get_srv_state(void)
 
 const std::string& ServerHTTP::get_server_name(void) const {return (this->_server_name);}
 const std::string& ServerHTTP::get_rootdir(void) const {return (this->_rootdir);}
+
+std::map<std::string, std::string>&
+ServerHTTP::get_srv_locations(void) {
+	
+	return (this->_locations);
+}
+
 
 std::ostream&	operator<<(std::ostream& ostream, ServerHTTP& srv)
 {

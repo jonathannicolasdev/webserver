@@ -6,7 +6,7 @@
 /*   By: iamongeo <iamongeo@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/09 16:43:14 by iamongeo          #+#    #+#             */
-/*   Updated: 2023/07/09 22:12:22 by iamongeo         ###   ########.fr       */
+/*   Updated: 2023/07/10 17:03:23 by iamongeo         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,4 +43,11 @@ void    gen_timestamp(std::string& ret)
 //        timestamp << std::put_time(std::localtime(&t), "%Y%m%d_%H%M%S");
 //	timestamp << std::put_time(std::localtime(&t), "%H:%M:%S %d/%m/%Y");
 //	ret = timestamp.str();
+}
+
+std::string get_working_path(void)
+{
+   char temp[PATH_MAX];
+
+   return (getcwd(temp, sizeof(temp)) ? std::string( temp ) : std::string(""));
 }

@@ -6,7 +6,7 @@
 /*   By: iamongeo <iamongeo@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/10 22:11:33 by iamongeo          #+#    #+#             */
-/*   Updated: 2023/07/10 23:53:17 by iamongeo         ###   ########.fr       */
+/*   Updated: 2023/07/11 19:04:46 by iamongeo         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,27 +28,33 @@ AServerDispatchSwitch::~AServerDispatchSwitch()
 }
 
 void
-AServerDispatchSwitch::disconnect(int clt_fd)
+AServerDispatchSwitch::disconnect(int clt_fd, bool force)
 {
 	std::map<int, t_clt_conn>::iterator it;
 
 	it = this->_active_connections.find(clt_fd);
-	if (it == this->_active_connections.end())
+	if (it == this->_active_connections.end()
+		|| (!force && it->second.conn_status & CLT_PROCESSING))
 		return ;
 	close(clt_fd);
 	this->_active_connections.erase(clt_fd);
 }
 
 void
-AServerDispatchSwitch::disconnect_all(void)
+AServerDispatchSwitch::disconnect_all(bool force)
 {
 	std::map<int, t_clt_conn>::iterator it;
+	int									clt_fd;
 
 	for (it=this->_active_connections.begin(); it != this->_active_connections.end(); it++)
-	{
-		close(it->second.clt_fd);
-		this->_active_connections.erase(it);
-	}
+//	{
+		this->disconnect(it->second.clt_fd, force);
+//		clt_fd = it->second.clt_fd;
+//		if (!force && it->second.conn_status & CLT_PROCESSING)
+//			continue ;
+//		close(it->second.clt_fd);
+//		this->_active_connections.erase(it);
+//	}
 }
 
 void
@@ -95,12 +101,21 @@ AServerDispatchSwitch::bind_server(void)
 	return (0);
 }
 
+bool
+AServerDispatchSwitch::is_serving(int client_fd) const
+{
+	std::map<int, t_clt_conn>::iterator it;
+
+	it = this->_active_connections.find(client_fd);
+	return (it != this->_active_connections.end());
+}
+
 int
 AServerDispatchSwitch::_init_macos_event_listener(void)
 {
 	if ((this->_pollfd = kqueue()) < 0)
 		return (Logger::log(LOG_ERROR, "Failed to open kqueue fd."));
-	return (0);		
+	return (0);
 }
 
 int
@@ -113,7 +128,7 @@ AServerDispatchSwitch::_validate_ready_start(void)
 
 	it = this->_callbacks.find(EVNT_ACCEPTED_CONNECTION);
 	if (it == this->_callbacks.end())
-		return (Logger::log(LOG_WARNING, "No event required callback registered for EVNT_ACCEPTED_CONNECTION event. You must register at least a callback for this event before starting the server. See register_react_callback() in AServerReact.hpp."));
+		return (Logger::log(LOG_WARNING, "Missing required callback for EVNT_ACCEPTED_CONNECTION event. You must register at least a callback for this event before starting the server. See register_react_callback() in AServerReact.hpp."));
 	return (0);
 }
 
@@ -140,8 +155,7 @@ AServerDispatchSwitch::start(bool self_managed)
 		return (Logger::log(LOG_ERROR, err_msg.str()));
 	}
 	this->_status = SRV_LISTENING;
-	this->_srv_start_time = std::time(NULL);
-	
+	this->_srv_start_time = std::time(NULL);	
 	
 	return (0);
 }

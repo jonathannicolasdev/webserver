@@ -41,7 +41,8 @@ t_webs  *get_webserv_main_struct(void);
 // Signal handlers
 void	webs_sigint_handler(int signum);
 
-// Time utils
-void    gen_timestamp(std::string& ret);
+// Webserv utils
+void		gen_timestamp(std::string& ret);
+std::string get_working_path(void);
 
 #endif

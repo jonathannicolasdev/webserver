@@ -44,8 +44,9 @@ typedef struct s_server_state
 	bool					is_running;
 	uint16_t				port;
 	std::string				address;// as string. ex : "127.0.0.1"
+	enum e_server_status_codes	status_code;// current status enum for the server
 	std::string				status;// set with srv_status_to_str(enum status) call
-	
+	int						open_connections;// nb of clients currently connected to it.
 	// allows for specific server types to add a pointer to a struct of relevant data to this type.
 	// Can be a pointer to a struct defined in the concrete server implemenetation file and declared
 	// in the class itself.
@@ -64,6 +65,8 @@ class   IServer
 		bool						_is_running;
 		enum e_server_status_codes	_status;
 
+		std::map<std::string, std::string>	_locations;
+
 		// A pointer to this struct is returned by get_srv_state() call. The specific
 		// implementation of get_srv_state should be implemented in the concrete server classes.
 		t_srv_state             _srv_state_view;
@@ -75,6 +78,9 @@ class   IServer
 		virtual int			start(bool self_managed) = 0;
 		virtual void		stop(void) = 0;
 		virtual t_srv_state	*get_srv_state(void) = 0;
+		virtual bool		is_serving(int client_fd) = 0;// if concrete server does not track client connection state (is stateless), implement with return (false);.
+
+		virtual	std::map<std::string, std::string>&	get_srv_locations(void) = 0;
 };
 
 std::string &srv_status_to_str(enum e_server_status_codes status, std::string &ret_str);

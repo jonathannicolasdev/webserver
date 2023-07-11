@@ -54,7 +54,7 @@ int	main()
 
 	///// Server init
 	//ServerHTTP	srv("", PORT_HTTP, "./www");
-	ServerHTTP	srv("Les Jamboni Sapristi inc.", "", 80, "./www/");
+	ServerHTTP	srv("Les Jamboni Sapristi inc.", "", 80, "/www");
 	webs->srv = &srv;
 
 	///// Server bind and start

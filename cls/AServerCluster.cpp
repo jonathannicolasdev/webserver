@@ -19,7 +19,22 @@ int	AServerCluster::generate_id(void)
 	return (this->_counter++);
 }
 
-bool	AServerCluster::server_in_cluster(IServer *srv)
+AServerCluster::AServerCluster(): _id(generate_id()), _status(CLU_IDLE), _pollfd(0)
+{
+	std::cout << "AServerCluster constructor" << std::endl;
+}
+
+bool	AServerCluster::contains(IServer *srv) const
 {
 	return (std::find(_servers.begin(), _servers.end(), srv) != _servers.end())
+}
+
+IServer			*AServerCluster::find_owner(int client_fd) const
+{
+	std::vector<IServer *>::iterator	it;
+
+	for (it = this->_servers.begin(); it != this->_servers.end(); ++it)
+		if ((*it)->is_serving(client_fd))
+			return (it);
+	return (nullptr);
 }

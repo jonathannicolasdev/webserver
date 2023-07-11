@@ -21,10 +21,10 @@ enum e_react_event
 	EVNT_SENT_RESPONSE = 0b10,
 	EVNT_SRV_OPEN = 0b100,
 	EVNT_SRV_CLOSE = 0b1000,
-	EVNT_EXCEPTION_OCCURED = 0x8000000// highest int32 bit
+	EVNT_EXCEPTION_OCCURED = 0x8000000// highest int32 bit = (1 << 31)
 };
 
-typedef int	(*t_react_callback)(IServer& srv, enum e_react_event event);
+typedef int	(*t_react_callback)(IServer& srv, enum e_react_event event, int client_fd);
 
 
 // Inheriting this abstract class allowes the server to react to events with callbacks.
@@ -33,7 +33,7 @@ class	AServerReactive: public IServer
 {
 	protected:
 
-		std::map<enum e_react_event, t_react_callback> callbacks;
+		std::map<enum e_react_event, t_react_callback> _callbacks;
 
 		int	register_react_callback(enum e_react_event event, t_react_callback cb);		
 		int	react(enum e_react_event event);

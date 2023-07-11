@@ -44,17 +44,13 @@ class	AServerCluster
 {
 	protected:
 		static int	_counter;
-		int		_id;
-		int		_status;
-		int		generate_id(void);
-		
-		std::vector<int>	_rd_fds;//	push the fd attribute from server
-		std::vector<int>	_wt_fds;//	obj added to cluster in add_server()
-						//	to _rd_fds as well.
-		std::vector<int>	_ex_fds;//	Used by poll (or equivallent) to either
-						//	read or write to clients. Or be placed
-						//	in ex_fds for exception handling.
 
+		int			_id;
+		int			_status;
+		int			generate_id(void);
+
+		int			_pollfd;
+		
 		std::vector<IServer *>	_servers;//	All servers in cluster
 		
 
@@ -62,10 +58,11 @@ class	AServerCluster
 									//	Specific to cluster type
 
 	public:
-		bool	server_in_cluster(IServer *srv);
+		bool			contains(IServer *srv) const;
+		IServer			*find_owner(int client_fd) const;
 
-		virtual int	start_cluster(void) = 0;
-		virtual int	add_server(IServer *srv) = 0;
+		virtual int		start_cluster(void) = 0;
+		virtual int		add_server(IServer *srv) = 0;
 		virtual void	stop_cluster(void) = 0;
 };
 /*

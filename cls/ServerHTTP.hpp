@@ -26,6 +26,7 @@
 # include "AServerReactive.hpp"
 # include "Logger.hpp"
 
+/*
 # define MAX_PENDING_CONN 128
 
 enum e_conn_status
@@ -54,6 +55,7 @@ struct s_timeout_info
 	std::time_t	duration;
 	std::time_t	end_time;
 };
+*/
 
 class	ServerHTTP: public AServerReactive
 {
@@ -65,7 +67,7 @@ class	ServerHTTP: public AServerReactive
 		// with connection fd (returned by accept()) for key
 		// and tracking client activity on site with the connection 
 		// state struct defined above. Once the client
-		std::map<int, t_clt_conn>	_active_connections;
+//		std::map<int, t_clt_conn>	_active_connections;
 
 		//  Potentially implement ip bans and ip timeouts.
 		std::set<in_addr_t>							_addr_blacklist;
@@ -80,13 +82,14 @@ class	ServerHTTP: public AServerReactive
 		ServerHTTP(const std::string& srv_name, const std::string& addr, uint16_t port=PORT_HTTP, const std::string &rootdir="./");
 		~ServerHTTP();
 	
-		int				bind_server();
-		int				start(bool self_managed);
-		void			stop();
-		void			disconnect(int clt_fd);
-		t_srv_state		*get_srv_state();
+		int					bind_server();
+		int					start(bool self_managed);
+		void				stop();
+		void				disconnect(int clt_fd);
+		t_srv_state			*get_srv_state();
 		const std::string&	get_server_name(void) const;
 		const std::string&	get_rootdir(void) const;
+		std::map<std::string, std::string>&	get_srv_locations(void);
 };
 
 std::ostream&	operator<<(std::ostream& ostream, ServerHTTP& srv);
