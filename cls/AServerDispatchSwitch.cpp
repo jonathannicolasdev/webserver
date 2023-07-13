@@ -36,7 +36,8 @@ AServerDispatchSwitch::disconnect(int clt_fd, bool force)
 	if (it == this->_active_connections.end()
 		|| (!force && it->second.conn_status & CLT_PROCESSING))
 		return ;
-	close(clt_fd);
+	if (clt_fd > 2)
+		close(clt_fd);
 	this->_active_connections.erase(clt_fd);
 }
 
@@ -105,10 +106,33 @@ bool
 AServerDispatchSwitch::is_serving(int client_fd) const
 {
 	std::map<int, t_clt_conn>::iterator it;
+	
+	if (!this->_keep_alive)
+		return (false);
 
 	it = this->_active_connections.find(client_fd);
 	return (it != this->_active_connections.end());
 }
+
+t_clt_conn&
+AServerDispatchSwitch::get_client_state(int client_fd) const
+{
+	std::map<int, t_clt_conn>::iterator it;
+
+	if (!this->_keep_alive)
+		return (false);
+
+	it = this->_active_connections.find(client_fd);
+	if (it == this->_active_connections.end())
+		return (nullptr);
+	return (it->second);
+}
+
+uint16_t
+AServerDispatchSwitch::get_port(void) const {return (this->_port);}
+
+int
+AServerDispatchSwitch::get_socket(void) const {return (this->_sockfd);}
 
 int
 AServerDispatchSwitch::_init_macos_event_listener(void)
@@ -136,7 +160,7 @@ AServerDispatchSwitch::_validate_ready_start(void)
 // waits for client connections.
 // Otherwise returns the server's sockfd fd to be managed externally.
 int
-AServerDispatchSwitch::start(bool self_managed)
+AServerDispatchSwitch::start(void)
 {
 	int					connfd;
 	struct sockaddr_in	conn_addr;
@@ -157,7 +181,8 @@ AServerDispatchSwitch::start(bool self_managed)
 	this->_status = SRV_LISTENING;
 	this->_srv_start_time = std::time(NULL);	
 	
-	return (0);
+	return (this->_sockfd);
+//	return (0);
 }
 /*
 // If self_managed is true, this server starts a while (1) loop and

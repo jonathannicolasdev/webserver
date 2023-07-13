@@ -13,9 +13,9 @@
 #ifndef SERVER_MANAGER_H
 # define SERVER_MANAGER_H
 
-# include "webserv.hpp"
-# include "Server.hpp"
-
+//# include "webserv.hpp"
+//# include "Server.hpp"
+# include "AServerCluster.hpp"
 
 class   ClusterWeb: public AServerCluster
 {
@@ -24,10 +24,14 @@ class   ClusterWeb: public AServerCluster
 
 	public:
 		ClusterWeb();
-		~ClusterWeb();
-		int		start_cluster(void);
-		int		add_server(IServer *srv);
-		void	stop_cluster(void);
+		virtual ~ClusterWeb();
+		
+		int		bind(void);
+//		int		start(void);
+//		int		add_server(IServer *srv);
+//		void	stop(void);// stops all its active servers
+//		void	reboot(void);// stops all its active servers and restarts them.
+//		void	terminate(bool force);// stops all active servers and deletes them from the cluster.
 };
 /*
 ClusterWeb::ClusterWeb(void): _status(CLU_IDLE), _id(this->generate_id())

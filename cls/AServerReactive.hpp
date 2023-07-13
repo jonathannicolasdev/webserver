@@ -39,6 +39,7 @@ class	AServerReactive: public IServer
 		int	react(enum e_react_event event);
 
 		AServerReactive(uint16_t _port, bool _close_rqst, bool _is_running, enum e_server_status_codes _status);
+		virtual	~AServerReactive();
 };
 
 #endif

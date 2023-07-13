@@ -306,6 +306,7 @@ ServerHTTP::start(bool self_managed)
 		return (Logger::log(LOG_ERROR, err_msg.str()));
 	}
 	this->_status = SRV_LISTENING;
+	this->_close_request = false;
 
 	if (!self_managed)
 		return (this->_sockfd);
@@ -386,7 +387,8 @@ ServerHTTP::disconnect(int clt_fd)
 		return ;
 
 //	shutdown(clt_fd, 2);
-	close(clt_fd);
+	if (clt_fd > 2)
+		close(clt_fd);
 	this->_active_connections.erase(clt_fd);
 }
 
@@ -398,11 +400,12 @@ ServerHTTP::stop(void)
 	std::cout << "Try stop ServerHTTP listening on port : " << this->_port << std::endl;
 	for (it=this->_active_connections.begin(); it != this->_active_connections.end();)// it++)
 	{
-//		shutdown(it->second.clt_fd, 2);
-		close(it->second.clt_fd);
+		if (it->second.clt_fd > 2)
+			close(it->second.clt_fd);
 		this->_active_connections.erase(it++);
 	}
-	close(this->_sockfd);
+	if (this->_sockfd > 2)
+		close(this->_sockfd);
 	this->_status = SRV_UNBOUND;
 	this->_close_request = true;
 }

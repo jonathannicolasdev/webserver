@@ -12,6 +12,18 @@
 
 #include "AServerReactive.hpp"
 
+AServerReactive::AServerReactive(uint16_t _port, bool _close_rqst, bool _is_running,
+    enum e_server_status_codes _status): 
+	IServer(_port, _close_rqst, _is_running, _status)
+{
+	std::cout << "AServerReactive passthrough constructor" << std:: endl;
+}
+
+AServerReactive::~AServerReactive(void)
+{
+	std::cout << "AServerReactive passthrough destructor" << std:: endl;
+}
+
 int	AServerReactive::register_react_callback(enum e_react_event event, t_react_callback cb)
 {
 	if (!cb)
@@ -39,11 +51,4 @@ int	AServerReactive::react(enum e_react_event event)
 		return (-1);
 	}
 	return (cb(*this, event));
-}
-
-AServerReactive::AServerReactive(uint16_t _port, bool _close_rqst, bool _is_running,
-    enum e_server_status_codes _status): 
-	IServer(_port, _close_rqst, _is_running, _status)
-{
-	std::cout << "AServerReactive passthrough constructor" << std:: endl;
 }

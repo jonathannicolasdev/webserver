@@ -41,6 +41,7 @@ enum e_common_port
 
 typedef struct s_server_state
 {
+	std::string				server_name;
 	bool					is_running;
 	uint16_t				port;
 	std::string				address;// as string. ex : "127.0.0.1"
@@ -58,6 +59,7 @@ class   IServer
 	protected:
 //		AServerCuster*				_owner;/// Value should be set to owner cluster if server is
 										// attached to a cluster else defaults to NULL.
+		std::string					_server_name;
 		int							_sockfd;
 		uint16_t					_port;
 		struct sockaddr_in			_server_addr;
@@ -75,12 +77,14 @@ class   IServer
 		
 	public:
 		virtual int			bind_server(void) = 0;
-		virtual int			start(bool self_managed) = 0;
+		virtual int			start(void) = 0;
 		virtual void		stop(void) = 0;
 		virtual t_srv_state	*get_srv_state(void) = 0;
 		virtual bool		is_serving(int client_fd) = 0;// if concrete server does not track client connection state (is stateless), implement with return (false);.
 
-		virtual	std::map<std::string, std::string>&	get_srv_locations(void) = 0;
+		virtual uint16_t	get_port(void) const = 0;
+		virtual int			get_socket(void) const = 0;
+//		virtual	std::map<std::string, std::string>&	get_srv_locations(void) = 0;
 };
 
 std::string &srv_status_to_str(enum e_server_status_codes status, std::string &ret_str);

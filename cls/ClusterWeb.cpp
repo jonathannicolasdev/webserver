@@ -12,35 +12,42 @@
 
 #include "ClusterWeb.hpp"
 
-ClusterWeb::ClusterWeb(void): _status(CLU_IDLE), _id(this->generate_id())
+ClusterWeb::ClusterWeb(void): AServerCluster(), _status(CLU_IDLE), _id(this->generate_id())
 {
-	std::cout << "Cluster constructor" << std::endl;
+	std::cout << "ClusterWeb constructor" << std::endl;
 }
 
 ClusterWeb::~ClusterWeb(void)
 {
-	std::cout << "Cluster destructor" << std::endl;
+	std::cout << "ClusterWeb destructor" << std::endl;
+	this->terminate();
+	if (_pollfd > 2)
+		this->close_poll();
+//		close(_pollfd);
 
+/*
 	for (int i=0; i < _servers.size(); i++)
 	{
 		_servers[i]->stop();
 		delete _servers[i];
 	}	
 	std::cout << "Cluster destructor" << std::endl;
+*/
 }
-
-int	ClusterWeb::start_cluster(void)
+/*
+int	ClusterWeb::start(void)
 {
 	std::cout << "Starting Web Cluster" << std::endl;
 	_status = CLU_RUNNING;
 	return (0);
 }
 
-void	ClusterWeb::stop_cluster(void)
+void	ClusterWeb::stop(void)
 {
 	std::cout << "Stopping Web Cluster" << std::endl;
 	_status = CLU_IDLE;
 }
+
 
 bool	validate_server(IServer *srv)
 {
@@ -56,3 +63,4 @@ int	ClusterWeb::add_server(IServer *srv)
 	_servers.push_back(srv);
 	return (0);
 }
+*/

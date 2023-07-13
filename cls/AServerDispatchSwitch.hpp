@@ -75,10 +75,17 @@ class	AServerDispatchSwitch: public AServerReactive
 		//  Uses hash map to store client's connection state info
 		// with connection fd (returned by accept()) for key
 		// and tracking client activity on site with the connection 
-		// state struct defined above. Once the client
+		// state struct defined above.
 		std::map<int, t_clt_conn>	_active_connections;
 
 		int		_subscribed_events = 0;// ORed set of enums from e_react_event
+
+		// If _keep_alive is true, the server will keep the client connections open 
+		// and store them in the _active_connections map, therefore making the server stateful.
+		// If false, closes the client connections after each interaction.
+		// The struct created in the map will keep track of timestamps indicating
+		// init client connection time, last activity timestamp and time since last activity
+		// which will be compared against _conn_timout duraction to flush inacive connections.
 		bool	_keep_alive;
 		int		_conn_timout;
 
@@ -87,16 +94,25 @@ class	AServerDispatchSwitch: public AServerReactive
 
 		AServerDispatchSwitch(uint16_t _port, bool _close_rqst, bool _is_running,
 			enum e_server_status_codes _status, bool conn_persistance, int conn_timout=600);
-		~AServerDispatchSwitch();
+		virtual	~AServerDispatchSwitch();
 
 			
-		int		bind_server();
-		int		start(bool self_managed);
-		void	stop();
-		void	disconnect(int clt_fd, bool force);
-		void	disconnect_all(bool force);
-		void	switch_connection_persistance(void);
-		bool	is_serving(int client_fd) const;
+		virtual int		bind_server(void);
+		virtual int		start(void);
+		virtual void	stop(void);
+		virtual void	disconnect(int clt_fd, bool force);
+		virtual void	disconnect_all(bool force);
+		virtual void	switch_connection_persistance(void);// Switches the _keep_alive bool on/off. 
+		virtual bool	is_serving(int client_fd) const;
+
+		virtual uint16_t	get_port(void) const;
+		virtual int			get_socket(void) const;
+		
+		t_clt_conn&			get_client_state(int client_fd) const;
+		
+		// TODO
+//		void			flush_timouts(void);
+//		void			flush_oldest(int n);
 };
 
 #endif
