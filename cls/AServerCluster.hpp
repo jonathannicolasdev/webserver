@@ -18,8 +18,12 @@
 //# include <set>
 # include <map>
 # include "IServer.hpp"
+# include <sys/event.h>
 
-# define MAX_POLL_EVENTS 64
+# include "webserv.hpp"
+
+//# define MAX_POLL_EVENTS 64
+# define MAX_CONCUR_POLL 1024
 
 enum e_cluster_status
 {
@@ -36,10 +40,13 @@ class __EventListener
 {
 	protected:
 		int				_pollfd;
+		int				nb_watched;
 #ifdef __APPLE__
-		struct kevent	_events[MAX_POLL_EVENTS];
+		struct kevent	_events[MAX_CONCUR_POLL];
+		struct kevent	_changes[MAX_CONCUR_POLL];
 #elif __linux__
-		struct epoll_event	_events[MAX_POLL_EVENTS];
+		struct epoll_event	_events[MAX_CONCUR_POLL];
+		struct epoll_event	_changes[MAX_CONCUR_POLL];
 #endif
 
 		// The word poll is used here for simplicity but 
@@ -50,6 +57,8 @@ class __EventListener
 		virtual int		unpoll_socket(int sockfd);
 		virtual int		poll_new_client(int clientfd);
 		virtual int		unpoll_client(int clientfd);
+
+		virtual int		poll_wait(int timeout);
 };
 
 // AServerCluster (Abstract Server Cluster):
@@ -98,8 +107,8 @@ class	AServerCluster:	public __EventListener
 		virtual int		start(void);// = 0;
 		virtual int		add_server(IServer *srv);// = 0;
 		virtual void	stop(void);// = 0;// stops all its active servers
-		virtual void	reboot(void);// = 0;// stops all its active servers and restarts them.
-		virtual void	terminate(bool force);// = 0;// stops all active servers and deletes them from the cluster.
+		virtual int		reboot(void);// = 0;// stops all its active servers and restarts them.
+		virtual int		terminate(bool force);// = 0;// stops all active servers and deletes them from the cluster.
 
 		// Potentialy add multiple overloads for stopping / rebooting / starting ... by Server type.
 };

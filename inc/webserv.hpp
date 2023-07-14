@@ -25,6 +25,8 @@
 //# include "AServerCluster.hpp"
 //# include "ClusterWeb.hpp"
 
+//# define MAX_CONCUR_CLIENTS 1024
+
 # define UNUSED(o) (void)(o)
 
 typedef struct s_webserv

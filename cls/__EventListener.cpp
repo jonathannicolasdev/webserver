@@ -25,7 +25,7 @@ __EventListener::init_poll(void)
 	if ((this->_pollfd = epoll_create1(0)) < 0)
 #endif
 		return (Logger::log(LOG_ERROR, "Failed to initialize polling mechanism."));
-
+	this->nb_watched = 0;
 	return (0);
 }
 
@@ -34,8 +34,8 @@ __EventListener::close_poll(void)
 {
 	if (this->_pollfd < 3)
 		return (Logger::log(LOG_WARNING, "Trying to close poll but none currently active."));
-	
 	close(this->_pollfd);
+	this->nb_watched = 0;
 	return (0);
 }
 
@@ -43,30 +43,108 @@ int
 __EventListener::poll_new_socket(int sockfd)
 {
 	if (this->_pollfd < 3)
-		return (Logger::log(LOG_WARNING, "Trying to poll new socket but no polling mechanism was initialized."));
+		return (Logger::log(LOG_WARNING, "Trying to poll new socket but no polling mechanism is initialized."));
+	if (sockfd < 3 || sockfd >= MAX_CONCUR_POLL)
+		return (Logger::log(LOG_WARNING, "Trying to poll out of bounds fd"));
 	
-    EV_SET(change_event, socket_listen_fd, EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, 0);
-
+#ifdef __APPLE__
+	if (this->_events[sockfd].ident > 2)
+		return (Logger::log(LOG_WARNING, "Trying to poll a socket twice"));
+	EV_SET(&this->_events[sockfd], sockfd, EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, 0);
+#elif __linux__
+	if (this->_events[sockfd].data.fd > 2)
+		return (Logger::log(LOG_WARNING, "Trying to poll a socket twice"));
+    this->_events[sockfd].data.fd = sockfd;
+    this->_events[sockfd].events = EPOLLIN;
+	if (epoll_ctl(this->_pollfd, EPOLL_CTL_ADD, sockfd, &this->_events[sockfd]) < 0)
+		return (Logger::log(LOG_ERROR, "Failed to poll new socket"));
+#endif
+	this->nb_watched++;
     return (0);
 }
 
 int
 __EventListener::unpoll_socket(int sockfd)
 {
-    // TO IMPLEMENT
+	if (this->_pollfd < 3)
+		return (Logger::log(LOG_WARNING, "Trying to remove socket from poll but no polling mechanism is initialized."));
+	if (sockfd < 3 || sockfd >= MAX_CONCUR_POLL)
+		return (Logger::log(LOG_WARNING, "Trying to remove out of bounds fd from poll"));
+#ifdef __APPLE__
+	if (this->_events[sockfd].ident < 3)
+		return (0);
+	EV_SET(&this->_events[sockfd], sockfd, EVFILT_READ, EV_DELETE, 0, 0, 0);
+	this->_events[sockfd].ident = 0;
+#elif __linux__
+	if (this->_events[sockfd].data.fd < 3)
+		return (0);
+	if (epoll_ctl(this->_pollfd, EPOLL_CTL_DEL, sockfd, NULL) < 0)
+		return (Logger::log(LOG_ERROR, "Failed to remove socket from poll"));
+    this->_events[sockfd].data.fd = 0;
+#endif
+	this->nb_watched--;
+	return (0);
+}
+
+int
+__EventListener::poll_new_client(int clientfd)
+{
+ 	if (this->_pollfd < 3)
+		return (Logger::log(LOG_WARNING, "Trying to poll new client but no polling mechanism is initialized."));
+	if (clientfd < 3 || clientfd >= MAX_CONCUR_POLL)
+		return (Logger::log(LOG_WARNING, "Trying to poll out of bounds fd"));
+	
+#ifdef __APPLE__
+	if (this->_events[clientfd].ident > 2)
+		return (Logger::log(LOG_WARNING, "Trying to poll a client twice"));
+	EV_SET(&this->_events[clientfd], clientfd, EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, 0);
+#elif __linux__
+	if (this->_events[sockfd].data.fd > 2)
+		return (Logger::log(LOG_WARNING, "Trying to poll a socket twice"));
+    this->_events[clientfd].data.fd = clientfd;
+    this->_events[clientfd].events = EPOLLIN;
+	if (epoll_ctl(this->_pollfd, EPOLL_CTL_ADD, clientfd, &this->_events[clientfd]) < 0)
+		return (Logger::log(LOG_ERROR, "Failed to poll new socket"));
+#endif
+	this->nb_watched++;
     return (0);
 }
 
 int
-__EventListener::poll_new_client(int sockfd)
+__EventListener::unpoll_client(int clientfd)
 {
-    // TO IMPLEMENT
-    return (0);
+	if (this->_pollfd < 3)
+		return (Logger::log(LOG_WARNING, "Trying to remove client from poll but no polling mechanism is initialized."));
+	if (clientfd < 3 || clientfd >= MAX_CONCUR_POLL)
+		return (Logger::log(LOG_WARNING, "Trying to remove out of bounds fd from poll"));
+#ifdef __APPLE__
+	if (this->_events[clientfd].ident < 3)
+		return (0);
+	EV_SET(&this->_events[clientfd], clientfd, EVFILT_READ, EV_DELETE, 0, 0, 0);
+	this->_events[clientfd].ident = 0;
+#elif __linux__
+	if (this->_events[clientfd].data.fd < 3)
+		return (0);
+	if (epoll_ctl(this->_pollfd, EPOLL_CTL_DEL, clientfd, NULL) < 0)
+		return (Logger::log(LOG_ERROR, "Failed to remove socket from poll"));
+    this->_events[clientfd].data.fd = 0;
+#endif
+	this->nb_watched--;
+	return (0);
 }
 
+// timeout value in ms.
 int
-__EventListener::unpoll_client(int sockfd)
+__EventListener::poll_wait(int timeout)
 {
-    // TO IMPLEMENT
-    return (0);
+	int	nb_events;
+
+	if (this->_pollfd < 3)
+		return (Logger::log(LOG_WARNING, "Trying to poll_wait but no polling mechanism is initialized."));
+#ifdef __APPLE__
+#elif __linux__
+	if ((nb_events = epoll_wait(this->_pollfd, this->_changes, MAX_CONCUR_POLL, timeout)) < 0)
+		return (Logger::log(LOG_ERROR, std::string()"poll_wait() call failed with error : ") + strerror(errno)));
+
+#endif
 }

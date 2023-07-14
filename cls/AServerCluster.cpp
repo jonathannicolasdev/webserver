@@ -16,8 +16,8 @@ int	log_bind_error(std::string &srv_name, int port)
 {
 	std::ostringstream	log_msg;
 
-	log_msg << "Server named " << srv_state->server_name;
-	log_msg << "on port " << srv_state->port;
+	log_msg << "Server named " << srv_name;
+	log_msg << "on port " << port;
 	log_msg << " failed to bind itself. All servers in a cluster must be able to bind, otherwise no server owned by this cluster can be bound.");
 
 	return (Logger::log(LOG_WARNING, log_msg.str()));
@@ -27,8 +27,8 @@ int	log_start_error(std::string &srv_name, int port)
 {
 	std::ostringstream	log_msg;
 
-	log_msg << "Server named " << srv_state->server_name;
-	log_msg << "on port " << srv_state->port;
+	log_msg << "Server named " << srv_name;
+	log_msg << "on port " << port;
 	log_msg << " failed to start itself. All servers in a cluster must be able to start, otherwise no server owned by this cluster are allowed to start. Stopping Cluster. Call ServerCluster::bind again to reattempt start.");
 
 	return (Logger::log(LOG_WARNING, log_msg.str()));
@@ -41,15 +41,18 @@ int	AServerCluster::generate_id(void)
 	return (this->_counter++);
 }
 
-AServerCluster::AServerCluster(void): _id(generate_id()), _status(CLU_IDLE), _pollfd(0)
+AServerCluster::AServerCluster(void): __EventListener(), _id(generate_id()), _status(CLU_IDLE), 
 {
 	std::cout << "AServerCluster constructor" << std::endl;
+	std::memset(this->_events, 0, sizeof(this->_events));
+	std::memset(this->_changes, 0, sizeof(this->_changes));
+	this->_pollfd = 0;
 }
 
 AServerCluster::~AServerCluster(void)
 {
 	std::cout << "AServerCluster destructor" << std::endl;
-	this->terminate();
+	this->terminate(true);
 }
 
 bool	AServerCluster::contains(IServer *srv) const
@@ -96,7 +99,8 @@ AServerCluster::validate_server(IServer *srv) const
 {
 	t_srv_state	*srv_state;
 	//std::vector<IServer*>::iterator it;
-	std::map<int, IServer*>::iterator it;
+	std::map<int, IServer*>::iterator	it;
+	std::ostringstream					port_str;
 
 	if (!srv)
 		return (Logger::log(LOG_WARNING, "Passed nullptr to AServerCluster::add_server()"), false);
@@ -112,9 +116,10 @@ AServerCluster::validate_server(IServer *srv) const
 			return (Logger::log(LOG_WARNING, std::string("Trying to add same server twice in ServerCluster. Server name : ")
 				+ srv_state->server_name), false);
 		//if ((*it)->get_port() == srv_state->port)
+		port_str << srv_state->port;
 		if (it->second->get_port() == srv_state->port)
 			return (Logger::log(LOG_WARNING, std::string("ServerCluster cannot have two servers binding to the same port. Conflicting port : ")
-				+ srv_state.port), false);
+				+ port_str.str()), false);
 	}
 	return (true);
 }
@@ -122,9 +127,12 @@ AServerCluster::validate_server(IServer *srv) const
 int
 AServerCluster::add_server(IServer *srv)
 {
+	std::ostringstream	id_str;
+
 	if (!this->validate_server(srv))
 		return (-1);
-	Logger::log(LOG_DEBUG, std::string("Adding new server to cluster id ") + this->_id + " Server info : ");
+	id_str << this->_id;
+	Logger::log(LOG_DEBUG, std::string("Adding new server to cluster id ") + id_str.str() + " Server info : ");
 	std::cout << srv << std::endl;
 //	this->_servers.push_back(srv);
 	this->_servers[srv->get_socket()] = srv;
@@ -188,6 +196,8 @@ AServerCluster::start(void)
 		}
 		this->poll_new_socket(sockfd);
 	}
+	/// Start main loop
+
 	this->_status = CLU_RUNNING;
 	return (0);
 }
@@ -197,6 +207,7 @@ AServerCluster::stop(void)
 {
 	//std::vector<IServer*>::iterator	it;
 	std::map<int, IServer*>::iterator	it;
+
 	
 	for (it = this->_servers.begin(); it != this->_servers.end(); ++it)
 	{
@@ -243,9 +254,8 @@ int
 AServerCluster::reboot(void)
 {
 //	std::vector<IServer*>::iterator	it;
-	
-	if (this->stop() < 0
-		|| this->bind() < 0
+	this->stop();
+	if (this->bind() < 0
 		|| this->start() < 0)
 		return (Logger::log(LOG_WARNING, "Cluster failed to reboot");
 	Logger::log(LOG_DEBUG, "Cluster successfully rebooted");
