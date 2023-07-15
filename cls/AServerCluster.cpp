@@ -41,7 +41,8 @@ int	AServerCluster::generate_id(void)
 	return (this->_counter++);
 }
 
-AServerCluster::AServerCluster(void): __EventListener(), _id(generate_id()), _status(CLU_IDLE), 
+AServerCluster::AServerCluster(void): __EventListener(), _id(generate_id()), _status(CLU_IDLE),
+	_timeout(-1)
 {
 	std::cout << "AServerCluster constructor" << std::endl;
 	std::memset(this->_events, 0, sizeof(this->_events));
@@ -172,14 +173,14 @@ AServerCluster::bind(void)
 }
 
 int 
-AServerCluster::__server_mainloop(void)
+AServerCluster::__cluster_mainloop(void)
 {
 	int	nb_events;
 
 	this->_status = CLU_RUNNING;
 	while (!this->_request_stop)
 	{
-		nb_events = this->poll_wait(this->_time);
+		nb_events = this->poll_wait(this->_timeout);
 	}
 	return (0);
 }

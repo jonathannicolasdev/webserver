@@ -34,6 +34,7 @@ class	AServerReactive: public IServer
 	protected:
 
 		std::map<enum e_react_event, t_react_callback> _callbacks;
+		int		_subscribed_events = 0;// ORed set of enums from e_react_event
 
 		int	register_react_callback(enum e_react_event event, t_react_callback cb);		
 		int	react(enum e_react_event event);
