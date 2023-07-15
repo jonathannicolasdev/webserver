@@ -85,7 +85,8 @@ class	AServerCluster:	public __EventListener
 		int			_id;
 		int			_status;
 		int			generate_id(void);
-
+		bool		_request_stop;
+		int			_timeout_clientfd[MAX_CONCUR_POLL];// array to receive the fds from timed out clients from servers.
 		
 //		std::vector<IServer *>	_servers;//	All servers in cluster
 		//std::set<IServer *>	_servers;//	All servers in cluster
@@ -98,6 +99,8 @@ class	AServerCluster:	public __EventListener
 		IServer			*find_server(int socket_fd) const;// Get server from socket fd. Used when polling server socket
 															//	for new connections. Poll (or equiv.) will return the socket fd
 															//	and passing it to this function retreives the server inst it belongs to.
+
+		int				__server_mainloop(void);
 
 	public:
 		int				get_nb_managed(void) const;

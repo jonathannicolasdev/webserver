@@ -171,6 +171,18 @@ AServerCluster::bind(void)
 	return (0);
 }
 
+int 
+AServerCluster::__server_mainloop(void)
+{
+	int	nb_events;
+
+	this->_status = CLU_RUNNING;
+	while (!this->_request_stop)
+	{
+		nb_events = this->poll_wait(this->_time);
+	}
+	return (0);
+}
 
 int
 AServerCluster::start(void)
@@ -198,7 +210,6 @@ AServerCluster::start(void)
 	}
 	/// Start main loop
 
-	this->_status = CLU_RUNNING;
 	return (0);
 }
 

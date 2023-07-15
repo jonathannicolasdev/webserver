@@ -36,6 +36,7 @@ __EventListener::close_poll(void)
 		return (Logger::log(LOG_WARNING, "Trying to close poll but none currently active."));
 	close(this->_pollfd);
 	this->nb_watched = 0;
+	this->_pollfd = 0;
 	return (0);
 }
 
@@ -134,17 +135,32 @@ __EventListener::unpoll_client(int clientfd)
 }
 
 // timeout value in ms.
+// Returns the nb of events that occured and are now stored in the _changes struct array.
 int
 __EventListener::poll_wait(int timeout)
 {
+	struct timespec	ts;
+	struct timespec	*ts_p;
 	int	nb_events;
 
 	if (this->_pollfd < 3)
 		return (Logger::log(LOG_WARNING, "Trying to poll_wait but no polling mechanism is initialized."));
 #ifdef __APPLE__
+	ts_p = NULL;
+	if (timeout >= 0)
+	{
+		ts.tv_sec = timeout / 1000;// timeout in seconds
+		ts.tv_nsec = (timeout % 1000) * 1000000;// timeout in nano seconds
+		ts_p = &ts;
+	}
+	if ((nb_events = kevent(this->_pollfd, this->_events, MAX_CONCUR_POLL,
+		this->_changes, MAX_CONCUR_POLL, ts_p)) < 0)
+		return (Logger::log(LOG_ERROR, std::string()"kevent() call failed with error : ") + strerror(errno)));
+
 #elif __linux__
 	if ((nb_events = epoll_wait(this->_pollfd, this->_changes, MAX_CONCUR_POLL, timeout)) < 0)
 		return (Logger::log(LOG_ERROR, std::string()"poll_wait() call failed with error : ") + strerror(errno)));
 
 #endif
+	return (nb_events);
 }
