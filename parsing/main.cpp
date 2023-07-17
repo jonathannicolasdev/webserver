@@ -3,6 +3,7 @@
 #include <sstream>
 #include <string>
 #include <vector>
+#include "ConfigBuilder.hpp"
 
 class Server {
 private:
@@ -82,9 +83,9 @@ private:
 };
 
 int main() {
-    ServerParser parser("config.txt");
-    parser.parse();
-    parser.createServer();
+    ConfigBuilder configBuilder = ConfigBuilder();
+
+    configBuilder.parseConfigFile("config.txt");
 
     return 0;
 }

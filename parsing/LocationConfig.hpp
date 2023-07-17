@@ -4,8 +4,9 @@
 #include <iostream>
 #include <vector>
 
-class Location {
+class LocationConfig {
     public:
+        LocationConfig();
         std::string path;
         std::vector<std::string> allowMethods;
         bool    autoIndex;
