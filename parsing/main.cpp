@@ -85,7 +85,7 @@ private:
 int main() {
     ConfigBuilder configBuilder = ConfigBuilder();
 
-    configBuilder.parseConfigFile("config.txt");
+    configBuilder.parseConfigFile("configserverblocks.txt");
 
     return 0;
 }

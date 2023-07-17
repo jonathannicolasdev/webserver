@@ -108,7 +108,8 @@ string ConfigBuilder::readConfigFile(const std::string& filename)
     std::string fileContent = "";
     std::ifstream configFile(filename);
     //std::ifstream configFile = std::ifstream(filename);
-    
+    //The modification made to use direct initialization for the configFile object 
+    //instead of copy initialization resolves the private copy constructor error. 
     if (!configFile.is_open())
     {
         throw std::runtime_error("Error opening config file: " + filename);
@@ -140,6 +141,31 @@ void ConfigBuilder::parseConfigFile(const std::string filename)
         configContent = ConfigBuilder::cleanComments(configContent);
         configContent = ConfigBuilder::cleanSpaces(configContent);
         std::cout << "parsed file:" << configContent;
+
+        std::istringstream iss(configContent);
+        std::string line;
+        std::string serverBlockContent;
+        bool insideServerBlock = false;
+
+        while (std::getline(iss, line))
+        {
+            if (line.find("server {") != std::string::npos)
+            {
+                insideServerBlock = true;
+                serverBlockContent += line + "\n";
+            }
+            else if (line.find("}") != std::string::npos)
+            {
+                insideServerBlock = false;
+                serverBlockContent += line + "\n";
+                std::cout << "Server Block content:\n" << serverBlockContent <<std::endl;
+                serverBlockContent.clear();
+            }
+            if (insideServerBlock)
+            {
+                serverBlockContent += line + "\n";
+            }
+        }
     }
     catch(const std::exception& e)
     {
