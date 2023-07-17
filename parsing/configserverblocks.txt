@@ -20,6 +20,15 @@ server {
 
   index index.html;
   cgi .bla cgi_tester;
+  location = /autoindex/ {
+    autoindex on;
+  }
+
+  location /data {
+    root www/data;
+    index index.html;
+    limit_except GET;
+  }
 
 }
 
@@ -32,5 +41,14 @@ server {
 
   index index.html;
   cgi .bla ubuntu_cgi_tester;
+  location = /autoindex/ {
+    autoindex on;
+  }
+
+  location /data {
+    root www/data;
+    index index.html;
+    limit_except GET;
+  }
 
 }

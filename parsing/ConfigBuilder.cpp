@@ -88,7 +88,8 @@ string ConfigBuilder::cleanComments(const std::string &content)
             // If the '#' character is found, extract the substring before it
             cleanedLine = line.substr(0, hashPos);
         }
-        else cleanedLine=line;
+        else
+            cleanedLine = line;
         buffer << cleanedLine << "\n";
     }
     return buffer.str();
@@ -100,16 +101,18 @@ string ConfigBuilder::cleanComments(const std::string &content)
 
 ServerConfig ConfigBuilder::parseServer(string content)
 {
-    return ServerConfig();
+    ServerConfig serverConfig;
+
+    return serverConfig;
 }
 
-string ConfigBuilder::readConfigFile(const std::string& filename)
+string ConfigBuilder::readConfigFile(const std::string &filename)
 {
     std::string fileContent = "";
     std::ifstream configFile(filename);
-    //std::ifstream configFile = std::ifstream(filename);
-    //The modification made to use direct initialization for the configFile object 
-    //instead of copy initialization resolves the private copy constructor error. 
+    // std::ifstream configFile = std::ifstream(filename);
+    // The modification made to use direct initialization for the configFile object
+    // instead of copy initialization resolves the private copy constructor error.
     if (!configFile.is_open())
     {
         throw std::runtime_error("Error opening config file: " + filename);
@@ -133,46 +136,86 @@ string ConfigBuilder::readConfigFile(const std::string& filename)
     // }
 }
 
-void ConfigBuilder::parseConfigFile(const std::string filename)
+std::vector<std::string> extractBlock(const std::string &content)
 {
+    std::vector<std::string> serverBlocks;
+
+    size_t pos = content.find("server {", 0);
+    size_t foundPos;
+
+    while ((foundPos = content.find("server {", pos + 8)) != std::string::npos)
+    {
+        serverBlocks.push_back(content.substr(pos, (foundPos - pos)));
+        pos = foundPos; // Move to the next position to search from
+    }
+    serverBlocks.push_back(content.substr(pos, (content.length() - pos)));
+
+    return serverBlocks;
+}
+/*
+std::vector<std::string> ConfigBuilder::extractLocationBlocks(const std::string &content)
+{
+    std::vector<std::string> locationBlocks;
+    std::istringstream iss(content);
+    std::string line;
+    bool inLocationBlock = false;
+
+    while (std::getline(iss, line))
+    {
+        // Remove leading and trailing whitespaces from the line
+        line = trim(line);
+
+        if (line.empty() || line[0] == '#')
+        {
+            // Skip empty lines and comments
+            continue;
+        }
+        else if (line.find("location") == 0)
+        {
+            // Start of location block
+            inLocationBlock = true;
+            locationBlocks.push_back(line);
+        }
+        else if (inLocationBlock && line.find("}") != std::string::npos)
+        {
+            // End of location block
+            inLocationBlock = false;
+            locationBlocks.back() += "\n" + line; // Add the line with closing curly brace to the last location block
+        }
+        else if (inLocationBlock)
+        {
+            // Continue adding lines to the location block
+            locationBlocks.back() += "\n" + line;
+        }
+    }
+
+    return locationBlocks;
+}
+*/
+std::vector<ServerConfig> ConfigBuilder::parseConfigFile(const std::string filename)
+{
+    std::vector<ServerConfig> serverConfigs;
+
     try
     {
         string configContent = readConfigFile(filename);
         configContent = ConfigBuilder::cleanComments(configContent);
         configContent = ConfigBuilder::cleanSpaces(configContent);
-        std::cout << "parsed file:" << configContent;
 
-        std::istringstream iss(configContent);
-        std::string line;
-        std::string serverBlockContent;
-        bool insideServerBlock = false;
+        std::vector<std::string> serverBlocks = extractBlock(configContent);
 
-        while (std::getline(iss, line))
+        for (int i = 0; i < serverBlocks.size(); i++)
         {
-            if (line.find("server {") != std::string::npos)
-            {
-                insideServerBlock = true;
-                serverBlockContent += line + "\n";
-            }
-            else if (line.find("}") != std::string::npos)
-            {
-                insideServerBlock = false;
-                serverBlockContent += line + "\n";
-                std::cout << "Server Block content:\n" << serverBlockContent <<std::endl;
-                serverBlockContent.clear();
-            }
-            if (insideServerBlock)
-            {
-                serverBlockContent += line + "\n";
-            }
+            std::cout << "SERVER: " << serverBlocks[i] << "\n";
+            serverConfigs.push_back(parseServer(serverBlocks[i]));
         }
+
     }
-    catch(const std::exception& e)
+    catch (const std::exception &e)
     {
         std::cerr << "Error: " << e.what() << std::endl;
     }
-    
-
+    return serverConfigs;
 
     /*
         // Remove leading and trailing whitespaces from the line
