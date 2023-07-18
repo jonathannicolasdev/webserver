@@ -12,10 +12,9 @@
 
 #include "AServerDispatchSwitch.hpp"
 
-AServerDispatchSwitch::AServerDispatchSwitch(uint16_t _port, bool _close_rqst,
-	bool _is_running, enum e_server_status_codes _status, 
-	bool conn_persistance, int conn_timout=600):
-	AServerReactive(_port, _close_rqst, _is_running, _status),
+AServerDispatchSwitch::AServerDispatchSwitch(uint16_t _port,// bool _close_rqst, bool _is_running,
+	enum e_server_status_codes _status, int conn_timout=600):
+	AServerReactive(_port, false, false, true, _status),
 	_keep_alive(conn_persistance), _conn_timout(conn_timout)
 {
 	std::cout << "AServerDispatchSwitch constructor" << std::endl;
@@ -27,18 +26,81 @@ AServerDispatchSwitch::~AServerDispatchSwitch()
 	this->stop();
 }
 
+//if ((connfd = accept(this->_sockfd, (struct sockaddr*)&conn_addr, &addr_len)) < 0)
+
+/// Takes clientfd of newly created client.
 void
+AServerDispatchSwitch::_init_new_client_connection(int clientfd)
+{
+	t_clt_conn			&clientconn;
+
+	clientconn = this->_active_connections[clientfd];
+	clientconn.clt_fd = clientfd;
+	clientconn.conn_status = CLT_ACEPTED;
+	clientconn.init_conn_time = std::time(NULL);
+	clientconn.last_act_time = clientconn.init_conn_time;
+	clientconn.time_on_site = 0;
+	clientconn.time_inactive = 0;
+}
+
+// Receives same arguments as do_maintenance() because, in case the cluster owning this 
+// server has reached its max nb of polled subjects, it will call do_maintenance() with 
+// its arguments to make place for the new connecting client by disconnecting one or more.
+// Returns the nb of disconnected clients and puts the clientfd in ret_clientfd.
+int
+AServerDispatchSwitch::connect(int *disconn_clients, int max_disconn, int *ret_clientfd)
+{
+	int					clientfd;
+	struct sockaddr_in	clientaddr;
+	socklen_t			clientaddrlen;
+	int					nb_disconn = 0;
+
+	if (!disconn_clients || !ret_clientfd)
+		return (Logger::log(LOG_ERROR, "AServerDispatchSwitch::connect() method must take a pointer to an in array of size max_disconn that will potentially take a chunck of disconnected clients that needed to be bumped to make place for the new one."));
+
+
+	clientaddrlen = sizeof(clientaddr);
+	if ((clientfd = accept(this->_sockfd, (struct sockaddr *)&clientaddr), &clientaddrlen) < 0)
+		return (Logger::log(LOG_ERROR, std::string("Server failed to accept new connection with error : ") + strerror(errno)));
+
+
+	if (max_conn >= 0 && this->_active_connections.size() >= max_disconn)
+	{
+		nb_disconn = this->do_maintenance(disconn_clients, max_disconn);
+		if (this->_active_connections.size() >= max_disconn)
+		{
+			nb_disconn += this->disconnect_oldest(disconn_clients + nb_disconn,
+				std::min(max_disconn - nb_disconn, (this->_active_connections.size() - max_disconn) + 10);
+		}		
+	}
+	this->_init_new_client_connection(clientfd);
+	this->react(EVNT_RECEIVED_CONNECTION, clientfd);
+//	this->react(EVNT_RECEIVED_REQUEST, clientfd);
+	//this->serve_request(clientfd);
+	*ret_clientfd = client_fd;
+	return (nb_disconn);
+}
+
+int
 AServerDispatchSwitch::disconnect(int clt_fd, bool force)
 {
 	std::map<int, t_clt_conn>::iterator it;
+	std::ostringstream					err_msg;
 
+	if (clt_fd < 3)
+	{
+		err_msg << "Cannot disconnect client with invalid fd ";
+		err_msg << clt_fd;
+		return (Logger::log(LOG_WARNING, err_msg.str()));
+	}
 	it = this->_active_connections.find(clt_fd);
 	if (it == this->_active_connections.end()
 		|| (!force && it->second.conn_status & CLT_PROCESSING))
-		return ;
-	if (clt_fd > 2)
-		close(clt_fd);
-	this->_active_connections.erase(clt_fd);
+		return (-1);
+	close(clt_fd);
+	this->_active_connections.erase(it);
+	this->react(EVNT_CLOSING_CONNECTION, 0);// clientfd arg ignored;
+	return (0);
 }
 
 void
@@ -47,9 +109,15 @@ AServerDispatchSwitch::disconnect_all(bool force)
 	std::map<int, t_clt_conn>::iterator it;
 	int									clt_fd;
 
-	for (it=this->_active_connections.begin(); it != this->_active_connections.end(); it++)
-//	{
-		this->disconnect(it->second.clt_fd, force);
+	for (it=this->_active_connections.begin(); it != this->_active_connections.end(); ++it)
+	{
+//		if (!force && it->second.conn_status & CLT_PROCESSING);
+//			continue ;
+//		close(it->first);
+		if (this->disconnect(it->second.clt_fd, force) == 0)
+			--it;
+	}
+//	this->_active_connections.clear();
 //		clt_fd = it->second.clt_fd;
 //		if (!force && it->second.conn_status & CLT_PROCESSING)
 //			continue ;
@@ -58,22 +126,88 @@ AServerDispatchSwitch::disconnect_all(bool force)
 //	}
 }
 
+// disconnect {max_disconn} oldest active connections.
+int
+AServerDispatchSwitch::disconnect_oldest(int *disconn_clients, int max_disconn)
+{
+	std::map<int, t_clt_conn>::iterator		it, jt;
+	std::map<int, time_t>		oldest;
+	time_t						longuest_time_inactive = 0;
+	int							nb_disconn = 0;
+
+	for (it = this->_active_connections.begin(); it != this->_active_connections.end(); ++it)
+	{
+		if (oldest.size() < max_disconn)
+		{
+			oldest[it->first] = it->second.time_inactive;
+			longuest_time_inactive = std::max(it->second.time_inactive, longuest_time_inactive);
+		}
+		else if (it->second.time_inactive > longuest_time_inactive)
+		{
+			for (jt = oldest.begin(); jt != oldest.end(); ++jt)
+			{
+				if (jt->second.time_inactive < it->second.time_inactive)
+				{
+					oldest.erase(jt);
+					oldest[it->first] = it->second.time_inactive;
+				}
+			}			
+		}
+	}
+	for (jt = oldest.begin(); jt != oldest.end(); ++jt)
+	{
+		close(jt->first);
+		disconn_clients[nb_disconn++] = jt->first;
+	}
+	return (nb_disconn);
+}
+
+int
+AServerDispatchSwitch::do_maintenance(int *disconn_clients, int max_disconn)
+{
+	std::map<int, t_clt_conn>::iterator it;
+	t_clt_conn							&clientconn;
+	int									clientfd;
+	int									nb_disconn;
+	time_t								curr_time;
+	bool								do_disconn;
+
+	curr_time = std::time(NULL);
+	nb_disconn = 0;
+	for (it=this->_active_connections.begin(); it != this->_active_connections.end(); ++it)
+	{
+		it->second.time_on_site = curr_time - it->second.init_conn_time;
+		it->second.time_inactive = curr_time - it->second.last_act_time;
+		do_disconn = it->second.time_inactive > this->_conn_timeout;
+		clientfd = it->second.clt_fd;
+		if (do_disconn && (this->disconnect(clientfd, false) == 0))
+		{
+			if (disconn_clients && nb_disconn < max_disconn)
+				disconn_clients[nb_disconn++] = clientfd;
+			--it;
+		}
+		if (nb_disconn == max_disconn)
+			break ;
+	}
+	this->_last_maintenance_time = std::time(NULL);
+	return (nb_disconn);
+}
+
 void
 AServerDispatchSwitch::stop(void)
 {
-	this->disconnect_all();
+	this->disconnect_all(true);
 	if (this->_sockfd > 2)
 		close(this->_sockfd);
 	this->_status = SRV_UNBOUND;
 	this->_close_request = true;
-
-	// close epoll / kqueue;
+	this->react(EVNT_SRV_CLOSE, 0);// clientfd arg ignored;
 }
 
 void	AServerDispatchSwitch::switch_connection_persistance(void)
 {
 	if (this->_keep_alive)
-		this->disconnect_all();
+		this->disconnect_all(false);
 	this->_keep_alive = ~this->_keep_alive;
 }
 
@@ -131,9 +265,9 @@ AServerDispatchSwitch::get_client_state(int client_fd) const
 uint16_t
 AServerDispatchSwitch::get_port(void) const {return (this->_port);}
 
-int
-AServerDispatchSwitch::get_socket(void) const {return (this->_sockfd);}
-
+//int
+//AServerDispatchSwitch::get_socket(void) const {return (this->_sockfd);}
+/*
 int
 AServerDispatchSwitch::_init_macos_event_listener(void)
 {
@@ -141,7 +275,7 @@ AServerDispatchSwitch::_init_macos_event_listener(void)
 		return (Logger::log(LOG_ERROR, "Failed to open kqueue fd."));
 	return (0);
 }
-
+*/
 int
 AServerDispatchSwitch::_validate_ready_start(void)
 {
@@ -181,6 +315,7 @@ AServerDispatchSwitch::start(void)
 	this->_status = SRV_LISTENING;
 	this->_srv_start_time = std::time(NULL);	
 	
+	this->react(EVNT_SRV_OPEN, 0);// clientfd arg ignored;
 	return (this->_sockfd);
 //	return (0);
 }

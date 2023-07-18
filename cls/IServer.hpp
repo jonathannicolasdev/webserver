@@ -54,17 +54,34 @@ typedef struct s_server_state
 	void					*extra;
 }	t_srv_state;
 
-class   IServer
+
+// This class is seperate from IServer to have all subclasses be able to 
+// call eachother's get_sockfd() methods, but limit accessibilty of the socket 
+// only to derived classes of __BaseSocketOwner. The purpose is to have AServerCluster
+// be able to call an IServer.get_sockfd() method to manage its servers with poll,
+// but prevent any other classes not inheriting __BaseSocketOwner to get access 
+// to a server's socket directly and be able to close it prematurly for exemple.
+class	__BaseSocketOwner
+{
+	protected:
+		int		_sockfd;
+		int		get_sockfd(void) const;
+};
+
+
+class   IServer:	protected __BaseSocketOwner
 {
 	protected:
 //		AServerCuster*				_owner;/// Value should be set to owner cluster if server is
 										// attached to a cluster else defaults to NULL.
 		std::string					_server_name;
-		int							_sockfd;
+//		int							_sockfd;
 		uint16_t					_port;
 		struct sockaddr_in			_server_addr;
 		bool						_close_request;
 		bool						_is_running;
+		bool						_is_dispatch_switch;
+		bool						_is_reactive;
 		enum e_server_status_codes	_status;
 
 		std::map<std::string, std::string>	_locations;
@@ -73,8 +90,11 @@ class   IServer
 		// implementation of get_srv_state should be implemented in the concrete server classes.
 		t_srv_state             _srv_state_view;
 
-		IServer(uint16_t _port, bool _close_rqst, bool _is_running, enum e_server_status_codes _status);
-		
+		IServer(uint16_t _port, bool _close_rqst, bool _is_running, bool _is_reactive, bool _is_dispatch_switch, enum e_server_status_codes _status);
+		bool		is_dispatch_switch(void) const;
+		bool		is_reactive(void) const;
+
+
 	public:
 		virtual int			bind_server(void) = 0;
 		virtual int			start(void) = 0;
@@ -83,9 +103,13 @@ class   IServer
 		virtual bool		is_serving(int client_fd) = 0;// if concrete server does not track client connection state (is stateless), implement with return (false);.
 
 		virtual uint16_t	get_port(void) const = 0;
-		virtual int			get_socket(void) const = 0;
+		virtual bool		is_running(void) const = 0;
+		
+
+//		virtual int			get_socket(void) const = 0;
 //		virtual	std::map<std::string, std::string>&	get_srv_locations(void) = 0;
 };
+
 
 std::string &srv_status_to_str(enum e_server_status_codes status, std::string &ret_str);
 /*

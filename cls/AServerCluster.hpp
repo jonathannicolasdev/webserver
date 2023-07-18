@@ -17,7 +17,7 @@
 //# include <vector>
 //# include <set>
 # include <map>
-# include "IServer.hpp"
+# include "AServerDispatchSwitch.hpp"
 # include <sys/event.h>
 
 # include "webserv.hpp"
@@ -57,8 +57,12 @@ class __EventListener
 		virtual int		unpoll_socket(int sockfd);
 		virtual int		poll_new_client(int clientfd);
 		virtual int		unpoll_client(int clientfd);
+		virtual int		unpoll_client_array(int *clientfds, int nb_clients);
 
 		virtual int		poll_wait(int timeout);
+
+		// Get fd of _changes[event_idx] crossplatform
+		virtual int		get_eventfd(int event_idx) const;
 };
 
 // AServerCluster (Abstract Server Cluster):
@@ -77,7 +81,7 @@ class __EventListener
 //	A Database cluster and a Web Cluster would be 2 concrete extensions to
 //	the Abstract Server Cluster class.
 
-class	AServerCluster:	public __EventListener
+class	AServerCluster:	public __EventListener, public __SocketOwner
 {
 	protected:
 		static int	_counter;
@@ -87,29 +91,32 @@ class	AServerCluster:	public __EventListener
 		int			generate_id(void);
 		bool		_request_stop;
 		int			_timeout;// minimum none 0 timeout in member servers.
-		int			_timeout_clientfd[MAX_CONCUR_POLL];// array to receive the fds from timed out clients from servers.
+		time_t		_start_time;
+		time_t		_last_maintenance_time;
+//		int			_timeout_clientfd[MAX_CONCUR_POLL];// array to receive the fds from timed out clients from servers.
 		
-//		std::vector<IServer *>	_servers;//	All servers in cluster
-		//std::set<IServer *>	_servers;//	All servers in cluster
-		std::map<int, IServer *>	_servers;//	All servers in cluster. key == sockfd, value == server instance.
+//		std::vector<AServerDispatchSwitch *>	_servers;//	All servers in cluster
+		//std::set<AServerDispatchSwitch *>	_servers;//	All servers in cluster
+		std::map<int, AServerDispatchSwitch *>	_servers;//	All servers in cluster. key == sockfd, value == server instance.
 		
-		virtual bool	validate_server(IServer *srv) const = 0;//	Called when adding new server
-																//	Specific to cluster type
+		virtual bool	validate_server(AServerDispatchSwitch *srv) const = 0;//	Called when adding new server
+																				//	Specific to cluster type
 
-		IServer			*find_owner(int client_fd) const;/// Finds the server to which a client fd belongs to if any.
-		IServer			*find_server(int socket_fd) const;// Get server from socket fd. Used when polling server socket
-															//	for new connections. Poll (or equiv.) will return the socket fd
-															//	and passing it to this function retreives the server inst it belongs to.
+		AServerDispatchSwitch	*find_owner(int client_fd) const;/// Finds the server to which a client fd belongs to if any.
+		AServerDispatchSwitch	*find_server(int socket_fd) const;// Get server from socket fd. Used when polling server socket
+																//	for new connections. Poll (or equiv.) will return the socket fd
+																//	and passing it to this function retreives the server inst it belongs to.
 
+		int				do_maintenance(void);
 		int				__cluster_mainloop(void);
 
 	public:
 		int				get_nb_managed(void) const;
-		bool			contains(IServer *srv) const;
+		bool			contains(AServerDispatchSwitch *srv) const;
 
 		virtual int		bind(void);// = 0;
 		virtual int		start(void);// = 0;
-		virtual int		add_server(IServer *srv);// = 0;
+		virtual int		add_server(AServerDispatchSwitch *srv);// = 0;
 		virtual void	stop(void);// = 0;// stops all its active servers
 		virtual int		reboot(void);// = 0;// stops all its active servers and restarts them.
 		virtual int		terminate(bool force);// = 0;// stops all active servers and deletes them from the cluster.
@@ -124,7 +131,7 @@ int	AServerCluster::generate_id(void)
 	return (this->_counter++);
 }
 
-bool	AServerCluster::server_in_cluster(IServer *srv)
+bool	AServerCluster::server_in_cluster(AServerDispatchSwitch *srv)
 {
 	return (std::find(_servers.begin(), _servers.end(), srv) != _servers.end())
 }

@@ -56,16 +56,16 @@ AServerCluster::~AServerCluster(void)
 	this->terminate(true);
 }
 
-bool	AServerCluster::contains(IServer *srv) const
+bool	AServerCluster::contains(AServerDispatchSwitch *srv) const
 {
 	return (std::find(_servers.begin(), _servers.end(), srv) != _servers.end())
 }
 
-IServer*
+AServerDispatchSwitch*
 AServerCluster::find_owner(int client_fd) const
 {
-	//std::vector<IServer *>::iterator	it;
-	std::map<int, IServer *>::iterator	it;
+	//std::vector<AServerDispatchSwitch *>::iterator	it;
+	std::map<int, AServerDispatchSwitch *>::iterator	it;
 
 	for (it = this->_servers.begin(); it != this->_servers.end(); ++it)
 		//if ((*it)->is_serving(client_fd))
@@ -74,10 +74,10 @@ AServerCluster::find_owner(int client_fd) const
 	return (nullptr);
 }
 
-IServer*
+AServerDispatchSwitch*
 AServerCluster::find_server(int socket_fd) const
 {
-	std::map<int, IServer *>::iterator	it;
+	std::map<int, AServerDispatchSwitch *>::iterator	it;
 
 	it = this->_servers.find(socket_fd);
 	if (it == this->_servers.end())
@@ -96,11 +96,11 @@ AServerCluster::get_nb_managed(void) const
 }
 
 bool
-AServerCluster::validate_server(IServer *srv) const
+AServerCluster::validate_server(AServerDispatchSwitch *srv) const
 {
 	t_srv_state	*srv_state;
-	//std::vector<IServer*>::iterator it;
-	std::map<int, IServer*>::iterator	it;
+	//std::vector<AServerDispatchSwitch*>::iterator it;
+	std::map<int, AServerDispatchSwitch*>::iterator	it;
 	std::ostringstream					port_str;
 
 	if (!srv)
@@ -126,7 +126,7 @@ AServerCluster::validate_server(IServer *srv) const
 }
 
 int
-AServerCluster::add_server(IServer *srv)
+AServerCluster::add_server(AServerDispatchSwitch *srv)
 {
 	std::ostringstream	id_str;
 
@@ -136,16 +136,16 @@ AServerCluster::add_server(IServer *srv)
 	Logger::log(LOG_DEBUG, std::string("Adding new server to cluster id ") + id_str.str() + " Server info : ");
 	std::cout << srv << std::endl;
 //	this->_servers.push_back(srv);
-	this->_servers[srv->get_socket()] = srv;
+	this->_servers[srv->get_sockfd()] = srv;
 	return (0);
 }
 
 int
 AServerCluster::bind(void)
 {
-	//std::vector<IServer*>::iterator	it;
-	std::map<int, IServer*>::iterator	it;
-	t_srv_state						*srv_state;
+	//std::vector<AServerDispatchSwitch*>::iterator	it;
+	std::map<int, AServerDispatchSwitch*>::iterator	it;
+	t_srv_state		*srv_state;
 
 	if (this->get_nb_managed() == 0)
 		return (Logger::log(LOG_DEBUG, "Cannot bind a cluster with no servers under managment. Add at least one server to proceed."));
@@ -172,15 +172,63 @@ AServerCluster::bind(void)
 	return (0);
 }
 
+void
+AServerCluster::do_maintenance(void)
+{
+	std::map<int, AServerDispatchSwitch*>::iterator	it;
+	int		nb_disconn;
+	int		timeout_clients[MAX_CONCUR_POLL];
+
+	for (it = this->_servers.begin(); it != this->_servers.end(); ++it)
+	{
+		nb_disconn = it->second.do_maintenance(timeout_clients, MAX_CONCUR_POLL);
+		for (int i=0; i < nb_disconn; ++i)
+			this->unpoll_client(timeout_clients[i]);
+	}
+	this->_last_maintenance_time = std::time(NULL);
+}
+
 int 
 AServerCluster::__cluster_mainloop(void)
 {
-	int	nb_events;
+	AServerDispatchSwitch	*srv;
+	int		nb_events;
+	int		eventfd, sockfd, clientfd;
+	int		disconn_clients[MAX_CONCUR_POLL];
+	int		nb_disconn;
+	int		i;
 
 	this->_status = CLU_RUNNING;
 	while (!this->_request_stop)
 	{
 		nb_events = this->poll_wait(this->_timeout);
+		//if (nb_events == 0)
+			// do basic maintenance of cluster and its servers.
+		for (i = 0; i < nb_events; ++i)
+		{
+			eventfd = this->get_eventfd(i);
+			srv = this->find_server(eventfd);// looks for the sockfd (eventfd) in the cluster to check weither this fd is a server socket and that it is the owner. Return Server pointer if so, NULL otherwise.
+			if (srv)
+			{
+				sockfd = eventfd;
+				// The event was triggered by a socket and we must accept() a new connection from it.
+				nb_disconn = srv->connect(disconn_clients, MAX_CONCUR_POLL, &clientfd);
+				if (nb_disconn < 0)
+				{
+					// Error happened while connecting but show must go on. Make sure client request
+					// is flushed correctly before continuing.
+					continue ;
+				}
+				if (nb_disconn)
+					this->unpoll_client_array(disconn_clients, nb_disconn);
+				this->poll_new_client(clientfd);
+			}
+			else if ((srv = this->find_owner(eventfd)))
+			{
+				clientfd = eventfd;
+				// The event was triggered by clientfd and we must serve the requested content.
+			}
+		}
 	}
 	return (0);
 }
@@ -188,8 +236,8 @@ AServerCluster::__cluster_mainloop(void)
 int
 AServerCluster::start(void)
 {
-//	std::vector<IServer*>::iterator	it;
-	std::map<int, IServer*>::iterator	it;
+//	std::vector<AServerDispatchSwitch*>::iterator	it;
+	std::map<int, AServerDispatchSwitch*>::iterator	it;
 	t_srv_state							*srv_state;
 	int									sockfd;
 
@@ -210,15 +258,17 @@ AServerCluster::start(void)
 		this->poll_new_socket(sockfd);
 	}
 	/// Start main loop
-
-	return (0);
+	this->_start_time = std::time(NULL);
+	this->_last_maintenance_time = this->_start_time;
+	return (this->__cluster_mainloop());
+	//return (0);
 }
 
 void
 AServerCluster::stop(void)
 {
-	//std::vector<IServer*>::iterator	it;
-	std::map<int, IServer*>::iterator	it;
+	//std::vector<AServerDispatchSwitch*>::iterator	it;
+	std::map<int, AServerDispatchSwitch*>::iterator	it;
 
 	
 	for (it = this->_servers.begin(); it != this->_servers.end(); ++it)
@@ -233,8 +283,8 @@ AServerCluster::stop(void)
 int
 AServerCluster::terminate(bool force)
 {
-//	IServer*	srv;
-	std::map<int, IServer*>::iterator	it;
+//	AServerDispatchSwitch*	srv;
+	std::map<int, AServerDispatchSwitch*>::iterator	it;
 
 	if (!force && (this->_status == CLU_RUNNING))
 		return (Logger::log(LOG_WARNING, "Cannot terminate a running cluster. To force a cluster to terminate, call terminate(true) instead."));
@@ -265,7 +315,7 @@ AServerCluster::terminate(bool force)
 int
 AServerCluster::reboot(void)
 {
-//	std::vector<IServer*>::iterator	it;
+//	std::vector<AServerDispatchSwitch*>::iterator	it;
 	this->stop();
 	if (this->bind() < 0
 		|| this->start() < 0)

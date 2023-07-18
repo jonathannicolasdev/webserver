@@ -17,10 +17,13 @@
 
 enum e_react_event
 {
-	EVNT_ACCEPTED_CONNECTION = 0b1,
-	EVNT_SENT_RESPONSE = 0b10,
-	EVNT_SRV_OPEN = 0b100,
-	EVNT_SRV_CLOSE = 0b1000,
+	//EVNT_ACCEPT_CONNECTION = 0b1,
+	EVNT_RECEIVED_CONNECTION = 0b1,
+	EVNT_RECEIVED_REQUEST = 0b10,
+	EVNT_CLOSING_CONNECTION = 0b100,
+	EVNT_SENT_RESPONSE = 0b1000,
+	EVNT_SRV_OPEN = 0b10000,
+	EVNT_SRV_CLOSE = 0b100000,
 	EVNT_EXCEPTION_OCCURED = 0x8000000// highest int32 bit = (1 << 31)
 };
 
@@ -37,9 +40,9 @@ class	AServerReactive: public IServer
 		int		_subscribed_events = 0;// ORed set of enums from e_react_event
 
 		int	register_react_callback(enum e_react_event event, t_react_callback cb);		
-		int	react(enum e_react_event event);
+		int	react(enum e_react_event event, int clientfd);
 
-		AServerReactive(uint16_t _port, bool _close_rqst, bool _is_running, enum e_server_status_codes _status);
+		AServerReactive(uint16_t _port, bool _close_rqst, bool _is_running, bool _is_dispatch_switch, enum e_server_status_codes _status);
 		virtual	~AServerReactive();
 };
 

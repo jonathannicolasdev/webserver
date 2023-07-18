@@ -103,7 +103,7 @@ __EventListener::poll_new_client(int clientfd)
 	if (this->_events[sockfd].data.fd > 2)
 		return (Logger::log(LOG_WARNING, "Trying to poll a socket twice"));
     this->_events[clientfd].data.fd = clientfd;
-    this->_events[clientfd].events = EPOLLIN;
+    this->_events[clientfd].events = EPOLLIN | EPOLLRDHUP;
 	if (epoll_ctl(this->_pollfd, EPOLL_CTL_ADD, clientfd, &this->_events[clientfd]) < 0)
 		return (Logger::log(LOG_ERROR, "Failed to poll new socket"));
 #endif
@@ -127,25 +127,34 @@ __EventListener::unpoll_client(int clientfd)
 	if (this->_events[clientfd].data.fd < 3)
 		return (0);
 	if (epoll_ctl(this->_pollfd, EPOLL_CTL_DEL, clientfd, NULL) < 0)
-		return (Logger::log(LOG_ERROR, "Failed to remove socket from poll"));
+		return (Logger::log(LOG_ERROR, "Failed to remove client from poll"));
     this->_events[clientfd].data.fd = 0;
 #endif
 	this->nb_watched--;
 	return (0);
 }
 
+void
+__EventListener::unpoll_client_array(int *clientfds, int nb_clients)
+{
+    for (int i=0; i < nb_clients; ++i)
+        this->unpoll_client(clientfds[i], nb_clients);
+}
+
+
 // timeout value in ms.
 // Returns the nb of events that occured and are now stored in the _changes struct array.
 int
 __EventListener::poll_wait(int timeout)
 {
-	struct timespec	ts;
-	struct timespec	*ts_p;
 	int	nb_events;
 
 	if (this->_pollfd < 3)
 		return (Logger::log(LOG_WARNING, "Trying to poll_wait but no polling mechanism is initialized."));
 #ifdef __APPLE__
+	struct timespec	ts;
+	struct timespec	*ts_p;
+
 	ts_p = NULL;
 	if (timeout >= 0)
 	{
@@ -164,3 +173,15 @@ __EventListener::poll_wait(int timeout)
 #endif
 	return (nb_events);
 }
+
+int
+__EventListener::get_eventfd(int event_idx) const
+{
+#ifdef	__APPLE__
+    return (this->_changer[event_idx].ident);
+#elif	__linux__
+    return (this->_changer[event_idx].data.fd);
+#endif
+    return (-1);
+}
+
