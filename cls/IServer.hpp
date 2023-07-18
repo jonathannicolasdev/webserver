@@ -14,8 +14,9 @@
 # define ISERVER_HPP
 
 # include <string>
+# include <cstring>
 # include <iostream>
-# include <csignal>
+//# include <csignal>
 # include <map>
 # include <stdint.h>
 # include <sys/socket.h>
@@ -92,6 +93,8 @@ class   IServer:	protected __BaseSocketOwner
 		t_srv_state             _srv_state_view;
 
 		IServer(uint16_t _port, bool _close_rqst, bool _is_running, bool _is_reactive, bool _is_dispatch_switch, enum e_server_status_codes _status);
+		virtual ~IServer(void);
+
 		bool		is_dispatch_switch(void) const;
 		bool		is_reactive(void) const;
 

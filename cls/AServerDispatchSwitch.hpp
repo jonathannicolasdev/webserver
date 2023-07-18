@@ -10,19 +10,20 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#ifndef A_SERVER_DISPATCH_SWITCH
-# define A_SERVER_DISPATCH_SWITCH
+#ifndef A_SERVER_DISPATCH_SWITCH_HPP
+# define A_SERVER_DISPATCH_SWITCH_HPP
 
+# include <cerrno>
+# include <cstring>
 # include <unistd.h>
-# include <sys/event.h>
 # include <sys/time.h>
 # include <algorithm>
 
+# include "AServerReactive.hpp"
 //# include "webserv.hpp"
 # include "Logger.hpp"
 # include "Request.hpp"
-# include "IServer.hpp"
-# include "AServerReactive.hpp"
+//# include "IServer.hpp"
 
 
 # define MAX_PENDING_CONN 128
@@ -81,14 +82,17 @@ class	__IClusterInterface
 // Server connections are kept alive if instanciated with 
 class	AServerDispatchSwitch: public AServerReactive
 {
-	private:
+	//private:
 //		int	_init_macos_event_listener(void);
 //		int	_init_linux_event_listener(void);
+
+
+	protected:
 
 		int		_validate_ready_start(void);
 		void	_init_new_client_connection(int clientfd);
 
-	protected:
+
 		//  Uses hash map to store client's connection state info
 		// with connection fd (returned by accept()) for key
 		// and tracking client activity on site with the connection 

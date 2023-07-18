@@ -14,6 +14,7 @@
 # define A_SERVER_REACTIVE
 
 # include "IServer.hpp"
+# include "Logger.hpp"
 
 enum e_react_event
 {

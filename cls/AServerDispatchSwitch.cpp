@@ -262,7 +262,7 @@ AServerDispatchSwitch::get_client_state(int client_fd) const
 
 	it = this->_active_connections.find(client_fd);
 	if (it == this->_active_connections.end())
-		return (nullptr);
+		return (NULL);
 	return (&it->second);
 }
 
@@ -325,7 +325,7 @@ AServerDispatchSwitch::start(void)
 // waits for client connections.
 // Otherwise returns the server's sockfd fd to be managed externally.
 int
-AServerDispatchSwitch::start(bool self_managed)
+AServerDispatchSwitch::_____________start(bool self_managed)
 {
 	int					connfd;
 	struct sockaddr_in	conn_addr;

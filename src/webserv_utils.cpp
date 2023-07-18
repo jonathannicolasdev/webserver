@@ -12,6 +12,7 @@
 
 #include "webserv.hpp"
 
+/*
 // Probably required globally accessible application componants for signal handling
 // and clean exits for closing all sockets properly.
 t_webs  *get_webserv_main_struct(void)
@@ -25,7 +26,7 @@ t_webs  *get_webserv_main_struct(void)
 	}
 	return (&webs);
 }
-
+*/
 void    gen_timestamp(std::string& ret)
 {
 	char					time_buff[128];

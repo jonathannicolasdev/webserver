@@ -83,7 +83,7 @@ int	Logger::_log_warning(const std::string& msg, bool print)
 	if (print)
 		std::cerr << LOG_WARNING_COLOR << log_msg << LOG_RESET_COLOR << std::endl;
 	_logfile << log_msg << std::endl;
-	return (0);
+	return (-1);
 }
 
 int	Logger::_log_error(const std::string& msg, bool print)
@@ -96,7 +96,7 @@ int	Logger::_log_error(const std::string& msg, bool print)
 	if (print)
 		std::cerr << LOG_ERROR_COLOR << log_msg << LOG_RESET_COLOR << std::endl;
 	_logfile << log_msg << std::endl;
-	return (0);
+	return (-1);
 }
 
 int	Logger::_log_critical(const std::string& msg, bool print)
@@ -109,7 +109,7 @@ int	Logger::_log_critical(const std::string& msg, bool print)
 	if (print)
 		std::cerr << LOG_CRITICAL_COLOR << log_msg << LOG_RESET_COLOR << std::endl;
 	_logfile << log_msg << std::endl;
-	return (0);
+	return (-1);
 }
 
 int  Logger::log(enum e_log_level lvl, const std::string& msg, bool print)

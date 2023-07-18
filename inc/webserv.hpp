@@ -14,15 +14,17 @@
 # define WEBSERV_HPP
 
 # include <iostream>
+# include <ctime>
 //# include <vector> 
 
-//# include <unistd.h>
-# include <sys/socket.h>
-# include <netinet/in.h>
-# include <netinet/ip.h>
+# include <unistd.h>
+# include <limits.h>
+//# include <sys/socket.h>
+//# include <netinet/in.h>
+//# include <netinet/ip.h>
 
-# include "Request.hpp"
-# include "ServerHTTP.hpp"
+//# include "Request.hpp"
+//# include "ServerHTTP.hpp"
 //# include "AServerCluster.hpp"
 //# include "ClusterWeb.hpp"
 
@@ -30,6 +32,7 @@
 
 # define UNUSED(o) (void)(o)
 
+/*
 typedef struct s_webserv
 {
 //	ClusterWeb	web_cluster;
@@ -40,7 +43,7 @@ typedef struct s_webserv
 
 
 t_webs  *get_webserv_main_struct(void);
-
+*/
 // Signal handlers
 void	webs_sigint_handler(int signum);
 

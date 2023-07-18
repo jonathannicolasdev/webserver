@@ -40,6 +40,8 @@ Request::process_raw_request(const std::string& raw_request)
 {
 	size_t	pos;
 
+	if (raw_request.empty())
+		return (Logger::log(LOG_WARNING, "Trying to process raw request but request is empty"));
 	pos = raw_request.find("\n\r\n\r\n");
 	if (pos == raw_request.npos)
 	{
@@ -53,6 +55,7 @@ Request::process_raw_request(const std::string& raw_request)
 		// Process header + body
 
 	}
+	return (0);
 }
 
 enum e_method

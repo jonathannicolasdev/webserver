@@ -3,19 +3,21 @@ CLS_DIR		:= cls/
 SRC_DIR		:= src/
 
 CLS_FILES	:= IServer.cpp			\
+			   Logger.cpp			\
+			   Request.cpp			\
 			   AServerReactive.cpp	\
-			   ServerHTTP.cpp		\
-			   ServerFactory.cpp	\
-			   AServerCluster.cpp	\
-			   ClusterWeb.cpp		\
-			   Logger.cpp
+			   AServerDispatchSwitch.cpp	\
+			   ServerHTTP.cpp		
+#			   ServerFactory.cpp	
+#			   AServerCluster.cpp	
+#			   ClusterWeb.cpp
 
 ST_CLS_FILES	:= IServer.cpp			\
 				   AServerReactive.cpp	\
 				   ServerHTTP.cpp		\
 				   Logger.cpp
 
-SRC_FILES		:= main.cpp
+SRC_FILES		:= webserv_utils.cpp #main.cpp
 
 ST_SRC_FILES	:= simple_server_test.cpp	\
 				   signal_handlers.cpp		\

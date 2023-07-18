@@ -10,12 +10,8 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include <vector>
-#include <string>
-#include <dirent.h>
+//#include <dirent.h>
 
-#include "webserv.hpp"
-#include "Request.hpp"
 #include "ServerHTTP.hpp"
 
 /*
@@ -414,27 +410,40 @@ ServerHTTP::stop(void)
 
 ServerHTTP::ServerHTTP(const std::string& rootdir, const std::string& servname,
 	const std::string& ip, uint16_t port):
-	AServerDispatchSwitch(_port, SRV_UNBOUND, true),
+	AServerDispatchSwitch(port, SRV_UNBOUND, true),
 	_rootdir(rootdir), _server_name(servname)
 {
+//	in_addr_t	ipaddr;
 	UNUSED(ip);
-	UNUSED(port);
+
 	std::cout << "ServerHTTP constructor" << std::endl;
+/*
+	if (ip.empty())
+		ipaddr = INADDR_ANY;
+	else
+ 		ipaddr = inet_addr(ip.c_str());
+	if (ipaddr == (unsigned int)(-1))
+	{
+		std::cout << "Constructing ServerHTTP with invalid ip addr : " << ip << ". Defaulting to listening to INADDR_ANY." << std::endl;
+		ipaddr = INADDR_ANY;
+	}
+	this->_server_addr.sin_addr.s_addr = ipaddr;
+*/
 }
 
 ServerHTTP::~ServerHTTP(void) {std::cout << "ServerHTTP desctructor" << std::endl;}
 
 // DEBUG PURPOSES ONLY
 int
-AServerDispatchSwitch::start(void)
+ServerHTTP::start(void)
 {
 	int					connfd;
 	struct sockaddr_in	conn_addr;
 	socklen_t			addr_len;
 	std::ostringstream	err_msg;
 
-	if (this->_validate_ready_start())
-		return (-1);
+//	if (this->_validate_ready_start())
+//		return (-1);
 
 	//listen
 	if (listen(this->_sockfd, MAX_PENDING_CONN) < 0)
@@ -450,6 +459,7 @@ AServerDispatchSwitch::start(void)
 	Request		rq;
 	//Response	resp;
 
+	std::cout << "Server listening on port " << this->_port << " with sockfd " << this->_sockfd << std::endl;
 	while (1)
 	{
 		addr_len = sizeof(struct sockaddr_in);
@@ -528,10 +538,15 @@ std::ostream&	operator<<(std::ostream& ostream, ServerHTTP& srv)
 
 int main()
 {
-	ServerHTTP	srv("www/", "Jimbo jones", "127.0.0.1", 80);
+	ServerHTTP	srv("www/", "Jimbo jones", "", 80);
 
 	if (srv.bind_server() < 0)// || srv.)
 		return (1);
+	
+	std::cout << "Try Starting Server" << std::endl;
+	if (srv.start() < 0)
+		return (2);
 
+	std::cout << "Exitting peacefully" << std::endl;
 	return (0);
 }

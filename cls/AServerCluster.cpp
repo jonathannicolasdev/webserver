@@ -227,8 +227,10 @@ AServerCluster::__cluster_mainloop(void)
 			{
 				clientfd = eventfd;
 				// The event was triggered by clientfd and we must serve the requested content.
-				
+				srv->serve_request(clientfd);
 			}
+			else
+				Logger::log(LOG_CRITICAL, "POLLING MECH RECEIVED EVENT FROM UNIDENTIFIED FD. THE TRUTH IS OUT THERE !!");
 		}
 	}
 	return (0);

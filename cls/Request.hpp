@@ -17,6 +17,7 @@
 # include <iostream>
 # include <map>
 
+# include "Logger.hpp"
 # include "webserv.hpp"
 
 enum e_method

@@ -37,7 +37,7 @@ int	AServerReactive::register_react_callback(enum e_react_event event, t_react_c
 //		if (ev & event)
 //			callback[(enum e_reat_event)ev] = cb;
 //	}
-	callbacks[event] = cb;
+	this->_callbacks[event] = cb;
 	this->_subscribed_events &= event;
 	return (0);
 }
@@ -48,12 +48,13 @@ int	AServerReactive::react(enum e_react_event event, int clientfd)
 	std::map<enum e_react_event, t_react_callback>::iterator	it;
 	t_react_callback	cb;
 
-	cb = nullptr;
+	cb = NULL;
 	it = this->_callbacks.find(event);
 	if (it != this->_callbacks.end())
 	{
-		cb = callbacks[event];
+		cb = this->_callbacks[event];
 		return (cb(*this, event, clientfd));
 	}
-	return (Logger::log(LOG_WARNING, "No callback registered for reacting event."));
+//	return (Logger::log(LOG_WARNING, "No callback registered for reacting event."));
+	return (0);
 }

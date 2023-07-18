@@ -17,12 +17,12 @@
 # include <map>
 # include <set>
 # include <ctime>
-# include <cstring>
+//# include <cstring>
 # include <string>
 # include <unistd.h>
 # include <fcntl.h>
 
-# include "IServer.hpp"
+//# include "IServer.hpp"
 # include "AServerDispatchSwitch.hpp"
 # include "Request.hpp"
 # include "Logger.hpp"
@@ -108,6 +108,8 @@ class ServerHTTP: public AServerDispatchSwitch
 			const std::string& ip, uint16_t port);
 		virtual ~ServerHTTP(void);
 
+		int	start(void);
+
 		int	parse_request(int clientfd, Request& request) const;
 		//int	serve_request(int clientfd) const;
 //		int	serve_response(int clientfd) const;
@@ -115,9 +117,9 @@ class ServerHTTP: public AServerDispatchSwitch
 //		virtual int		bind_server(void);
 
 		t_srv_state	*get_srv_state(void);
-		const std::map<std::string, std::string>& get_srv_locations(void) const;
-		const std::string& get_server_name(void) const;
-		const std::string& get_rootdir(void) const;
+		const std::map<std::string, std::string>&	get_srv_locations(void) const;
+		const std::string&							get_server_name(void) const;
+		const std::string&							get_rootdir(void) const;
 };
 
 #endif
