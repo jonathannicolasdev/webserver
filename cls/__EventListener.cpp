@@ -191,15 +191,3 @@ __EventListener::get_eventfd(int event_idx) const
 #endif
     return (-1);
 }
-
-int
-__EventListener::get_read_size(int event_idx) const
-{
-#ifdef	__APPLE__
-    return (this->_changes[event_idx].data);//this->_changes[event_idx].ident);
-#elif	__linux__
-    return (0);//(this->_changes[event_idx].data.fd);
-#endif
-    return (-1);
-}
-

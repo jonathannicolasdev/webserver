@@ -21,6 +21,7 @@
 # include <string>
 # include <unistd.h>
 # include <fcntl.h>
+# include <netdb.h>
 
 //# include "IServer.hpp"
 # include "AServerDispatchSwitch.hpp"
@@ -113,8 +114,8 @@ class ServerHTTP: public AServerDispatchSwitch
 
 		int	start(void);
 
-		int		parse_request(int clientfd);// raw_request should have been read already.
-		//int	parse_request(int clientfd, Request& request) const;
+//		int		parse_request(int clientfd);// raw_request should have been read already.
+		int		parse_request(int clientfd, Request& request) const;// Can take Request ref from the rq attribute or from and locally declared Request instance.
 		//int	prepare_response(int clientfd, Request& request, Response& response) const;
 		//int	serve_response(int clientfd, Response& response) const;
 

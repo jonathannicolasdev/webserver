@@ -256,7 +256,6 @@ AServerCluster::__cluster_mainloop(void)
 			else if ((srv = this->find_owner(eventfd)))
 			{
 				std::cout << "Cluster found eventfd " << eventfd << " is client socket." << std::endl;
-				std::cout << "bytes to read from socket : " << this->get_read_size(eventfd) << std::endl;
 				// The event was triggered by clientfd and we must serve the requested content.
 				clientfd = eventfd;
 				std::cout << "Found server owner of clientfd " << clientfd << " and serving request." << std::endl;

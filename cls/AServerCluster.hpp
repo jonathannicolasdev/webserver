@@ -19,9 +19,13 @@
 # include <set>
 # include <map>
 # include "AServerDispatchSwitch.hpp"
-# include <sys/event.h>
-
 # include "webserv.hpp"
+
+# ifdef __APPLE__
+#  include <sys/event.h>
+# elif __linux__
+#  include <sys/epoll.h>
+# endif
 
 //# define MAX_POLL_EVENTS 64
 # define MAX_CONCUR_POLL 1024
@@ -66,7 +70,7 @@ class __EventListener
 
 		// Get fd of _changes[event_idx] crossplatform
 		virtual int		get_eventfd(int event_idx) const;
-		virtual int		get_read_size(int event_idx) const;
+//		virtual int		get_read_size(int event_idx) const;
 };
 
 // AServerCluster (Abstract Server Cluster):

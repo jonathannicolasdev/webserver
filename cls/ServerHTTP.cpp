@@ -413,8 +413,12 @@ ServerHTTP::ServerHTTP(const std::string& rootdir, const std::string& servname,
 	AServerDispatchSwitch(port, SRV_UNBOUND, true, timeout),
 	_rootdir(rootdir), _server_name(servname)
 {
+
 //	in_addr_t	ipaddr;
 	UNUSED(ip);
+//	this->_server_addr.sin_family = AF_INET;
+//	this->_server_addr.sin_port = htons(80);
+//	this->_server_addr.sin_addr.s_addr = INADDR_ANY;//htons(80);
 
 	std::cout << "ServerHTTP constructor" << std::endl;
 /*
@@ -494,7 +498,7 @@ ServerHTTP::parse_request(int clientfd, Request& request) const
 	UNUSED(request);
 	//while ((read_size = read(clientfd, request_buff, MAX_READ_BUFF)) == MAX_READ_BUFF)
 	std::cout << "Starting to read client socket until return <= 0" << std::endl;
-	while ((read_size = read(clientfd, request_buff, MAX_READ_BUFF)) > 0)
+	while ((read_size = read(clientfd, request_buff, MAX_READ_BUFF)) >= 0)
 	{
 		std::cout << "reading chunk with read_size : " << read_size << std::endl;
 		request_buff[read_size] = '\0';
@@ -579,11 +583,35 @@ ServerHTTP::get_srv_locations(void) const {return (this->_locations);}
 
 #include "AServerCluster.hpp"
 
+
+
+void	read_available_addr(void)
+{
+	struct addrinfo	af, *res, *ap;
+	int				error;
+
+	std::memset(&af, 0, sizeof(af));
+	af.ai_family = AF_INET;
+	af.ai_socktype = SOCK_STREAM;
+	af.ai_flags = AI_PASSIVE;
+	if ((error = getaddrinfo(NULL, "3738", &af, &res)) < 0)
+		Logger::log(LOG_DEBUG, std::string("Error while getaddrinfo : ") + gai_strerror(errno));
+	ap = res;
+	while (ap)
+	{
+		std::cout << "valid address : " << inet_ntoa(((struct sockaddr_in *)ap->ai_addr)->sin_addr) << std::endl;
+		ap = ap->ai_next;
+	}
+	freeaddrinfo(res);
+}
+
 int main()
 {
 	AServerCluster	clu;
 
-	ServerHTTP	*srv = new ServerHTTP("www/", "Jimbo jones", "", 80);
+	ServerHTTP	*srv = new ServerHTTP("www/", "Jimbo jones", "", 3738);
+
+//	read_available_addr();
 
 	if (clu.add_server(srv) < 0)
 		return (1);
@@ -593,6 +621,8 @@ int main()
 
 	if (clu.start() < 0)
 		return (3);
+
+
 /*
 	if (srv.bind_server() < 0)// || srv.)
 		return (1);
