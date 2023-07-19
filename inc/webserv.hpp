@@ -21,6 +21,7 @@
 # include <netinet/in.h>
 # include <netinet/ip.h>
 
+# include "Request.hpp"
 # include "ServerHTTP.hpp"
 //# include "AServerCluster.hpp"
 //# include "ClusterWeb.hpp"

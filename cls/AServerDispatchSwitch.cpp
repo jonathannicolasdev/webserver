@@ -13,9 +13,9 @@
 #include "AServerDispatchSwitch.hpp"
 
 AServerDispatchSwitch::AServerDispatchSwitch(uint16_t _port,// bool _close_rqst, bool _is_running,
-	enum e_server_status_codes _status, int conn_timout=600):
+	enum e_server_status_codes _status, bool conn_persistance, int conn_timout):
 	AServerReactive(_port, false, false, true, _status),
-	_keep_alive(conn_persistance), _conn_timout(conn_timout)
+	_keep_alive(conn_persistance), _conn_timeout(conn_timout)
 {
 	std::cout << "AServerDispatchSwitch constructor" << std::endl;
 }
@@ -32,9 +32,9 @@ AServerDispatchSwitch::~AServerDispatchSwitch()
 void
 AServerDispatchSwitch::_init_new_client_connection(int clientfd)
 {
-	t_clt_conn			&clientconn;
+	t_clt_conn			&clientconn = this->_active_connections[clientfd];
 
-	clientconn = this->_active_connections[clientfd];
+//	clientconn = this->_active_connections[clientfd];
 	clientconn.clt_fd = clientfd;
 	clientconn.conn_status = CLT_ACEPTED;
 	clientconn.init_conn_time = std::time(NULL);
@@ -60,24 +60,24 @@ AServerDispatchSwitch::connect(int *disconn_clients, int max_disconn, int *ret_c
 
 
 	clientaddrlen = sizeof(clientaddr);
-	if ((clientfd = accept(this->_sockfd, (struct sockaddr *)&clientaddr), &clientaddrlen) < 0)
+	if ((clientfd = accept(this->_sockfd, (struct sockaddr *)&clientaddr, &clientaddrlen) < 0))
 		return (Logger::log(LOG_ERROR, std::string("Server failed to accept new connection with error : ") + strerror(errno)));
 
 
-	if (max_conn >= 0 && this->_active_connections.size() >= max_disconn)
+	if (max_disconn >= 0 && (int)this->_active_connections.size() >= max_disconn)
 	{
 		nb_disconn = this->do_maintenance(disconn_clients, max_disconn);
-		if (this->_active_connections.size() >= max_disconn)
+		if ((int)this->_active_connections.size() >= max_disconn)
 		{
 			nb_disconn += this->disconnect_oldest(disconn_clients + nb_disconn,
-				std::min(max_disconn - nb_disconn, (this->_active_connections.size() - max_disconn) + 10);
+				std::min(max_disconn - nb_disconn, (int)((this->_active_connections.size() - max_disconn) + 10)));
 		}		
 	}
 	this->_init_new_client_connection(clientfd);
 	this->react(EVNT_RECEIVED_CONNECTION, clientfd);
 //	this->react(EVNT_RECEIVED_REQUEST, clientfd);
 	//this->serve_request(clientfd);
-	*ret_clientfd = client_fd;
+	*ret_clientfd = clientfd;
 	return (nb_disconn);
 }
 
@@ -107,7 +107,7 @@ void
 AServerDispatchSwitch::disconnect_all(bool force)
 {
 	std::map<int, t_clt_conn>::iterator it;
-	int									clt_fd;
+	//int									clt_fd;
 
 	for (it=this->_active_connections.begin(); it != this->_active_connections.end(); ++it)
 	{
@@ -130,14 +130,15 @@ AServerDispatchSwitch::disconnect_all(bool force)
 int
 AServerDispatchSwitch::disconnect_oldest(int *disconn_clients, int max_disconn)
 {
-	std::map<int, t_clt_conn>::iterator		it, jt;
-	std::map<int, time_t>		oldest;
+	std::map<int, t_clt_conn>::iterator		it;
+	std::map<int, time_t>					oldest;
+	std::map<int, time_t>::iterator			jt;
 	time_t						longuest_time_inactive = 0;
 	int							nb_disconn = 0;
 
 	for (it = this->_active_connections.begin(); it != this->_active_connections.end(); ++it)
 	{
-		if (oldest.size() < max_disconn)
+		if ((int)oldest.size() < max_disconn)
 		{
 			oldest[it->first] = it->second.time_inactive;
 			longuest_time_inactive = std::max(it->second.time_inactive, longuest_time_inactive);
@@ -146,7 +147,7 @@ AServerDispatchSwitch::disconnect_oldest(int *disconn_clients, int max_disconn)
 		{
 			for (jt = oldest.begin(); jt != oldest.end(); ++jt)
 			{
-				if (jt->second.time_inactive < it->second.time_inactive)
+				if (jt->second < it->second.time_inactive)
 				{
 					oldest.erase(jt);
 					oldest[it->first] = it->second.time_inactive;
@@ -166,7 +167,7 @@ int
 AServerDispatchSwitch::do_maintenance(int *disconn_clients, int max_disconn)
 {
 	std::map<int, t_clt_conn>::iterator it;
-	t_clt_conn							&clientconn;
+//	t_clt_conn							&clientconn;
 	int									clientfd;
 	int									nb_disconn;
 	time_t								curr_time;
@@ -208,7 +209,7 @@ void	AServerDispatchSwitch::switch_connection_persistance(void)
 {
 	if (this->_keep_alive)
 		this->disconnect_all(false);
-	this->_keep_alive = ~this->_keep_alive;
+	this->_keep_alive = !this->_keep_alive;
 }
 
 int
@@ -239,7 +240,7 @@ AServerDispatchSwitch::bind_server(void)
 bool
 AServerDispatchSwitch::is_serving(int client_fd) const
 {
-	std::map<int, t_clt_conn>::iterator it;
+	std::map<int, t_clt_conn>::const_iterator it;
 	
 	if (!this->_keep_alive)
 		return (false);
@@ -248,18 +249,21 @@ AServerDispatchSwitch::is_serving(int client_fd) const
 	return (it != this->_active_connections.end());
 }
 
-t_clt_conn&
+bool
+AServerDispatchSwitch::is_running(void) const {return (this->_status == SRV_LISTENING);}
+
+const t_clt_conn*
 AServerDispatchSwitch::get_client_state(int client_fd) const
 {
-	std::map<int, t_clt_conn>::iterator it;
+	std::map<int, t_clt_conn>::const_iterator it;
 
 	if (!this->_keep_alive)
-		return (false);
+		return (NULL);
 
 	it = this->_active_connections.find(client_fd);
 	if (it == this->_active_connections.end())
 		return (nullptr);
-	return (it->second);
+	return (&it->second);
 }
 
 uint16_t
@@ -284,25 +288,22 @@ AServerDispatchSwitch::_validate_ready_start(void)
 	if (this->_sockfd < 3)
 		return (Logger::log(LOG_WARNING, "Server has no socket yet. Call the bind_server() method first to create an AF_INET socket and bind its address and port."));
 
-	it = this->_callbacks.find(EVNT_ACCEPTED_CONNECTION);
+	it = this->_callbacks.find(EVNT_RECEIVED_CONNECTION);
 	if (it == this->_callbacks.end())
 		return (Logger::log(LOG_WARNING, "Missing required callback for EVNT_ACCEPTED_CONNECTION event. You must register at least a callback for this event before starting the server. See register_react_callback() in AServerReact.hpp."));
 	return (0);
 }
 
-// If self_managed is true, this server starts a while (1) loop and
-// waits for client connections.
-// Otherwise returns the server's sockfd fd to be managed externally.
 int
 AServerDispatchSwitch::start(void)
 {
-	int					connfd;
-	struct sockaddr_in	conn_addr;
-	socklen_t			addr_len;
+	//int					connfd;
+//	struct sockaddr_in	conn_addr;
+//	socklen_t			addr_len;
 	std::ostringstream	err_msg;
 
-	if (this->_validate_ready_start())
-		return (-1);
+//	if (this->_validate_ready_start())
+//		return (-1);
 
 	//listen
 	if (listen(this->_sockfd, MAX_PENDING_CONN) < 0)

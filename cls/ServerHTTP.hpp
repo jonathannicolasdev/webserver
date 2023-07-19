@@ -23,7 +23,8 @@
 # include <fcntl.h>
 
 # include "IServer.hpp"
-# include "AServerReactive.hpp"
+# include "AServerDispatchSwitch.hpp"
+# include "Request.hpp"
 # include "Logger.hpp"
 
 /*
@@ -56,7 +57,7 @@ struct s_timeout_info
 	std::time_t	end_time;
 };
 */
-
+/*
 class	ServerHTTP: public AServerReactive
 {
 	private:
@@ -91,7 +92,32 @@ class	ServerHTTP: public AServerReactive
 		const std::string&	get_rootdir(void) const;
 		std::map<std::string, std::string>&	get_srv_locations(void);
 };
-
 std::ostream&	operator<<(std::ostream& ostream, ServerHTTP& srv);
+*/
+
+// DEBUG SIMPLE VERSION
+class ServerHTTP: public AServerDispatchSwitch
+{
+	private:
+		const std::string					_rootdir;
+		const std::string					_server_name;
+		std::map<std::string, std::string>	_locations;
+
+	public:
+		ServerHTTP(const std::string& rootdir, const std::string& servname,
+			const std::string& ip, uint16_t port);
+		virtual ~ServerHTTP(void);
+
+		int	parse_request(int clientfd, Request& request) const;
+		//int	serve_request(int clientfd) const;
+//		int	serve_response(int clientfd) const;
+
+//		virtual int		bind_server(void);
+
+		t_srv_state	*get_srv_state(void);
+		const std::map<std::string, std::string>& get_srv_locations(void) const;
+		const std::string& get_server_name(void) const;
+		const std::string& get_rootdir(void) const;
+};
 
 #endif

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Request.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: marvin <marvin@student.42.fr>              +#+  +:+       +#+        */
+/*   By: iamongeo <iamongeo@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2023/07/17 22:02:57 by marvin            #+#    #+#             */
-/*   Updated: 2023/07/17 22:02:57 by marvin           ###   ########.fr       */
+/*   Created: 2023/07/18 23:07:58 by iamongeo          #+#    #+#             */
+/*   Updated: 2023/07/18 23:07:58 by iamongeo         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,6 +16,8 @@
 # include <string>
 # include <iostream>
 # include <map>
+
+# include "webserv.hpp"
 
 enum e_method
 {
@@ -27,7 +29,7 @@ enum e_method
 };
 
 // Relatively passive container for request data
-class Request:
+class Request
 {
 	private:
 		enum e_method	_method;
@@ -44,15 +46,17 @@ class Request:
 
 
 	public:
+		Request(void);
 		Request(const std::string& raw_request);
 		~Request(void);
+		
+		int	process_header(const std::string& raw_header);
 
 		enum e_method	get_method(void) const;
 		bool			is_method(enum e_method method) const;
 
 		// Returns the header element at given key.
 		const std::string*	operator[](const std::string& key) const;
-				
 };
 
 #endif

@@ -227,6 +227,7 @@ AServerCluster::__cluster_mainloop(void)
 			{
 				clientfd = eventfd;
 				// The event was triggered by clientfd and we must serve the requested content.
+				
 			}
 		}
 	}

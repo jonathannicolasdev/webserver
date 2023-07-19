@@ -16,9 +16,11 @@
 # include <unistd.h>
 # include <sys/event.h>
 # include <sys/time.h>
-# include <algorythm>
+# include <algorithm>
 
+//# include "webserv.hpp"
 # include "Logger.hpp"
+# include "Request.hpp"
 # include "IServer.hpp"
 # include "AServerReactive.hpp"
 
@@ -84,10 +86,9 @@ class	AServerDispatchSwitch: public AServerReactive
 //		int	_init_linux_event_listener(void);
 
 		int		_validate_ready_start(void);
-		void	_init_new_client_connection(t_clt_conn &clientconn, int clientfd);
+		void	_init_new_client_connection(int clientfd);
 
 	protected:
-
 		//  Uses hash map to store client's connection state info
 		// with connection fd (returned by accept()) for key
 		// and tracking client activity on site with the connection 
@@ -111,20 +112,24 @@ class	AServerDispatchSwitch: public AServerReactive
 			enum e_server_status_codes _status, bool conn_persistance, int conn_timout=600);
 		virtual	~AServerDispatchSwitch();
 
+		virtual int		connect(int *disconn_clients, int max_disconn, int *ret_clientfd);// Is called either to wait for a knew connection or to use as a callback for the EVNT_ACCEPT_CONNECTION event.
+		virtual int		disconnect_oldest(int *disconn_clients, int max_disconn);
+		
+
+	public:
 			
 		virtual int		bind_server(void);
 		virtual int		start(void);
 		virtual void	stop(void);
-		virtual int		connect(int *disconn_clients, int max_disconn, int *ret_clientfd);// Is called either to wait for a knew connection or to use as a callback for the EVNT_ACCEPT_CONNECTION event.
-		virtual void	disconnect(int clt_fd, bool force);
+		virtual int		disconnect(int clt_fd, bool force);
 		virtual void	disconnect_all(bool force);
-		virtual int		disconnect_oldest(int *disconn_clients, int max_disconn);
 		virtual void	switch_connection_persistance(void);// Switches the _keep_alive bool on/off. 
+		virtual bool	is_running(void) const;
 		virtual bool	is_serving(int client_fd) const;
 		
 		// Still abstract methods to implement in specialized concrete classes.
-		virtual int		serve_request(int clientfd) = 0;
-		virtual int		serve_response(int clientfd) = 0;
+		virtual int		parse_request(int clientfd, Request& request) const = 0;
+//		virtual int		prepare_response(int clientfd, Response& response) = 0;
 
 		// checks its active_connections and removes clients having exceded their timeout
 		// puts the flushed clients fds in the disconn_clients int array limited 
@@ -132,11 +137,12 @@ class	AServerDispatchSwitch: public AServerReactive
 		// If no pointer is given for disconn_clients, max_disconn is ignored and 
 		// server maintenance is performed without returning the filled array of 
 		// disconnected clients fds.
-		virtual int		do_maintenance(int *disconn_clients, int max_disconn);
+		virtual int			do_maintenance(int *disconn_clients, int max_disconn);
+		//virtual int			do_maintenance(void);
 
 		virtual uint16_t	get_port(void) const;
 //		virtual int			get_socket(void) const;		
-		t_clt_conn&			get_client_state(int client_fd) const;
+		const t_clt_conn*	get_client_state(int client_fd) const;
 		
 		// TODO
 //		void			flush_timouts(void);

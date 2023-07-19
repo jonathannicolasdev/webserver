@@ -14,7 +14,8 @@
 
 AServerReactive::AServerReactive(uint16_t _port, bool _close_rqst, bool _is_running,
 	bool _is_dispatch_switch, enum e_server_status_codes _status):
-	IServer(_port, _close_rqst, _is_running, true, _is_dispatch_switch, _status)
+	IServer(_port, _close_rqst, _is_running, true, _is_dispatch_switch, _status),
+	_subscribed_events(0)
 {
 	std::cout << "AServerReactive passthrough constructor" << std:: endl;
 }

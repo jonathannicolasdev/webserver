@@ -19,6 +19,7 @@
 # include <map>
 # include <stdint.h>
 # include <sys/socket.h>
+
 # include <netinet/in.h>
 # include <arpa/inet.h>
 //# include <netinet/ip.h>
@@ -100,7 +101,7 @@ class   IServer:	protected __BaseSocketOwner
 		virtual int			start(void) = 0;
 		virtual void		stop(void) = 0;
 		virtual t_srv_state	*get_srv_state(void) = 0;
-		virtual bool		is_serving(int client_fd) = 0;// if concrete server does not track client connection state (is stateless), implement with return (false);.
+		virtual bool		is_serving(int client_fd) const = 0;// if concrete server does not track client connection state (is stateless), implement with return (false);.
 
 		virtual uint16_t	get_port(void) const = 0;
 		virtual bool		is_running(void) const = 0;

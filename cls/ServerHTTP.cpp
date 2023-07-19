@@ -15,6 +15,7 @@
 #include <dirent.h>
 
 #include "webserv.hpp"
+#include "Request.hpp"
 #include "ServerHTTP.hpp"
 
 /*
@@ -189,7 +190,7 @@ std::string&	get_dummy_response(ServerHTTP &srv, std::stringstream& raw_request,
 	return (response);
 }
 */
-
+/*
 //ServerHTTP::ServerHTTP(uint16_t port=PORT_HTTP, const std::string &rootdir="./"):
 ServerHTTP::ServerHTTP(const std::string& srv_name, const std::string& addr, 
 	uint16_t port, const std::string &rootdir):
@@ -409,6 +410,86 @@ ServerHTTP::stop(void)
 	this->_status = SRV_UNBOUND;
 	this->_close_request = true;
 }
+*/
+
+ServerHTTP::ServerHTTP(const std::string& rootdir, const std::string& servname,
+	const std::string& ip, uint16_t port):
+	AServerDispatchSwitch(_port, SRV_UNBOUND, true),
+	_rootdir(rootdir), _server_name(servname)
+{
+	UNUSED(ip);
+	UNUSED(port);
+	std::cout << "ServerHTTP constructor" << std::endl;
+}
+
+ServerHTTP::~ServerHTTP(void) {std::cout << "ServerHTTP desctructor" << std::endl;}
+
+// DEBUG PURPOSES ONLY
+int
+AServerDispatchSwitch::start(void)
+{
+	int					connfd;
+	struct sockaddr_in	conn_addr;
+	socklen_t			addr_len;
+	std::ostringstream	err_msg;
+
+	if (this->_validate_ready_start())
+		return (-1);
+
+	//listen
+	if (listen(this->_sockfd, MAX_PENDING_CONN) < 0)
+	{
+		err_msg << "Failed to start listening to port " <<  this->_port;
+		err_msg << " on address " << inet_ntoa(this->_server_addr.sin_addr);
+		err_msg << " with error : " << std::strerror(errno);
+		return (Logger::log(LOG_ERROR, err_msg.str()));
+	}
+	this->_status = SRV_LISTENING;
+	this->_srv_start_time = std::time(NULL);
+	
+	Request		rq;
+	//Response	resp;
+
+	while (1)
+	{
+		addr_len = sizeof(struct sockaddr_in);
+		if ((connfd = accept(this->_sockfd, (struct sockaddr *)&conn_addr, &addr_len)) < 0)
+			return (Logger::log(LOG_ERROR, std::string("accept call failed with error : ") + strerror(errno)));
+		
+		this->_init_new_client_connection(connfd);
+		this->parse_request(connfd, rq);
+//		this->prepare_response(connfd, rq, );
+		close(connfd);
+	}
+//	this->react(EVNT_SRV_OPEN, 0);// clientfd arg ignored;
+//	return (this->_sockfd);
+//	return (0);
+}
+
+#define MAX_READ_BUFF 4096
+int
+ServerHTTP::parse_request(int clientfd, Request& request) const
+{
+	char				request_buff[MAX_READ_BUFF + 1];
+	ssize_t				read_size, send_size;
+	std::string			req_str;
+	std::string			header;
+
+	UNUSED(request);
+	while ((read_size = read(clientfd, request_buff, MAX_READ_BUFF)) == MAX_READ_BUFF)
+	{
+		request_buff[read_size] = '\0';
+		req_str += request_buff;
+	}
+	if (read_size == -1)
+		return (Logger::log(LOG_ERROR, "failed to read() client request after accept()."));
+	request_buff[read_size] = '\0';
+	req_str += request_buff;
+	header = "HTTP/1.1 200 OK\n";
+	if ((send_size = write(clientfd, header.c_str(), header.length())) < 0)
+		return (Logger::log(LOG_ERROR, "failed to write() client request after read()."));
+	return (0);
+}
 
 t_srv_state*
 ServerHTTP::get_srv_state(void)
@@ -425,11 +506,8 @@ ServerHTTP::get_srv_state(void)
 const std::string& ServerHTTP::get_server_name(void) const {return (this->_server_name);}
 const std::string& ServerHTTP::get_rootdir(void) const {return (this->_rootdir);}
 
-std::map<std::string, std::string>&
-ServerHTTP::get_srv_locations(void) {
-	
-	return (this->_locations);
-}
+const std::map<std::string, std::string>&
+ServerHTTP::get_srv_locations(void) const {return (this->_locations);}
 
 
 std::ostream&	operator<<(std::ostream& ostream, ServerHTTP& srv)
@@ -443,4 +521,17 @@ std::ostream&	operator<<(std::ostream& ostream, ServerHTTP& srv)
 	std::cout << "| - status : \t\t" << state->status << std::endl;
 	std::cout << "<------------------------------------->" << std::endl;
 	return (ostream);
+}
+
+//int
+//ServerHTTP::bind_server(void) {return (0);}
+
+int main()
+{
+	ServerHTTP	srv("www/", "Jimbo jones", "127.0.0.1", 80);
+
+	if (srv.bind_server() < 0)// || srv.)
+		return (1);
+
+	return (0);
 }

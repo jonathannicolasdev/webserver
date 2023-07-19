@@ -12,10 +12,14 @@
 
 #include "Request.hpp"
 
-Request::Request(const std::string& raw_request): _raw_request(raw_request), _method(NULL_M)
+Request::Request(const std::string& raw_request): _method(NULL_M), _raw_request(raw_request)
 {
 	std::cout << "Request Constructor" << std::endl;
+}
 
+Request::Request(void): _method(NULL_M)
+{
+	std::cout << "Request default constructor" << std::endl;
 }
 
 Request::~Request()
@@ -27,7 +31,8 @@ Request::~Request()
 int
 Request::process_header(const std::string& raw_header)
 {
-
+	UNUSED(raw_header);
+	return (0);
 }
 
 int
@@ -43,7 +48,7 @@ Request::process_raw_request(const std::string& raw_request)
 	}
 	else
 	{
-		this->header = raw_request.substr(0, pos);
+		this->_raw_header = raw_request.substr(0, pos);
 		this->body = raw_request.substr(pos + 5);
 		// Process header + body
 
@@ -58,7 +63,7 @@ Request::is_method(enum e_method method) const {return (this->_method == method)
 
 const std::string*	Request::operator[](const std::string& key) const
 {
-	std::map<std::string, std::string>::iterator	it;
+	std::map<std::string, std::string>::const_iterator	it;
 	
 	it = this->header.find(key);
 	if (it == this->header.end())
