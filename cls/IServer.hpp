@@ -65,13 +65,15 @@ typedef struct s_server_state
 // to a server's socket directly and be able to close it prematurly for exemple.
 class	__BaseSocketOwner
 {
+	private:
+		friend class AServerCluster;
 	protected:
 		int		_sockfd;
 		int		get_sockfd(void) const;
 };
 
 
-class   IServer:	protected __BaseSocketOwner
+class   IServer:	public __BaseSocketOwner
 {
 	protected:
 //		AServerCuster*				_owner;/// Value should be set to owner cluster if server is

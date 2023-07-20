@@ -24,6 +24,7 @@ IServer::IServer(uint16_t _port, bool _close_rqst,
     std::cout << "ServerHTTP Constructor" << std::endl;
 	std::memset(&this->_server_addr, 0, sizeof(this->_server_addr));
 	this->_server_addr.sin_family = AF_INET;
+    std::cout << "Setting up listen on any address on port : " << this->_port << std::endl;
 	this->_server_addr.sin_port = htons(this->_port);
 	//this->_server_addr.sin_port = _port;
 	this->_server_addr.sin_addr.s_addr = INADDR_ANY;

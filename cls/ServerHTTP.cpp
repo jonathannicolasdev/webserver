@@ -409,8 +409,8 @@ ServerHTTP::stop(void)
 */
 
 ServerHTTP::ServerHTTP(const std::string& rootdir, const std::string& servname,
-	const std::string& ip, uint16_t port):
-	AServerDispatchSwitch(port, SRV_UNBOUND, true),
+	const std::string& ip, uint16_t port, int timeout):
+	AServerDispatchSwitch(port, SRV_UNBOUND, true, timeout),
 	_rootdir(rootdir), _server_name(servname)
 {
 //	in_addr_t	ipaddr;
@@ -437,9 +437,9 @@ ServerHTTP::~ServerHTTP(void) {std::cout << "ServerHTTP desctructor" << std::end
 int
 ServerHTTP::start(void)
 {
-	int					connfd;
-	struct sockaddr_in	conn_addr;
-	socklen_t			addr_len;
+	// int					connfd;
+	// struct sockaddr_in	conn_addr;
+	// socklen_t			addr_len;
 	std::ostringstream	err_msg;
 
 //	if (this->_validate_ready_start())
@@ -455,7 +455,7 @@ ServerHTTP::start(void)
 	}
 	this->_status = SRV_LISTENING;
 	this->_srv_start_time = std::time(NULL);
-	
+	/*
 	Request		rq;
 	//Response	resp;
 
@@ -463,16 +463,19 @@ ServerHTTP::start(void)
 	while (1)
 	{
 		addr_len = sizeof(struct sockaddr_in);
+		std::cout << "Accepting connections " << std::endl;
 		if ((connfd = accept(this->_sockfd, (struct sockaddr *)&conn_addr, &addr_len)) < 0)
 			return (Logger::log(LOG_ERROR, std::string("accept call failed with error : ") + strerror(errno)));
+		std::cout << "Conneciton accepted !" << std::endl;
 		
 		this->_init_new_client_connection(connfd);
 		this->parse_request(connfd, rq);
 //		this->prepare_response(connfd, rq, );
 		close(connfd);
 	}
+*/
 //	this->react(EVNT_SRV_OPEN, 0);// clientfd arg ignored;
-//	return (this->_sockfd);
+	return (this->_sockfd);
 //	return (0);
 }
 
@@ -484,20 +487,58 @@ ServerHTTP::parse_request(int clientfd, Request& request) const
 	ssize_t				read_size, send_size;
 	std::string			req_str;
 	std::string			header;
+	std::string			body;
+	std::ostringstream	content_length;
+	std::string			response;
 
 	UNUSED(request);
-	while ((read_size = read(clientfd, request_buff, MAX_READ_BUFF)) == MAX_READ_BUFF)
+	//while ((read_size = read(clientfd, request_buff, MAX_READ_BUFF)) == MAX_READ_BUFF)
+	std::cout << "Starting to read client socket until return <= 0" << std::endl;
+	while ((read_size = read(clientfd, request_buff, MAX_READ_BUFF)) > 0)
 	{
+		std::cout << "reading chunk with read_size : " << read_size << std::endl;
 		request_buff[read_size] = '\0';
 		req_str += request_buff;
 	}
-	if (read_size == -1)
-		return (Logger::log(LOG_ERROR, "failed to read() client request after accept()."));
-	request_buff[read_size] = '\0';
-	req_str += request_buff;
+	std::cout << "Finished reading client socket" << std::endl;
+	if (req_str.length() == 0)
+	{
+		Logger::log(LOG_WARNING, "Client sent empty request.");
+		return (0);
+	}
+//	if (read_size == -1)
+//		return (Logger::log(LOG_ERROR, "failed to read() client request after accept()."));
+//	request_buff[read_size] = '\0';
+//	req_str += request_buff;
+	std::cout << "Read " << req_str.length() << " chars from client." << std::endl;
 	header = "HTTP/1.1 200 OK\n";
-	if ((send_size = write(clientfd, header.c_str(), header.length())) < 0)
+	header += "Content-type: text/html\n";
+	
+	body +=	"<!DOCTYPE html>";
+	body +=	"<html>";
+	body +=	"	<head>";
+	body +=	"		<title>Webserv Index</title>";
+	body +=	"	</head>";
+	body +=	"	<body>";
+	body +=	"		<h1>Hello World page1</h1>";
+	body +=	"		<img src=\"asdf.jpg\" width=100 height=100>";
+	body +=	"		<a href=\"page2.html\">My beautiful link</a>";
+	body +=	"	</body>";
+	body +=	"</html>";
+
+	header += "Content-length: ";
+	content_length << body.length();
+	header += content_length.str();
+	header += "\r\n\r\n";
+	response = header + body;
+	std::cout << "Sending response page" << std::endl;
+	
+	if ((send_size = write(clientfd, response.c_str(), response.length())) < 0)
+	{
+		std::cout << "write failed" << std::endl;
 		return (Logger::log(LOG_ERROR, "failed to write() client request after read()."));
+	}
+	std::cout << "Response page SENT !" << std::endl;
 	return (0);
 }
 
@@ -520,33 +561,46 @@ const std::map<std::string, std::string>&
 ServerHTTP::get_srv_locations(void) const {return (this->_locations);}
 
 
-std::ostream&	operator<<(std::ostream& ostream, ServerHTTP& srv)
-{
-	t_srv_state	*state = srv.get_srv_state();
+// std::ostream&	operator<<(std::ostream& ostream, ServerHTTP& srv)
+// {
+// 	t_srv_state	*state = srv.get_srv_state();
 
-	std::cout << "<--- HTTP Server state ---------------->" << std::endl;
-	std::cout << "| - is running : \t" << (state->is_running ? "TRUE" : "FALSE") << std::endl;
-	std::cout << "| - port : \t\t" << state->port << std::endl;
-	std::cout << "| - address : \t\t" << state->address << std::endl;
-	std::cout << "| - status : \t\t" << state->status << std::endl;
-	std::cout << "<------------------------------------->" << std::endl;
-	return (ostream);
-}
+// 	std::cout << "<--- HTTP Server state ---------------->" << std::endl;
+// 	std::cout << "| - is running : \t" << (state->is_running ? "TRUE" : "FALSE") << std::endl;
+// 	std::cout << "| - port : \t\t" << state->port << std::endl;
+// 	std::cout << "| - address : \t\t" << state->address << std::endl;
+// 	std::cout << "| - status : \t\t" << state->status << std::endl;
+// 	std::cout << "<------------------------------------->" << std::endl;
+// 	return (ostream);
+// }
 
 //int
 //ServerHTTP::bind_server(void) {return (0);}
 
+#include "AServerCluster.hpp"
+
 int main()
 {
-	ServerHTTP	srv("www/", "Jimbo jones", "", 80);
+	AServerCluster	clu;
 
+	ServerHTTP	*srv = new ServerHTTP("www/", "Jimbo jones", "", 80);
+
+	if (clu.add_server(srv) < 0)
+		return (1);
+	
+	if (clu.bind() < 0)
+		return (2);
+
+	if (clu.start() < 0)
+		return (3);
+/*
 	if (srv.bind_server() < 0)// || srv.)
 		return (1);
 	
 	std::cout << "Try Starting Server" << std::endl;
 	if (srv.start() < 0)
 		return (2);
-
-	std::cout << "Exitting peacefully" << std::endl;
+*/
+	std::cout << "Exiting peacefully" << std::endl;
 	return (0);
 }

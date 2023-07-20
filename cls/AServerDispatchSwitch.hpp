@@ -112,11 +112,11 @@ class	AServerDispatchSwitch: public AServerReactive
 		std::time_t		_srv_start_time;
 		std::time_t		_last_maintenance_time;// 
 
+		// conn_timout in ms
 		AServerDispatchSwitch(uint16_t _port, //bool _close_rqst, bool _is_running,
-			enum e_server_status_codes _status, bool conn_persistance, int conn_timout=600);
+			enum e_server_status_codes _status, bool conn_persistance, int conn_timout=10000);
 		virtual	~AServerDispatchSwitch();
 
-		virtual int		connect(int *disconn_clients, int max_disconn, int *ret_clientfd);// Is called either to wait for a knew connection or to use as a callback for the EVNT_ACCEPT_CONNECTION event.
 		virtual int		disconnect_oldest(int *disconn_clients, int max_disconn);
 		
 
@@ -128,6 +128,7 @@ class	AServerDispatchSwitch: public AServerReactive
 		virtual int		disconnect(int clt_fd, bool force);
 		virtual void	disconnect_all(bool force);
 		virtual void	switch_connection_persistance(void);// Switches the _keep_alive bool on/off. 
+		virtual int		connect(int *disconn_clients, int max_disconn, int *ret_clientfd);// Is called either to wait for a knew connection or to use as a callback for the EVNT_ACCEPT_CONNECTION event.
 		virtual bool	is_running(void) const;
 		virtual bool	is_serving(int client_fd) const;
 		
@@ -145,6 +146,7 @@ class	AServerDispatchSwitch: public AServerReactive
 		//virtual int			do_maintenance(void);
 
 		virtual uint16_t	get_port(void) const;
+		int					get_timeout(void) const;
 //		virtual int			get_socket(void) const;		
 		const t_clt_conn*	get_client_state(int client_fd) const;
 		
@@ -152,5 +154,7 @@ class	AServerDispatchSwitch: public AServerReactive
 //		void			flush_timouts(void);
 //		void			flush_oldest(int n);
 };
+
+std::ostream&	operator<<(std::ostream& ostream, AServerDispatchSwitch& srv);
 
 #endif

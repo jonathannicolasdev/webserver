@@ -102,17 +102,21 @@ class ServerHTTP: public AServerDispatchSwitch
 		const std::string					_rootdir;
 		const std::string					_server_name;
 		std::map<std::string, std::string>	_locations;
+		std::ostringstream					_raw_request;
+		Request								rq;
+		//Response								rp;
 
 	public:
 		ServerHTTP(const std::string& rootdir, const std::string& servname,
-			const std::string& ip, uint16_t port);
+			const std::string& ip, uint16_t port, int timeout=10000);
 		virtual ~ServerHTTP(void);
 
 		int	start(void);
 
-		int	parse_request(int clientfd, Request& request) const;
-		//int	serve_request(int clientfd) const;
-//		int	serve_response(int clientfd) const;
+		int		parse_request(int clientfd);// raw_request should have been read already.
+		//int	parse_request(int clientfd, Request& request) const;
+		//int	prepare_response(int clientfd, Request& request, Response& response) const;
+		//int	serve_response(int clientfd, Response& response) const;
 
 //		virtual int		bind_server(void);
 

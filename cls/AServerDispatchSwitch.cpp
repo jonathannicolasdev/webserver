@@ -60,10 +60,12 @@ AServerDispatchSwitch::connect(int *disconn_clients, int max_disconn, int *ret_c
 
 
 	clientaddrlen = sizeof(clientaddr);
-	if ((clientfd = accept(this->_sockfd, (struct sockaddr *)&clientaddr, &clientaddrlen) < 0))
+//	clientfd = accept(this->_sockfd, (struct sockaddr *)&clientaddr, &clientaddrlen);
+	if ((clientfd = accept(this->_sockfd, (struct sockaddr *)&clientaddr, &clientaddrlen)) < 0)
 		return (Logger::log(LOG_ERROR, std::string("Server failed to accept new connection with error : ") + strerror(errno)));
 
-
+	std::cout << "AServerDispatchSwitch::connect() accepted clientfd : " << clientfd << std::endl;
+//	std::cout << "address of new connected client : " << inet_ntoa(clientaddr.sin_addr) << std::endl;
 	if (max_disconn >= 0 && (int)this->_active_connections.size() >= max_disconn)
 	{
 		nb_disconn = this->do_maintenance(disconn_clients, max_disconn);
@@ -269,6 +271,9 @@ AServerDispatchSwitch::get_client_state(int client_fd) const
 uint16_t
 AServerDispatchSwitch::get_port(void) const {return (this->_port);}
 
+int
+AServerDispatchSwitch::get_timeout(void) const {return (this->_conn_timeout);}
+
 //int
 //AServerDispatchSwitch::get_socket(void) const {return (this->_sockfd);}
 /*
@@ -320,6 +325,20 @@ AServerDispatchSwitch::start(void)
 	return (this->_sockfd);
 //	return (0);
 }
+
+std::ostream&	operator<<(std::ostream& ostream, AServerDispatchSwitch& srv)
+{
+	t_srv_state	*state = srv.get_srv_state();
+
+	std::cout << "<--- HTTP Server state ---------------->" << std::endl;
+	std::cout << "| - is running : \t" << (state->is_running ? "TRUE" : "FALSE") << std::endl;
+	std::cout << "| - port : \t\t" << state->port << std::endl;
+	std::cout << "| - address : \t\t" << state->address << std::endl;
+	std::cout << "| - status : \t\t" << state->status << std::endl;
+	std::cout << "<------------------------------------->" << std::endl;
+	return (ostream);
+}
+
 /*
 // If self_managed is true, this server starts a while (1) loop and
 // waits for client connections.

@@ -18,7 +18,7 @@ int	log_bind_error(std::string &srv_name, int port)
 
 	log_msg << "Server named " << srv_name;
 	log_msg << "on port " << port;
-	log_msg << " failed to bind itself. All servers in a cluster must be able to bind, otherwise no server owned by this cluster can be bound.");
+	log_msg << " failed to bind itself. All servers in a cluster must be able to bind, otherwise no server owned by this cluster can be bound.";
 
 	return (Logger::log(LOG_WARNING, log_msg.str()));
 }
@@ -29,7 +29,7 @@ int	log_start_error(std::string &srv_name, int port)
 
 	log_msg << "Server named " << srv_name;
 	log_msg << "on port " << port;
-	log_msg << " failed to start itself. All servers in a cluster must be able to start, otherwise no server owned by this cluster are allowed to start. Stopping Cluster. Call ServerCluster::bind again to reattempt start.");
+	log_msg << " failed to start itself. All servers in a cluster must be able to start, otherwise no server owned by this cluster are allowed to start. Stopping Cluster. Call ServerCluster::bind again to reattempt start.";
 
 	return (Logger::log(LOG_WARNING, log_msg.str()));
 }
@@ -41,11 +41,12 @@ int	AServerCluster::generate_id(void)
 	return (this->_counter++);
 }
 
-AServerCluster::AServerCluster(void): __EventListener(), _id(generate_id()), _status(CLU_IDLE),
-	_timeout(-1)
+AServerCluster::AServerCluster(void): __EventListener(), _id(generate_id()),
+	_status(CLU_UNBOUND), _request_stop(false), _timeout(-1)
 {
 	std::cout << "AServerCluster constructor" << std::endl;
-	std::memset(this->_events, 0, sizeof(this->_events));
+//	std::memset(this->_events, 0, sizeof(this->_events));
+	std::memset(&this->_new_event, 0, sizeof(this->_new_event));
 	std::memset(this->_changes, 0, sizeof(this->_changes));
 	this->_pollfd = 0;
 }
@@ -58,30 +59,36 @@ AServerCluster::~AServerCluster(void)
 
 bool	AServerCluster::contains(AServerDispatchSwitch *srv) const
 {
-	return (std::find(_servers.begin(), _servers.end(), srv) != _servers.end())
+	std::map<int, AServerDispatchSwitch *>::const_iterator	it;
+
+//	return (this->_servers.find(srv) != this->_servers.end());
+	for (it = this->_servers.begin(); it != this->_servers.end(); ++it)
+		if (it->second == srv)
+			return (true);
+	return (false);
 }
 
 AServerDispatchSwitch*
 AServerCluster::find_owner(int client_fd) const
 {
 	//std::vector<AServerDispatchSwitch *>::iterator	it;
-	std::map<int, AServerDispatchSwitch *>::iterator	it;
+	std::map<int, AServerDispatchSwitch *>::const_iterator	it;
 
 	for (it = this->_servers.begin(); it != this->_servers.end(); ++it)
 		//if ((*it)->is_serving(client_fd))
 		if (it->second->is_serving(client_fd))
-			return (it);
-	return (nullptr);
+			return (it->second);
+	return (NULL);
 }
 
 AServerDispatchSwitch*
 AServerCluster::find_server(int socket_fd) const
 {
-	std::map<int, AServerDispatchSwitch *>::iterator	it;
+	std::map<int, AServerDispatchSwitch *>::const_iterator	it;
 
 	it = this->_servers.find(socket_fd);
 	if (it == this->_servers.end())
-		return (nullptr);
+		return (NULL);
 	else
 		return (it->second);
 //	for (it = this->_servers.begin(); it != this->_servers.end(); ++it)
@@ -90,18 +97,14 @@ AServerCluster::find_server(int socket_fd) const
 }
 
 int
-AServerCluster::get_nb_managed(void) const
-{
-	return (this->_servers.size());
-}
+AServerCluster::get_nb_managed(void) const { return (this->_server_set.size());}
 
 bool
 AServerCluster::validate_server(AServerDispatchSwitch *srv) const
 {
-	t_srv_state	*srv_state;
-	//std::vector<AServerDispatchSwitch*>::iterator it;
-	std::map<int, AServerDispatchSwitch*>::iterator	it;
-	std::ostringstream					port_str;
+	t_srv_state				*srv_state;
+	std::ostringstream		port_str;
+	std::map<int, AServerDispatchSwitch*>::const_iterator	it;
 
 	if (!srv)
 		return (Logger::log(LOG_WARNING, "Passed nullptr to AServerCluster::add_server()"), false);
@@ -109,14 +112,12 @@ AServerCluster::validate_server(AServerDispatchSwitch *srv) const
 	if (srv_state->status_code != SRV_UNBOUND)
 		return (Logger::log(LOG_WARNING, std::string("Cannot add to a Cluster a server with status other than SRV_UNBOUND. This server status : ")
 			+ srv_state->status), false);
-	
-	for (it = this->_servers.begin() ; it != this->_servers.end(); ++it)
+
+	for (it = this->_servers.begin(); it != this->_servers.end(); ++it)
 	{
-		//if (srv == (*it))
 		if (srv == it->second)
 			return (Logger::log(LOG_WARNING, std::string("Trying to add same server twice in ServerCluster. Server name : ")
 				+ srv_state->server_name), false);
-		//if ((*it)->get_port() == srv_state->port)
 		port_str << srv_state->port;
 		if (it->second->get_port() == srv_state->port)
 			return (Logger::log(LOG_WARNING, std::string("ServerCluster cannot have two servers binding to the same port. Conflicting port : ")
@@ -129,14 +130,26 @@ int
 AServerCluster::add_server(AServerDispatchSwitch *srv)
 {
 	std::ostringstream	id_str;
+	int					timeout;
+//	int					sockfd;
 
 	if (!this->validate_server(srv))
 		return (-1);
 	id_str << this->_id;
 	Logger::log(LOG_DEBUG, std::string("Adding new server to cluster id ") + id_str.str() + " Server info : ");
-	std::cout << srv << std::endl;
+	std::cout << *srv << std::endl;
 //	this->_servers.push_back(srv);
-	this->_servers[srv->get_sockfd()] = srv;
+//	sockfd = srv->get_sockfd();
+//	std::cout << "Cluster adding sockfd " << sockfd << std::endl;
+//	this->_servers[sockfd] = srv;
+	this->_server_set.insert(srv);
+	timeout = srv->get_timeout();
+	std::cout << "New added server timeout " << timeout << " vs current cluster timeout " << this->_timeout << std::endl;
+	if (this->_timeout == -1)
+		this->_timeout = timeout;
+	else if (timeout >= 0 && timeout < this->_timeout)
+		this->_timeout = timeout;
+
 	return (0);
 }
 
@@ -144,30 +157,33 @@ int
 AServerCluster::bind(void)
 {
 	//std::vector<AServerDispatchSwitch*>::iterator	it;
-	std::map<int, AServerDispatchSwitch*>::iterator	it;
+	std::set<AServerDispatchSwitch*>::const_iterator	it;
 	t_srv_state		*srv_state;
 
 	if (this->get_nb_managed() == 0)
 		return (Logger::log(LOG_DEBUG, "Cannot bind a cluster with no servers under managment. Add at least one server to proceed."));
 	
 	if (this->_status != CLU_UNBOUND)
-		return (Logger::log(LOG_WARNING, "Cluster must be at CLU_UNBOUND stage to attempt to bind its servers. Call ServerCluster::stop() or reboot() if you think something went wrong.");
+		return (Logger::log(LOG_WARNING, "Cluster must be at CLU_UNBOUND stage to attempt to bind its servers. Call ServerCluster::stop() or reboot() if you think something went wrong."));
 	
-	for (it = this->_servers.begin(); it != this->_servers.end(); ++it)
+	if (this->init_poll() < 0)
+		return (this->stop(), -1);
+//	for (it = this->_servers.begin(); it != this->_servers.end(); ++it)
+	for (it = this->_server_set.begin(); it != this->_server_set.end(); ++it)
 	{
 		//if ((*it)->bind_server() < 0)
-		if (it->second->bind_server() < 0)
+		if ((*it)->bind_server() < 0)
 		{
 			//srv_state = (*it)->get_srv_state();
-			srv_state = it->second->get_srv_state();
+			srv_state = (*it)->get_srv_state();
 
 			log_bind_error(srv_state->server_name, srv_state->port);
 			this->stop();
 			return (-1);
 		}
+		std::cout << "Cluster::bind sockfd after bind : " << (*it)->get_sockfd() << std::endl;
+		this->_servers[(*it)->get_sockfd()] = *it;
 	}
-	if (this->init_poll() < 0)
-		return (this->stop(), -1);
 	this->_status = CLU_IDLE;
 	return (0);
 }
@@ -175,15 +191,16 @@ AServerCluster::bind(void)
 void
 AServerCluster::do_maintenance(void)
 {
-	std::map<int, AServerDispatchSwitch*>::iterator	it;
+	std::map<int, AServerDispatchSwitch*>::const_iterator	it;
 	int		nb_disconn;
 	int		timeout_clients[MAX_CONCUR_POLL];
 
+	std::cout << "Cluster doing clusterwide maintnance" << std::endl;
 	for (it = this->_servers.begin(); it != this->_servers.end(); ++it)
 	{
-		nb_disconn = it->second.do_maintenance(timeout_clients, MAX_CONCUR_POLL);
+		nb_disconn = it->second->do_maintenance(timeout_clients, MAX_CONCUR_POLL);
 		for (int i=0; i < nb_disconn; ++i)
-			this->unpoll_client(timeout_clients[i]);
+			this->unpoll_socket(timeout_clients[i]);
 	}
 	this->_last_maintenance_time = std::time(NULL);
 }
@@ -197,22 +214,32 @@ AServerCluster::__cluster_mainloop(void)
 	int		disconn_clients[MAX_CONCUR_POLL];
 	int		nb_disconn;
 	int		i;
+	Request	rq;
+
 
 	this->_status = CLU_RUNNING;
 	while (!this->_request_stop)
 	{
+		std::cout << "Cluster waiting for polled event" << std::endl;
 		nb_events = this->poll_wait(this->_timeout);
+		std::cout << "Cluster : " << nb_events << " events occured" << std::endl;
 		//if (nb_events == 0)
 			// do basic maintenance of cluster and its servers.
 		for (i = 0; i < nb_events; ++i)
 		{
+			std::cout << "Cluster processing event " << i + 1 << " / " << nb_events << std::endl;
 			eventfd = this->get_eventfd(i);
+			std::cout << "Cluster processing eventfd " << eventfd << std::endl;
+
 			srv = this->find_server(eventfd);// looks for the sockfd (eventfd) in the cluster to check weither this fd is a server socket and that it is the owner. Return Server pointer if so, NULL otherwise.
+			std::cout << "Cluster checking if eventfd is a server : " << srv << " (ptr means it is a server)" << std::endl;
 			if (srv)
 			{
 				sockfd = eventfd;
 				// The event was triggered by a socket and we must accept() a new connection from it.
 				nb_disconn = srv->connect(disconn_clients, MAX_CONCUR_POLL, &clientfd);
+				fcntl(clientfd, F_SETFL, O_NONBLOCK);
+				std::cout << "new connection : nb_disconn " << nb_disconn << ", clientfd : " << clientfd << std::endl;
 				if (nb_disconn < 0)
 				{
 					// Error happened while connecting but show must go on. Make sure client request
@@ -220,19 +247,27 @@ AServerCluster::__cluster_mainloop(void)
 					continue ;
 				}
 				if (nb_disconn)
-					this->unpoll_client_array(disconn_clients, nb_disconn);
-				this->poll_new_client(clientfd);
+					this->unpoll_socket_array(disconn_clients, nb_disconn);
+
+				std::cout << "Found new client request through server socket " << sockfd << ". Putting new clientfd " << clientfd << " in polling list and serving request." << std::endl;
+				this->poll_new_socket(clientfd);
+				srv->parse_request(clientfd, rq);
 			}
 			else if ((srv = this->find_owner(eventfd)))
 			{
-				clientfd = eventfd;
+				std::cout << "Cluster found eventfd " << eventfd << " is client socket." << std::endl;
+				std::cout << "bytes to read from socket : " << this->get_read_size(eventfd) << std::endl;
 				// The event was triggered by clientfd and we must serve the requested content.
-				srv->serve_request(clientfd);
+				clientfd = eventfd;
+				std::cout << "Found server owner of clientfd " << clientfd << " and serving request." << std::endl;
+				if (srv->parse_request(clientfd, rq) < 0)
+					Logger::log(LOG_WARNING, "Cluster parsingrequest / sending response failed");
 			}
 			else
-				Logger::log(LOG_CRITICAL, "POLLING MECH RECEIVED EVENT FROM UNIDENTIFIED FD. THE TRUTH IS OUT THERE !!");
+				return (Logger::log(LOG_CRITICAL, "POLLING MECH RECEIVED EVENT FROM UNIDENTIFIED FD. THE TRUTH IS OUT THERE !!"));
 		}
 	}
+	std::cout << "__cluster_mainloop EXITED LIKE MAD LOOP  !!" << std::endl;
 	return (0);
 }
 
@@ -245,11 +280,12 @@ AServerCluster::start(void)
 	int									sockfd;
 
 	if (this->_status != CLU_IDLE)
-		return (Logger::log(LOG_DEBUG, "Cluster must be at CLU_IDLE stage, with all servers bound, to attempt to start. Call ServerCluster::bind() first before attempting to start cluster.");
+		return (Logger::log(LOG_DEBUG, "Cluster must be at CLU_IDLE stage, with all servers bound, to attempt to start. Call ServerCluster::bind() first before attempting to start cluster."));
 	
 	for (it = this->_servers.begin(); it != this->_servers.end(); ++it)
 	{
 		//if ((sockfd = (*it)->start()) < 0)
+		std::cout << "Cluster::start starting server with sockfd : " << it->first << std::endl;
 		if ((sockfd = it->second->start()) < 0)
 		{
 			//srv_state = (*it)->get_srv_state();
@@ -322,7 +358,7 @@ AServerCluster::reboot(void)
 	this->stop();
 	if (this->bind() < 0
 		|| this->start() < 0)
-		return (Logger::log(LOG_WARNING, "Cluster failed to reboot");
+		return (Logger::log(LOG_WARNING, "Cluster failed to reboot"));
 	Logger::log(LOG_DEBUG, "Cluster successfully rebooted");
 	return (0);
 }

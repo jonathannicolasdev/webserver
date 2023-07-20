@@ -7,7 +7,9 @@ CLS_FILES	:= IServer.cpp			\
 			   Request.cpp			\
 			   AServerReactive.cpp	\
 			   AServerDispatchSwitch.cpp	\
-			   ServerHTTP.cpp		
+			   ServerHTTP.cpp		\
+			   __EventListener.cpp	\
+			   AServerCluster.cpp
 #			   ServerFactory.cpp	
 #			   AServerCluster.cpp	
 #			   ClusterWeb.cpp
@@ -39,7 +41,7 @@ INCL_DIR	:= $(CLS_INCL) $(SRC_INCL)
 INCLS		:= $(addprefix -I, $(INCL_DIR))
 
 CC			:= g++
-CFLAGS		:= -Wall -Wextra -Werror -std=c++98
+CFLAGS		:= -Wall -Wextra -Werror -std=c++98 -fsanitize=address
 
 LIBS		:= #NONE
 
