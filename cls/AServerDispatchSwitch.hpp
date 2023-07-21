@@ -22,7 +22,7 @@
 # include "AServerReactive.hpp"
 //# include "webserv.hpp"
 # include "Logger.hpp"
-# include "Request.hpp"
+//# include "Request.hpp"
 //# include "IServer.hpp"
 
 
@@ -133,7 +133,8 @@ class	AServerDispatchSwitch: public AServerReactive
 		virtual bool	is_serving(int client_fd) const;
 		
 		// Still abstract methods to implement in specialized concrete classes.
-		virtual int		parse_request(int clientfd, Request& request) const = 0;
+//		virtual int		parse_request(int clientfd, Request& request) const = 0;
+		virtual int		serve_request(int clientfd) = 0;
 //		virtual int		prepare_response(int clientfd, Response& response) = 0;
 
 		// checks its active_connections and removes clients having exceded their timeout

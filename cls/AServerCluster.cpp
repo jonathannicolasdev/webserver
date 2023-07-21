@@ -194,11 +194,18 @@ AServerCluster::do_maintenance(void)
 	std::map<int, AServerDispatchSwitch*>::const_iterator	it;
 	int		nb_disconn;
 	int		timeout_clients[MAX_CONCUR_POLL];
+	time_t	curr_time = std::time(NULL);
 
+	std::cout << "do_maintnance called" << std::endl;
+	printf("curr_time : %ld, last_time : %ld, delta : %ld\n", curr_time,
+		this->_last_maintenance_time, curr_time - this->_last_maintenance_time);
+	if ((curr_time - this->_last_maintenance_time) * 1000 < this->_timeout)
+		return ;
 	std::cout << "Cluster doing clusterwide maintnance" << std::endl;
 	for (it = this->_servers.begin(); it != this->_servers.end(); ++it)
 	{
 		nb_disconn = it->second->do_maintenance(timeout_clients, MAX_CONCUR_POLL);
+		std::cout << "Removing " << nb_disconn << " clients from poll." << std::endl;
 		for (int i=0; i < nb_disconn; ++i)
 			this->unpoll_socket(timeout_clients[i]);
 	}
@@ -214,7 +221,7 @@ AServerCluster::__cluster_mainloop(void)
 	int		disconn_clients[MAX_CONCUR_POLL];
 	int		nb_disconn;
 	int		i;
-	Request	rq;
+//	Request	rq;
 
 
 	this->_status = CLU_RUNNING;
@@ -223,8 +230,18 @@ AServerCluster::__cluster_mainloop(void)
 		std::cout << "Cluster waiting for polled event" << std::endl;
 		nb_events = this->poll_wait(this->_timeout);
 		std::cout << "Cluster : " << nb_events << " events occured" << std::endl;
-		//if (nb_events == 0)
+
+		// Called here but only does maintenance if > timeout time has past since
+		// last maintenance or start of cluster.
+		if (nb_events == 0)
+		{
 			// do basic maintenance of cluster and its servers.
+			this->do_maintenance();
+			std::ostringstream	ss;
+			ss << this->nb_watched;
+			std::cout << "nb of listened sockets : " << ss << std::endl;
+		}
+
 		for (i = 0; i < nb_events; ++i)
 		{
 			std::cout << "Cluster processing event " << i + 1 << " / " << nb_events << std::endl;
@@ -251,7 +268,7 @@ AServerCluster::__cluster_mainloop(void)
 
 				std::cout << "Found new client request through server socket " << sockfd << ". Putting new clientfd " << clientfd << " in polling list and serving request." << std::endl;
 				this->poll_new_socket(clientfd);
-				srv->parse_request(clientfd, rq);
+//				srv->parse_request(clientfd, rq);
 			}
 			else if ((srv = this->find_owner(eventfd)))
 			{
@@ -259,8 +276,12 @@ AServerCluster::__cluster_mainloop(void)
 				// The event was triggered by clientfd and we must serve the requested content.
 				clientfd = eventfd;
 				std::cout << "Found server owner of clientfd " << clientfd << " and serving request." << std::endl;
-				if (srv->parse_request(clientfd, rq) < 0)
-					Logger::log(LOG_WARNING, "Cluster parsingrequest / sending response failed");
+				if (srv->serve_request(clientfd) < 0)
+				{
+					Logger::log(LOG_DEBUG, "Cluster parsing request / sending response failed or client disconnected. Closing clientfd.");
+					this->unpoll_socket(clientfd);
+					srv->disconnect(clientfd, true);
+				}
 			}
 			else
 				return (Logger::log(LOG_CRITICAL, "POLLING MECH RECEIVED EVENT FROM UNIDENTIFIED FD. THE TRUTH IS OUT THERE !!"));

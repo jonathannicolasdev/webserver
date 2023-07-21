@@ -33,31 +33,40 @@ enum e_method
 class Request
 {
 	private:
-		enum e_method	_method;
+		enum e_method			_method;
 
-		std::string     _raw_request;
-		std::string     _raw_header;
+		std::string				_raw_request;
+		std::string				_raw_request_line;
+		std::string				_raw_header;
+//		std::string				_raw_body;
 
 		std::map<std::string, std::string>	header;// split and parsed request header.
+		std::string							path;
+		std::string							query;
+		std::string							protocol;
 		std::string							body;
 
 		// Takes the raw request received from constructor, split the header and body
 		// and split the header as a map to put in the header attribute.
-		int	process_raw_request(const std::string& raw_request);
-
+		int				process_request_line(void);
+		int				process_header(void);
+		int				process_body(void);//const std::string& raw_header);
 
 	public:
 		Request(void);
 		Request(const std::string& raw_request);
 		~Request(void);
 		
-		int	process_header(const std::string& raw_header);
+		int				process_raw_request(void);//const std::string& raw_request);
 
+		size_t			length(void) const;
 		enum e_method	get_method(void) const;
 		bool			is_method(enum e_method method) const;
+		bool			is_empty(void);
 
 		// Returns the header element at given key.
-		const std::string*	operator[](const std::string& key) const;
+		const std::string*	operator[](const std::string& key) const;// access header tag values by indexing Request instance like a map. Returns NULL if not tag not in header, returns a string otherwise.
+		Request&			operator<<(char *req_buff);// push raw request from client inside Request instance.
 };
 
 #endif

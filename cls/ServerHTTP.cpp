@@ -483,38 +483,63 @@ ServerHTTP::start(void)
 //	return (0);
 }
 
+
+
 #define MAX_READ_BUFF 4096
+
 int
-ServerHTTP::parse_request(int clientfd, Request& request) const
+ServerHTTP::receive_request(int clientfd, Request& request)
 {
 	char				request_buff[MAX_READ_BUFF + 1];
-	ssize_t				read_size, send_size;
-	std::string			req_str;
+	ssize_t				read_size;
+//	std::ostringstream	req_str;
+
+	std::cout << "Starting to read client socket until return <= 0" << std::endl;
+	while ((read_size = read(clientfd, request_buff, MAX_READ_BUFF)) > 0)
+	{
+		std::cout << "reading chunk with read_size : " << read_size << std::endl;
+		request_buff[read_size] = '\0';
+		request << request_buff;
+//		req_str += request_buff;
+	}
+	std::cout << "Finished reading client socket with read_size : " << read_size << std::endl;
+	if (read_size == 0)
+	{
+		Logger::log(LOG_DEBUG, "Client has disconnected. Closing client socket.");
+		return (-1);
+	}
+	std::cout << "Read " << request.length() << " chars from client." << std::endl;
+//	if (req_str.length() == 0)
+//		return (0);
+	return (0);
+}
+
+int
+ServerHTTP::parse_request(Request& request) const
+{
+	if (request.process_raw_request() < 0)
+		return (-1);
+	return (0);
+}
+
+int
+ServerHTTP::send_response(int clientfd)//(Request& request) const
+{
+//	char				request_buff[MAX_READ_BUFF + 1];
+//	ssize_t				read_size, send_size;
 	std::string			header;
 	std::string			body;
 	std::ostringstream	content_length;
 	std::string			response;
+	ssize_t				send_size;
 
-	UNUSED(request);
+//	UNUSED(request);
 	//while ((read_size = read(clientfd, request_buff, MAX_READ_BUFF)) == MAX_READ_BUFF)
-	std::cout << "Starting to read client socket until return <= 0" << std::endl;
-	while ((read_size = read(clientfd, request_buff, MAX_READ_BUFF)) >= 0)
-	{
-		std::cout << "reading chunk with read_size : " << read_size << std::endl;
-		request_buff[read_size] = '\0';
-		req_str += request_buff;
-	}
-	std::cout << "Finished reading client socket" << std::endl;
-	if (req_str.length() == 0)
-	{
-		Logger::log(LOG_WARNING, "Client sent empty request.");
-		return (0);
-	}
+
 //	if (read_size == -1)
 //		return (Logger::log(LOG_ERROR, "failed to read() client request after accept()."));
 //	request_buff[read_size] = '\0';
 //	req_str += request_buff;
-	std::cout << "Read " << req_str.length() << " chars from client." << std::endl;
 	header = "HTTP/1.1 200 OK\n";
 	header += "Content-type: text/html\n";
 	
@@ -543,6 +568,21 @@ ServerHTTP::parse_request(int clientfd, Request& request) const
 		return (Logger::log(LOG_ERROR, "failed to write() client request after read()."));
 	}
 	std::cout << "Response page SENT !" << std::endl;
+	return (0);
+}
+
+/// Full service function wrapping together the whole process of servicing a client request.
+int
+ServerHTTP::serve_request(int clientfd)
+{
+	Request	req;
+	//Response	resp;
+
+	if (	receive_request(clientfd, req) < 0
+		||	parse_request(req) < 0
+//		||	prepare_response(req, resp) < 0
+		||	send_response(clientfd) < 0)
+		return (-1);
 	return (0);
 }
 
@@ -605,23 +645,47 @@ void	read_available_addr(void)
 	freeaddrinfo(res);
 }
 
+int	clean_exit(AServerCluster& clu)
+{
+	clu.terminate(true);
+	return (1);
+}
+
+void	sigint_handler(int signum)
+{
+	UNUSED(signum);
+	std::cerr << "Received SIGINT signal. Exiting." << std::endl;
+	// Don't do this.
+	exit(SIGINT);
+}
+
+void	sigpipe_handler(int signum)
+{
+	UNUSED(signum);
+	std::cerr << "Received SIGPIPE signal. Exiting." << std::endl;
+	// Don't do this.
+	exit(SIGINT);
+}
+
 int main()
 {
 	AServerCluster	clu;
 
-	ServerHTTP	*srv = new ServerHTTP("www/", "Jimbo jones", "", 3738);
+	ServerHTTP	*srv = new ServerHTTP("www/", "Jimbo Jones", "", 3738);
+	ServerHTTP	*srv2 = new ServerHTTP("www/", "Jimby Jims", "", 80);
 
 //	read_available_addr();
+	signal(SIGINT, sigint_handler);
+	signal(SIGPIPE, sigpipe_handler);
 
-	if (clu.add_server(srv) < 0)
-		return (1);
+	if (clu.add_server(srv) < 0 || clu.add_server(srv2) < 0)
+		return (clean_exit(clu));
 	
 	if (clu.bind() < 0)
-		return (2);
+		return (clean_exit(clu));
 
 	if (clu.start() < 0)
-		return (3);
-
+		return (clean_exit(clu));
 
 /*
 	if (srv.bind_server() < 0)// || srv.)

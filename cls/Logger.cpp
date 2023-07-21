@@ -70,7 +70,7 @@ int	Logger::_log_debug(const std::string& msg)//, bool print)
 	log_msg += " :: " + log_level_to_string(LOG_DEBUG) + " :: " + msg;
 
 	std::cerr << LOG_DEBUG_COLOR << log_msg << LOG_RESET_COLOR << std::endl;
-	return (0);
+	return (-1);
 }
 
 int	Logger::_log_warning(const std::string& msg, bool print)

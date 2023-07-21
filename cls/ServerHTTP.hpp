@@ -107,19 +107,21 @@ class ServerHTTP: public AServerDispatchSwitch
 		Request								rq;
 		//Response								rp;
 
+		// Series of functions called by serve_request()
+		int		receive_request(int clientfd, Request& request);
+		int		parse_request(Request& request) const;// Can take Request ref from the rq attribute or from and locally declared Request instance.
+		//int	prepare_response(Request& request, Response& response) const;
+		int		send_response(int clientfd);//, Response& response) const;
+
 	public:
 		ServerHTTP(const std::string& rootdir, const std::string& servname,
 			const std::string& ip, uint16_t port, int timeout=10000);
 		virtual ~ServerHTTP(void);
 
-		int	start(void);
+		int		start(void);
 
 //		int		parse_request(int clientfd);// raw_request should have been read already.
-		int		parse_request(int clientfd, Request& request) const;// Can take Request ref from the rq attribute or from and locally declared Request instance.
-		//int	prepare_response(int clientfd, Request& request, Response& response) const;
-		//int	serve_response(int clientfd, Response& response) const;
-
-//		virtual int		bind_server(void);
+		int		serve_request(int clientfd);
 
 		t_srv_state	*get_srv_state(void);
 		const std::map<std::string, std::string>&	get_srv_locations(void) const;

@@ -53,7 +53,7 @@ __EventListener::poll_new_socket(int sockfd)
 //	if (this->_events[sockfd].ident > 2)
 //		return (Logger::log(LOG_WARNING, "Trying to poll a socket twice"));
 //	EV_SET(&this->_events[sockfd], sockfd, EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, 0);
-	EV_SET(&this->_new_event, sockfd, EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, 0);
+	EV_SET(&this->_new_event, sockfd, EVFILT_READ | EVFILT_WRITE, EV_ADD | EV_ENABLE, 0, 0, 0);
 //	if ((nb_events = kevent(this->_pollfd, this->_events, MAX_CONCUR_POLL,
 	if (kevent(this->_pollfd, &this->_new_event, 1, NULL, 0, NULL) < 0)
 		return (Logger::log(LOG_ERROR, "Failed to poll new socket"));
@@ -77,7 +77,7 @@ __EventListener::unpoll_socket(int sockfd)
 	if (sockfd < 3 || sockfd >= MAX_CONCUR_POLL)
 		return (Logger::log(LOG_WARNING, "Trying to remove out of bounds fd from poll"));
 #ifdef __APPLE__
-	EV_SET(&this->_new_event, sockfd, EVFILT_READ, EV_DELETE, 0, 0, 0);
+	EV_SET(&this->_new_event, sockfd, EVFILT_READ | EVFILT_WRITE, EV_DELETE, 0, 0, 0);
 	if (kevent(this->_pollfd, &this->_new_event, 1, NULL, 0, NULL) < 0)
 		return (Logger::log(LOG_ERROR, "Failed to poll new socket"));
 #elif __linux__
