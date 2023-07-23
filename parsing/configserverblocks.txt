@@ -6,6 +6,7 @@ server {
 
   error_page 404 /my_errors/404.html;
 
+
  }
 
 # MAC

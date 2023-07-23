@@ -3,7 +3,6 @@
 #include <iostream>
 #include <fstream>
 #include <string>
-#include <cstdlib>
 #include <vector>
 #include <algorithm>
 #include <cctype> // For isspace function
@@ -32,18 +31,6 @@ std::string removeDuplicateSpaces(const std::string &input)
             previousSpace = true;
         }
     }
-    return result;
-}
-
-std::vector<std::string> split(const std::string& input, char delimiter) {
-    std::vector<std::string> result;
-    std::istringstream iss(input);
-    std::string token;
-
-    while (std::getline(iss, token, delimiter)) {
-        result.push_back(token);
-    }
-
     return result;
 }
 
@@ -107,77 +94,14 @@ string ConfigBuilder::cleanComments(const std::string &content)
     }
     return buffer.str();
 }
-LocationConfig ConfigBuilder::parseLocation(string content)
-{
-    return LocationConfig();
-}
-
-std::vector<std::string> extractLocationBlock(const std::string &content)
-{
-    std::vector<std::string> locationBlocks;
-    std::istringstream iss(content);
-    std::string line, currentLocation, server_directives = "";
-    bool inLocationBlock = false;
-
-    while (std::getline(iss, line))
-    {
-        if (inLocationBlock)
-        {
-            currentLocation += "\n" + line; // Add the line with closing curly brace to the last location block
-            if (line[line.length() - 1] == '}')
-            {
-                // End of location block
-                inLocationBlock = false;
-                locationBlocks.push_back(currentLocation);
-            }
-        }
-        else
-        {
-            if (line.substr(0, 8) == "location" && line[line.length() - 1] == '{')
-            {
-                // Start of location block
-                inLocationBlock = true;
-                currentLocation = line;
-            }
-            else
-                server_directives += line+"\n";
-        }
-    }
-    locationBlocks.push_back(server_directives);
-    return locationBlocks;
-}
+// LocationConfig ConfigBuilder::parseLocation(string content)
+// {
+//     return LocationConfig();
+// }
 
 ServerConfig ConfigBuilder::parseServer(string content)
 {
     ServerConfig serverConfig;
-    std::vector<LocationConfig> locationConfigs;
-    std::vector<std::string> locationBlocks;
-    std::string serverDirectives;
-
-    locationBlocks = extractLocationBlock(content);
-    serverDirectives = locationBlocks[locationBlocks.size() - 1];
-    locationBlocks.pop_back();
-
-    for (int i = 0; i < locationBlocks.size(); i++)
-    {
-       // std::cout << "LOCATION: " << locationBlocks[i] << "\n";
-        locationConfigs.push_back(parseLocation(locationBlocks[i]));
-    }
-
-    //std::cout << "SERVER: " << serverDirectives;
-    std::istringstream iss(serverDirectives);
-    std::string line;
-    std::getline(iss, line); //purge first ligne server {
-    while (std::getline(iss, line))
-    {
-        if (line[0]=='}')
-            break;
-        std::vector<std::string> words = split(line, ' ');
-        std:string directiveServerKey = words[0];
-        if (directiveServerKey=="listen"){
-            serverConfig.SetListenPort(std::atoi(words[1].c_str()));
-        }
-    }
 
     return serverConfig;
 }
@@ -212,7 +136,7 @@ string ConfigBuilder::readConfigFile(const std::string &filename)
     // }
 }
 
-std::vector<std::string> extractServerBlock(const std::string &content)
+std::vector<std::string> extractBlock(const std::string &content)
 {
     std::vector<std::string> serverBlocks;
 
@@ -228,7 +152,46 @@ std::vector<std::string> extractServerBlock(const std::string &content)
 
     return serverBlocks;
 }
+/*
+std::vector<std::string> ConfigBuilder::extractLocationBlocks(const std::string &content)
+{
+    std::vector<std::string> locationBlocks;
+    std::istringstream iss(content);
+    std::string line;
+    bool inLocationBlock = false;
 
+    while (std::getline(iss, line))
+    {
+        // Remove leading and trailing whitespaces from the line
+        line = trim(line);
+
+        if (line.empty() || line[0] == '#')
+        {
+            // Skip empty lines and comments
+            continue;
+        }
+        else if (line.find("location") == 0)
+        {
+            // Start of location block
+            inLocationBlock = true;
+            locationBlocks.push_back(line);
+        }
+        else if (inLocationBlock && line.find("}") != std::string::npos)
+        {
+            // End of location block
+            inLocationBlock = false;
+            locationBlocks.back() += "\n" + line; // Add the line with closing curly brace to the last location block
+        }
+        else if (inLocationBlock)
+        {
+            // Continue adding lines to the location block
+            locationBlocks.back() += "\n" + line;
+        }
+    }
+
+    return locationBlocks;
+}
+*/
 std::vector<ServerConfig> ConfigBuilder::parseConfigFile(const std::string filename)
 {
     std::vector<ServerConfig> serverConfigs;
@@ -239,13 +202,14 @@ std::vector<ServerConfig> ConfigBuilder::parseConfigFile(const std::string filen
         configContent = ConfigBuilder::cleanComments(configContent);
         configContent = ConfigBuilder::cleanSpaces(configContent);
 
-        std::vector<std::string> serverBlocks = extractServerBlock(configContent);
+        std::vector<std::string> serverBlocks = extractBlock(configContent);
 
         for (int i = 0; i < serverBlocks.size(); i++)
         {
             std::cout << "SERVER: " << serverBlocks[i] << "\n";
             serverConfigs.push_back(parseServer(serverBlocks[i]));
         }
+
     }
     catch (const std::exception &e)
     {
