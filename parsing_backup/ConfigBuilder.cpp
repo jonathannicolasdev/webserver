@@ -35,14 +35,12 @@ std::string removeDuplicateSpaces(const std::string &input)
     return result;
 }
 
-std::vector<std::string> split(const std::string &input, char delimiter)
-{
+std::vector<std::string> split(const std::string& input, char delimiter) {
     std::vector<std::string> result;
     std::istringstream iss(input);
     std::string token;
 
-    while (std::getline(iss, token, delimiter))
-    {
+    while (std::getline(iss, token, delimiter)) {
         result.push_back(token);
     }
 
@@ -82,8 +80,6 @@ string ConfigBuilder::cleanSpaces(const std::string &content)
         cleanedLine = removeDuplicateSpaces(cleanedLine);
         if (cleanedLine.empty())
             continue;
-        if (cleanedLine[cleanedLine.length() - 1] == ';')
-            cleanedLine = cleanedLine.substr(0, cleanedLine.length() - 1);
         buffer << cleanedLine << "\n";
     }
     return buffer.str();
@@ -113,53 +109,7 @@ string ConfigBuilder::cleanComments(const std::string &content)
 }
 LocationConfig ConfigBuilder::parseLocation(string content)
 {
-    LocationConfig locationConfig = LocationConfig();
-
-    std::istringstream iss(content);
-    std::string line;
-    std::getline(iss, line); // purge first ligne server {
-    std::vector<std::string> words = split(line, ' ');
-    locationConfig.SetPath(words[1]);
-    while (std::getline(iss, line))
-    {
-        if (line[0] == '}')
-            break;
-        words = split(line, ' ');
-        std::string directiveLocationKey = words[0];
-
-        if (directiveLocationKey == "index")
-        {
-            locationConfig.SetIndexFile(words[1]);
-        }
-        if (directiveLocationKey == "root")
-        {
-            locationConfig.SetRoot(words[1]);
-        }
-        if (directiveLocationKey == "allow_methods")
-        {
-            for (int i = 1; i < words.size(); i++)
-                locationConfig.AddAllowMethods(words[i]);
-        }
-        if (directiveLocationKey == "return")
-        {
-            locationConfig.SetReturnPath(words[1]);
-        }
-        if (directiveLocationKey == "autoindex")
-        {
-            locationConfig.SetAutoIndex(words[1]);
-        }
-        if (directiveLocationKey == "cgi_path")
-        {
-            for (int i = 1; i < words.size(); i++)
-                locationConfig.AddCgiPath(words[i]);
-        }
-        if (directiveLocationKey == "cgi_ext")
-        {
-            for (int i = 1; i < words.size(); i++)
-                locationConfig.AddCgiExt(words[i]);
-        }
-    }
-    return locationConfig;
+    return LocationConfig();
 }
 
 std::vector<std::string> extractLocationBlock(const std::string &content)
@@ -190,7 +140,7 @@ std::vector<std::string> extractLocationBlock(const std::string &content)
                 currentLocation = line;
             }
             else
-                server_directives += line + "\n";
+                server_directives += line+"\n";
         }
     }
     locationBlocks.push_back(server_directives);
@@ -200,6 +150,7 @@ std::vector<std::string> extractLocationBlock(const std::string &content)
 ServerConfig ConfigBuilder::parseServer(string content)
 {
     ServerConfig serverConfig;
+    std::vector<LocationConfig> locationConfigs;
     std::vector<std::string> locationBlocks;
     std::string serverDirectives;
 
@@ -209,46 +160,22 @@ ServerConfig ConfigBuilder::parseServer(string content)
 
     for (int i = 0; i < locationBlocks.size(); i++)
     {
-        // std::cout << "LOCATION: " << locationBlocks[i] << "\n";
-        serverConfig.AddLocations(parseLocation(locationBlocks[i]));
+       // std::cout << "LOCATION: " << locationBlocks[i] << "\n";
+        locationConfigs.push_back(parseLocation(locationBlocks[i]));
     }
 
-    // std::cout << "SERVER: " << serverDirectives;
+    //std::cout << "SERVER: " << serverDirectives;
     std::istringstream iss(serverDirectives);
     std::string line;
-    std::getline(iss, line); // purge first ligne server {
+    std::getline(iss, line); //purge first ligne server {
     while (std::getline(iss, line))
     {
-        if (line[0] == '}')
+        if (line[0]=='}')
             break;
         std::vector<std::string> words = split(line, ' ');
-    std:
-        string directiveServerKey = words[0];
-
-        if (directiveServerKey == "listen")
-        {
+        std:string directiveServerKey = words[0];
+        if (directiveServerKey=="listen"){
             serverConfig.SetListenPort(std::atoi(words[1].c_str()));
-            std::cout << serverConfig.GetListenPort() << ": port\n";
-        }
-        if (directiveServerKey == "root")
-        {
-            serverConfig.SetRoot(words[1]);
-            std::cout << serverConfig.GetRoot() << ": root\n";
-        }
-        if (directiveServerKey == "host")
-        {
-            serverConfig.SetHostIp(words[1]);
-            std::cout << serverConfig.GetHostIp() << ": host IP\n";
-        }
-        if (directiveServerKey == "error_page")
-        {
-            serverConfig.AddError_page(std::atoi(words[1].c_str()), words[2]);
-            std::cout << serverConfig.GetError_pages()[404] << ": error_page\n";
-        }
-        if (directiveServerKey == "server_name")
-        {
-            serverConfig.SetServerName(words[1]);
-            std::cout << serverConfig.GetServerName() << ": serverName\n";
         }
     }
 
@@ -316,7 +243,7 @@ std::vector<ServerConfig> ConfigBuilder::parseConfigFile(const std::string filen
 
         for (int i = 0; i < serverBlocks.size(); i++)
         {
-            // std::cout << "SERVER: " << serverBlocks[i] << "\n";
+            std::cout << "SERVER: " << serverBlocks[i] << "\n";
             serverConfigs.push_back(parseServer(serverBlocks[i]));
         }
     }

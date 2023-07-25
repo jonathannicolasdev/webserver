@@ -15,6 +15,7 @@ public:
     std::vector<ServerConfig> parseConfigFile(const std::string filename);
 
 private:
+    ServerConfig server;
     std::string readConfigFile(const std::string& filename);
     std::string cleanSpaces(const std::string &content);
     std::string cleanComments(const std::string &content);

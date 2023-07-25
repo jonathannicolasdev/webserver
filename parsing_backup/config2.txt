@@ -2,16 +2,15 @@ server {
   listen 8000;
 
   root www;
-  
-	server_name localhost;
-	index index.html;
+  cgi .php php-cgi_ubuntu;
+
+  error_page 404 /my_errors/404.html;
 
   location / {
     index index.html;
   }
-cgi .php php-cgi_ubuntu;
 
-  location /autoindex/ {
+  location = /autoindex/ {
     autoindex on;
   }
 
@@ -30,6 +29,4 @@ cgi .php php-cgi_ubuntu;
     root www/admin;
     index index.html;
   }
-    error_page 404 /my_errors/404.html;
-
 }

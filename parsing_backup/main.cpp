@@ -5,8 +5,7 @@
 #include <vector>
 #include "ConfigBuilder.hpp"
 
-class Server
-{
+class Server {
 private:
     int port;
     std::string host;
@@ -14,18 +13,16 @@ private:
     std::string defaultIndex;
 
 public:
-    Server(int port, const std::string &host, const std::string &root, const std::string &defaultIndex)
+    Server(int port, const std::string& host, const std::string& root, const std::string& defaultIndex)
         : port(port), host(host), root(root), defaultIndex(defaultIndex) {}
 
-    void startListening()
-    {
+    void startListening() {
         // Server startup logic
         std::cout << "Server listening on " << host << ":" << port << std::endl;
     }
 };
 
-class ServerParser
-{
+class ServerParser {
 private:
     std::string configFile;
     int port;
@@ -34,13 +31,11 @@ private:
     std::string defaultIndex;
 
 public:
-    ServerParser(const std::string &filename) : configFile(filename) {}
+    ServerParser(const std::string& filename) : configFile(filename) {}
 
-    void parse()
-    {
+    void parse() {
         std::ifstream file(configFile);
-        if (!file)
-        {
+        if (!file) {
             std::cerr << "Failed to open file: " << configFile << std::endl;
             return;
         }
@@ -48,30 +43,24 @@ public:
         std::string line;
         std::stringstream ss;
 
-        while (std::getline(file, line))
-        {
+        while (std::getline(file, line)) {
             ss.str(line);
             std::string token;
             ss >> token;
 
-            if (token == "server")
-            {
+            if (token == "server") {
                 resetConfig();
             }
-            else if (token == "listen")
-            {
+            else if (token == "listen") {
                 ss >> port;
             }
-            else if (token == "host")
-            {
+            else if (token == "host") {
                 ss >> host;
             }
-            else if (token == "root")
-            {
+            else if (token == "root") {
                 ss >> root;
             }
-            else if (token == "index")
-            {
+            else if (token == "index") {
                 ss >> defaultIndex;
             }
 
@@ -79,15 +68,13 @@ public:
         }
     }
 
-    void createServer() const
-    {
+    void createServer() const {
         Server server(port, host, root, defaultIndex);
         server.startListening();
     }
 
 private:
-    void resetConfig()
-    {
+    void resetConfig() {
         port = 0;
         host = "";
         root = "";
@@ -95,19 +82,10 @@ private:
     }
 };
 
-int main()
-{
+int main() {
     ConfigBuilder configBuilder = ConfigBuilder();
 
-    std::vector<ServerConfig> serverConfigs= configBuilder.parseConfigFile("config2.txt");
-
-    for(int i=0;i<serverConfigs.size();i++)
-    {
-        std::vector<LocationConfig> locationConfigs = serverConfigs[i].GetLocations();
-        for(int j=0;j<locationConfigs.size();j++)
-            locationConfigs[j].print();
-        
-    }
+    configBuilder.parseConfigFile("configserverblocks.txt");
 
     return 0;
 }

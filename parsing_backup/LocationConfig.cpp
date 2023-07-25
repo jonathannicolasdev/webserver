@@ -7,8 +7,7 @@
 #include <algorithm>
 
 
-ServerConfig::ServerConfig()
+LocationConfig::LocationConfig()
 {
 
 }
-

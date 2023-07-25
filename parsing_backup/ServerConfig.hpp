@@ -12,14 +12,14 @@ class ServerConfig
 {
 public:
     ServerConfig();
-
+    
     std::string GetHostIp() const
     {
         return hostIp;
     }
     void SetHostIp(std::string hostIp)
     {
-        ServerConfig::hostIp = hostIp;
+        hostIp = hostIp;
     }
     std::string GetRoot() const
     {
@@ -28,7 +28,7 @@ public:
 
     void SetRoot(std::string root)
     {
-        ServerConfig::root = root;
+        root = root;
     }
     std::string GetIndexFile() const
     {
@@ -37,25 +37,25 @@ public:
 
     void SetIndexFile(std::string indexFile)
     {
-        ServerConfig::indexFile = indexFile;
+        indexFile = indexFile;
     }
     std::vector<LocationConfig> GetLocations() const
     {
         return locations;
     }
 
-    void AddLocations(LocationConfig location)
+    void SetLocations(std::vector<LocationConfig> locations)
     {
-        ServerConfig::locations.push_back(location);
+        locations = locations;
     }
     std::map<int, string> GetError_pages() const
     {
         return error_pages;
     }
 
-    void AddError_page(int errorCode, std::string error_page)
+    void SetError_pages(std::map<int, string> error_pages)
     {
-        ServerConfig::error_pages[errorCode] = error_page;
+        error_pages = error_pages;
     }
     int GetListenPort() const
     {
@@ -64,16 +64,7 @@ public:
 
     void SetListenPort(int listenPort)
     {
-        ServerConfig::listenPort = listenPort;
-    }
-
-    void SetServerName(std::string serverName)
-    {
-        ServerConfig::serverName = serverName;
-    }
-    std::string GetServerName() const
-    {
-        return serverName;
+        listenPort = listenPort;
     }
 
 private:

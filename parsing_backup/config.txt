@@ -1,0 +1,8 @@
+server     {
+    listen       8002;
+    host  127.0.0.1;
+# blabla 
+    root fusion_web/;#sdfsdf
+
+	index   siege.html;
+       }
