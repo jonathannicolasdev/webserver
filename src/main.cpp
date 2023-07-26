@@ -54,12 +54,21 @@ void	sigpipe_handler(int signum)
 	exit(SIGINT);
 }
 
-int main()
+int main(int argc, char **argv, char **envp)
 {
 	AServerCluster	clu;
-	ConfigBuilder configBuilder;// = ConfigBuilder();
+	ConfigBuilder	configBuilder;// = ConfigBuilder();
+	std::string		config_path;
+	std::vector<ServerConfig> serverConfigs;
 
-	std::vector<ServerConfig> serverConfigs = configBuilder.parseConfigFile("configs/config.txt");
+	(void)envp;
+
+	if (argc < 2)
+		config_path = "configs/config.txt";
+	else
+		config_path = argv[1];
+
+	serverConfigs = configBuilder.parseConfigFile(config_path);
 
 //	std::vector <AServerDispatchSwitch *>	init_servers;
 
