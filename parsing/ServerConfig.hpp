@@ -57,12 +57,12 @@ public:
     {
         ServerConfig::error_pages[errorCode] = error_page;
     }
-    int GetListenPort() const
+    std::string GetListenPort() const
     {
         return listenPort;
     }
 
-    void SetListenPort(int listenPort)
+    void SetListenPort(std::string listenPort)
     {
         ServerConfig::listenPort = listenPort;
     }
@@ -76,13 +76,26 @@ public:
         return serverName;
     }
 
+    std::string GetMaxBodySize() const
+    {
+        return maxBodySize;
+    }
+
+    void SetMaxBodySize(std::string maxBodySize)
+    {
+        ServerConfig::maxBodySize = maxBodySize;
+    }
+
+    void print();
+
 private:
-    int listenPort;
+    std::string listenPort;
     std::string serverName;
     std::string hostIp;
     std::string root;
     std::string indexFile;
     std::vector<LocationConfig> locations;
     std::map<int, string> error_pages;
+    std::string maxBodySize; // max_body_size
 };
 #endif

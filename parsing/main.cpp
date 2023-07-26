@@ -99,14 +99,11 @@ int main()
 {
     ConfigBuilder configBuilder = ConfigBuilder();
 
-    std::vector<ServerConfig> serverConfigs= configBuilder.parseConfigFile("config2.txt");
+    std::vector<ServerConfig> serverConfigs= configBuilder.parseConfigFile("config.txt");
 
     for(int i=0;i<serverConfigs.size();i++)
     {
-        std::vector<LocationConfig> locationConfigs = serverConfigs[i].GetLocations();
-        for(int j=0;j<locationConfigs.size();j++)
-            locationConfigs[j].print();
-        
+        serverConfigs[i].print();       
     }
 
     return 0;

@@ -148,6 +148,18 @@ LocationConfig ConfigBuilder::parseLocation(string content)
         {
             locationConfig.SetAutoIndex(words[1]);
         }
+        if (directiveLocationKey == "max_body_size")
+        {
+            locationConfig.SetMaxBodySize(words[1]);
+        }
+        if (directiveLocationKey == "allow_delete")
+        {
+            locationConfig.SetAllowDelete(words[1]);
+        }        
+        if (directiveLocationKey == "upload")
+        {
+            locationConfig.SetUpload(words[1]);
+        }          
         if (directiveLocationKey == "cgi_path")
         {
             for (int i = 1; i < words.size(); i++)
@@ -227,29 +239,40 @@ ServerConfig ConfigBuilder::parseServer(string content)
 
         if (directiveServerKey == "listen")
         {
-            serverConfig.SetListenPort(std::atoi(words[1].c_str()));
-            std::cout << serverConfig.GetListenPort() << ": port\n";
+            serverConfig.SetListenPort(words[1]);
+            // std::cout << serverConfig.GetListenPort() << ": port\n";
         }
         if (directiveServerKey == "root")
         {
             serverConfig.SetRoot(words[1]);
-            std::cout << serverConfig.GetRoot() << ": root\n";
+            // std::cout << serverConfig.GetRoot() << ": root\n";
         }
         if (directiveServerKey == "host")
         {
             serverConfig.SetHostIp(words[1]);
-            std::cout << serverConfig.GetHostIp() << ": host IP\n";
+            // std::cout << serverConfig.GetHostIp() << ": host IP\n";
         }
         if (directiveServerKey == "error_page")
         {
             serverConfig.AddError_page(std::atoi(words[1].c_str()), words[2]);
-            std::cout << serverConfig.GetError_pages()[404] << ": error_page\n";
+            // std::cout << serverConfig.GetError_pages()[404] << ": error_page\n";
         }
         if (directiveServerKey == "server_name")
         {
             serverConfig.SetServerName(words[1]);
-            std::cout << serverConfig.GetServerName() << ": serverName\n";
+            // std::cout << serverConfig.GetServerName() << ": serverName\n";
         }
+        if (directiveServerKey == "index")
+        {
+            serverConfig.SetIndexFile(words[1]);
+            // std::cout << serverConfig.GetServerName() << ": serverName\n";
+        }
+        if (directiveServerKey == "max_body_size")
+        {
+            serverConfig.SetMaxBodySize(words[1]);
+            // std::cout << serverConfig.GetServerName() << ": serverName\n";
+        }
+        
     }
 
     return serverConfig;

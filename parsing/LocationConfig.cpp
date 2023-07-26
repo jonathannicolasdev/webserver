@@ -12,12 +12,12 @@ LocationConfig::LocationConfig()
 
 void LocationConfig::print()
 {
-    std::cout << "name location: " << LocationConfig::GetPath() << std::endl;
+    std::cout << "\tLocation: " << LocationConfig::GetPath() << std::endl;
 
     std::vector<std::string> allowMethods = LocationConfig::GetAllowMethods();
     if (allowMethods.size() > 0)
     {
-        std::cout << "methods: ";
+        std::cout << "\t\tmethods: ";
         for (int i = 0; i < allowMethods.size(); i++)
         {
             std::cout << " " << allowMethods[i];
@@ -26,21 +26,30 @@ void LocationConfig::print()
     }
 
     if (!LocationConfig::GetIndexFile().empty())
-        std::cout << "index: " << LocationConfig::GetIndexFile() << std::endl;
+        std::cout << "\t\tindex: " << LocationConfig::GetIndexFile() << std::endl;
 
     if (!LocationConfig::GetRoot().empty())
-        std::cout << "root: " << LocationConfig::GetRoot() << std::endl;
+        std::cout << "\t\troot: " << LocationConfig::GetRoot() << std::endl;
 
     if (!LocationConfig::GetReturnPath().empty())
-        std::cout << "return: " << LocationConfig::GetReturnPath() << std::endl;
+        std::cout << "\t\treturn: " << LocationConfig::GetReturnPath() << std::endl;
 
     if (!LocationConfig::GetAutoIndex().empty())
-        std::cout << "autoindex: " << LocationConfig::GetAutoIndex() << std::endl;
+        std::cout << "\t\tautoindex: " << LocationConfig::GetAutoIndex() << std::endl;
+
+    if (!LocationConfig::GetMaxBodySize().empty())
+        std::cout << "\t\tMaxBodySize: " << LocationConfig::GetMaxBodySize() << std::endl;
+
+   if (!LocationConfig::GetAllowDelete().empty())
+        std::cout << "\t\tAllowDelete: " << LocationConfig::GetAllowDelete() << std::endl;
+
+   if (!LocationConfig::GetUpload().empty())
+        std::cout << "\t\tUpload: " << LocationConfig::GetUpload() << std::endl;
 
     std::vector<std::string> cgiPaths = LocationConfig::GetCgiPaths();
     if (cgiPaths.size() > 0)
     {
-        std::cout << "cgi_path: ";
+        std::cout << "\t\tcgi_path: ";
         for (int i = 0; i < cgiPaths.size(); i++)
         {
             std::cout << " " << cgiPaths[i];
@@ -50,7 +59,7 @@ void LocationConfig::print()
     std::vector<std::string> cgiExts = LocationConfig::GetCgiExts();
     if (cgiExts.size() > 0)
     {
-        std::cout << "cgi_ext: ";
+        std::cout << "\t\tcgi_ext: ";
         for (int i = 0; i < cgiExts.size(); i++)
         {
             std::cout << " " << cgiExts[i];

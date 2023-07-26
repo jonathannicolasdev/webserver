@@ -71,6 +71,33 @@ public:
     {
         return cgiPaths;
     }
+    std::string GetMaxBodySize() const
+    {
+        return maxBodySize;
+    }
+
+    void SetMaxBodySize(std::string maxBodySize)
+    {
+        LocationConfig::maxBodySize = maxBodySize;
+    }
+    std::string GetAllowDelete() const
+    {
+        return allowDelete;
+    }
+
+    void SetAllowDelete(std::string allowDelete)
+    {
+        LocationConfig::allowDelete = allowDelete;
+    }
+    std::string GetUpload() const
+    {
+        return upload;
+    }
+
+    void SetUpload(std::string upload)
+    {
+        LocationConfig::upload = upload;
+    }
 
     void AddCgiPath(std::string cgiPath)
     {
@@ -95,6 +122,10 @@ private:
     std::string root;
     std::vector<std::string> cgiPaths;
     std::vector<std::string> cgiExts;
+    std::string maxBodySize; // max_body_size
+    std::string upload;
+    std::string allowDelete; // allow_delete on;
+
     // limit_except, auth
 };
 
