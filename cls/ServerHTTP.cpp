@@ -667,19 +667,40 @@ void	sigpipe_handler(int signum)
 	exit(SIGINT);
 }
 
+#include "ConfigBuilder.hpp"
+#include "ServerConfig.hpp"
+
 int main()
 {
 	AServerCluster	clu;
+	ConfigBuilder configBuilder;// = ConfigBuilder();
 
-	ServerHTTP	*srv = new ServerHTTP("www/", "Jimbo Jones", "", 3738);
-	ServerHTTP	*srv2 = new ServerHTTP("www/", "Jimby Jims", "", 80);
+	std::vector<ServerConfig> serverConfigs = configBuilder.parseConfigFile("parsing/config.txt");
+
+//	std::vector <AServerDispatchSwitch *>	init_servers;
+
+    for(uint32_t i=0; i < serverConfigs.size();i++)
+    {
+		int64_t	port = std::stoi(serverConfigs[i].GetListenPort());
+		if (port < 1 || port > 65535)
+			return (Logger::log(LOG_ERROR, "Listening port invalid"));
+		std::cout << "listening port : " << port << std::endl;
+        serverConfigs[i].print();
+//		init_servers.push_back(
+		if (clu.add_server(new ServerHTTP(serverConfigs[i].GetRoot(), serverConfigs[i].GetServerName(),
+				serverConfigs[i].GetHostIp(), port)) < 0)
+			return (Logger::log(LOG_ERROR, "Adding Server Failed."));
+    }
+
+//	ServerHTTP	*srv = new ServerHTTP("www/", "Jimbo Jones", "", 3738);
+//	ServerHTTP	*srv2 = new ServerHTTP("www/", "Jimby Jims", "", 80);
 
 //	read_available_addr();
 	signal(SIGINT, sigint_handler);
 	signal(SIGPIPE, sigpipe_handler);
 
-	if (clu.add_server(srv) < 0 || clu.add_server(srv2) < 0)
-		return (clean_exit(clu));
+//	if (clu.add_server(srv) < 0 || clu.add_server(srv2) < 0)
+//		return (clean_exit(clu));
 	
 	if (clu.bind() < 0)
 		return (clean_exit(clu));

@@ -17,8 +17,8 @@ CLS_FILES	:= IServer.cpp			\
 
 PARS_CLS		:=	ConfigBuilder.cpp	\
 					LocationConfig.cpp	\
-					ServerConfig.cpp	\
-					main.cpp
+					ServerConfig.cpp	
+#					main.cpp
 
 ST_CLS_FILES	:= IServer.cpp			\
 				   AServerReactive.cpp	\
@@ -39,7 +39,7 @@ ST_SRCS		:= $(addprefix $(SRC_DIR), $(ST_SRC_FILES))
 
 PARS		:= $(addprefix $(PARS_DIR), $(PARS_CLS))
 
-OBJS		:= $(CLS:.cpp=.o) $(SRCS:.cpp=.o)
+OBJS		:= $(CLS:.cpp=.o) $(SRCS:.cpp=.o) $(PARS:.cpp=.o)
 ST_OBJS		:= $(ST_CLS:.cpp=.o) $(ST_SRCS:.cpp=.o)
 PARS_OBJS	:= $(PARS:.cpp=.o)
 
