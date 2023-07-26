@@ -13,22 +13,18 @@
 #ifndef WEBSERV_HPP
 # define WEBSERV_HPP
 
+# include <unistd.h>
 # include <iostream>
 # include <ctime>
-//# include <vector> 
-
-# include <unistd.h>
 # include <limits.h>
-//# include <sys/socket.h>
-//# include <netinet/in.h>
-//# include <netinet/ip.h>
 
 //# include "Request.hpp"
-//# include "ServerHTTP.hpp"
-//# include "AServerCluster.hpp"
+# include "ServerHTTP.hpp"
+# include "AServerCluster.hpp"
+#include "ConfigBuilder.hpp"
+#include "ServerConfig.hpp"
+#include "Logger.hpp"
 //# include "ClusterWeb.hpp"
-
-//# define MAX_CONCUR_CLIENTS 1024
 
 # define UNUSED(o) (void)(o)
 
@@ -45,7 +41,7 @@ typedef struct s_webserv
 t_webs  *get_webserv_main_struct(void);
 */
 // Signal handlers
-void	webs_sigint_handler(int signum);
+//void	webs_sigint_handler(int signum);
 
 // Webserv utils
 void		gen_timestamp(std::string& ret);

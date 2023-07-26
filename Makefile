@@ -1,54 +1,87 @@
 
-CLS_DIR		:= cls/
-PARS_DIR	:= parsing/
-SRC_DIR		:= src/
+PARS_DIR		:= Parsing/
+SRVFACT_DIR		:= ServerFactory/
+SRVCORE_DIR		:= ServerCore/
+RQST_DIR		:= Request/
+RESP_DIR		:= Response/
+LOGGER_DIR		:= Logger/
+SRC_DIR			:= src/
 
-CLS_FILES	:= IServer.cpp			\
-			   Logger.cpp			\
-			   Request.cpp			\
-			   AServerReactive.cpp	\
-			   AServerDispatchSwitch.cpp	\
-			   ServerHTTP.cpp		\
-			   __EventListener.cpp	\
-			   AServerCluster.cpp
-#			   ServerFactory.cpp	
-#			   AServerCluster.cpp	
-#			   ClusterWeb.cpp
+INCL_DIRS		:=	inc/ $(PARS_DIR) $(SRVFACT_DIR) $(SRVCORE_DIR) \
+					$(RQST_DIR) $(RESP_DIR) $(LOGGER_DIR) $(SRC_DIR) 
 
-PARS_CLS		:=	ConfigBuilder.cpp	\
+
+PARS_FILES		:=	ConfigBuilder.cpp	\
 					LocationConfig.cpp	\
 					ServerConfig.cpp	
 #					main.cpp
+PARS			:= $(addprefix $(PARS_DIR), $(PARS_FILES))
+
+SRVFACT_FILES	:=	ServerFactory.cpp
+SRVFACT			:= $(addprefix $(SRVFACT_DIR), $(SRVFACT_FILES))
+
+SRVCORE_FILES	:= IServer.cpp					\
+				   AServerReactive.cpp			\
+				   AServerDispatchSwitch.cpp	\
+				   ServerHTTP.cpp				\
+				   __EventListener.cpp			\
+				   AServerCluster.cpp
+#			   ServerFactory.cpp	
+#			   AServerCluster.cpp	
+#			   ClusterWeb.cpp
+SRVCORE			:= $(addprefix $(SRVCORE_DIR), $(SRVCORE_FILES))
+
+RQST_FILES		:=	Request.cpp
+RQST			:= $(addprefix $(RQST_DIR), $(RQST_FILES))
+
+RESP_FILES		:=	Response.cpp
+RESP			:= $(addprefix $(RESP_DIR), $(RESP_FILES))
+
+LOGGER_FILES	:=	Logger.cpp
+LOGGER			:= $(addprefix $(LOGGER_DIR), $(LOGGER_FILES))
+
+SRC_FILES		:=	webserv_utils.cpp	\
+					main.cpp
+#					signal_handlers.cpp
+					
+SRCS			:= $(addprefix $(SRC_DIR), $(SRC_FILES))
+
 
 ST_CLS_FILES	:= IServer.cpp			\
 				   AServerReactive.cpp	\
 				   ServerHTTP.cpp		\
 				   Logger.cpp
 
-SRC_FILES		:= webserv_utils.cpp #main.cpp
+#SRC_FILES		:= webserv_utils.cpp #main.cpp
 
 ST_SRC_FILES	:= simple_server_test.cpp	\
 				   signal_handlers.cpp		\
 				   webserv_utils.cpp		
 		   
 
-CLS			:= $(addprefix $(CLS_DIR), $(CLS_FILES))
-SRCS		:= $(addprefix $(SRC_DIR), $(SRC_FILES))
-ST_CLS		:= $(addprefix $(CLS_DIR), $(ST_CLS_FILES))
-ST_SRCS		:= $(addprefix $(SRC_DIR), $(ST_SRC_FILES))
+#CLS			:= $(addprefix $(CLS_DIR), $(CLS_FILES))
+#SRCS		:= $(addprefix $(SRC_DIR), $(SRC_FILES))
+#ST_CLS		:= $(addprefix $(CLS_DIR), $(ST_CLS_FILES))
+#ST_SRCS		:= $(addprefix $(SRC_DIR), $(ST_SRC_FILES))
 
-PARS		:= $(addprefix $(PARS_DIR), $(PARS_CLS))
+#PARS		:= $(addprefix $(PARS_DIR), $(PARS_CLS))
 
-OBJS		:= $(CLS:.cpp=.o) $(SRCS:.cpp=.o) $(PARS:.cpp=.o)
+OBJS		:=	$(PARS:.cpp=.o)		\
+				$(SRVCORE:.cpp=.o)	\
+				$(RQST:.cpp=.o)		\
+				$(RESP:.cpp=.o)		\
+				$(LOGGER:.cpp=.o)	\
+				$(SRCS:.cpp=.o)
+#				$(SRVFACT:.cpp=.o)
+				
+#$(CLS:.cpp=.o) $(SRCS:.cpp=.o) $(PARS:.cpp=.o)
+
+
 ST_OBJS		:= $(ST_CLS:.cpp=.o) $(ST_SRCS:.cpp=.o)
 PARS_OBJS	:= $(PARS:.cpp=.o)
 
-CLS_INCL	:= cls/
-PARS_INCL	:= parsing/
-SRC_INCL	:= inc/
-
-INCL_DIR	:= $(CLS_INCL) $(PARS_INCL) $(SRC_INCL)
-INCLS		:= $(addprefix -I, $(INCL_DIR))
+#INCL_DIR	:= $(_INCL) $(PARS_INCL) $(SRC_INCL)
+INCLS		:= $(addprefix -I, $(INCL_DIRS))
 
 CC			:= g++
 CFLAGS		:= -Wall -Wextra -Werror -std=c++98 -fsanitize=address

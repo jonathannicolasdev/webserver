@@ -44,9 +44,5 @@ class ServerFactory
 		static IServer  *create_server_from_cfg(const std::map<std::string, std::string> &cfg);
 };
 
-//std::map<enum e_srv_type, t_srv_cfg>	ServerFactory::default_cfgs = {
-int	ServerFactory::default_cfgs = {
-	{SRVF_HTTP, {(uint16_t)PORT_HTTP, "./"}}
-}
 
 #endif

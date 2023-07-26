@@ -12,6 +12,11 @@
 
 #include "ServerFactory.hpp"
 
+//std::map<enum e_srv_type, t_srv_cfg>	ServerFactory::default_cfgs = {
+int	ServerFactory::default_cfgs = {
+	{SRVF_HTTP, {(uint16_t)PORT_HTTP, "./"}}
+}
+
 // Creates and builds a new instance of a Server of the type mentioned as parameter
 // 
 IServer *ServerFactory::create_server(enum e_srv_type_srv srv_type, uint16_t port,

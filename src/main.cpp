@@ -12,10 +12,94 @@
 
 #include "webserv.hpp"
 
-int	main()
+void	read_available_addr(void)
 {
-	t_webs	ws;
+	struct addrinfo	af, *res, *ap;
+	int				error;
+
+	std::memset(&af, 0, sizeof(af));
+	af.ai_family = AF_INET;
+	af.ai_socktype = SOCK_STREAM;
+	af.ai_flags = AI_PASSIVE;
+	if ((error = getaddrinfo(NULL, "3738", &af, &res)) < 0)
+		Logger::log(LOG_DEBUG, std::string("Error while getaddrinfo : ") + gai_strerror(errno));
+	ap = res;
+	while (ap)
+	{
+		std::cout << "valid address : " << inet_ntoa(((struct sockaddr_in *)ap->ai_addr)->sin_addr) << std::endl;
+		ap = ap->ai_next;
+	}
+	freeaddrinfo(res);
+}
+
+int	clean_exit(AServerCluster& clu)
+{
+	clu.terminate(true);
+	return (1);
+}
+
+void	sigint_handler(int signum)
+{
+	UNUSED(signum);
+	std::cerr << "Received SIGINT signal. Exiting." << std::endl;
+	// Don't do this.
+	exit(SIGINT);
+}
+
+void	sigpipe_handler(int signum)
+{
+	UNUSED(signum);
+	std::cerr << "Received SIGPIPE signal. Exiting." << std::endl;
+	// Don't do this.
+	exit(SIGINT);
+}
+
+int main()
+{
+	AServerCluster	clu;
+	ConfigBuilder configBuilder;// = ConfigBuilder();
+
+	std::vector<ServerConfig> serverConfigs = configBuilder.parseConfigFile("configs/config.txt");
+
+//	std::vector <AServerDispatchSwitch *>	init_servers;
+
+    for(uint32_t i=0; i < serverConfigs.size();i++)
+    {
+		int64_t	port = std::stoi(serverConfigs[i].GetListenPort());
+		if (port < 1 || port > 65535)
+			return (Logger::log(LOG_ERROR, "Listening port invalid"));
+		std::cout << "listening port : " << port << std::endl;
+        serverConfigs[i].print();
+//		init_servers.push_back(
+		if (clu.add_server(new ServerHTTP(serverConfigs[i].GetRoot(), serverConfigs[i].GetServerName(),
+				serverConfigs[i].GetHostIp(), port)) < 0)
+			return (Logger::log(LOG_ERROR, "Adding Server Failed."));
+    }
+
+//	ServerHTTP	*srv = new ServerHTTP("www/", "Jimbo Jones", "", 3738);
+//	ServerHTTP	*srv2 = new ServerHTTP("www/", "Jimby Jims", "", 80);
+
+//	read_available_addr();
+	signal(SIGINT, sigint_handler);
+	signal(SIGPIPE, sigpipe_handler);
+
+//	if (clu.add_server(srv) < 0 || clu.add_server(srv2) < 0)
+//		return (clean_exit(clu));
 	
-	UNUSED(ws);
+	if (clu.bind() < 0)
+		return (clean_exit(clu));
+
+	if (clu.start() < 0)
+		return (clean_exit(clu));
+
+/*
+	if (srv.bind_server() < 0)// || srv.)
+		return (1);
+	
+	std::cout << "Try Starting Server" << std::endl;
+	if (srv.start() < 0)
+		return (2);
+*/
+	std::cout << "Exiting peacefully" << std::endl;
 	return (0);
 }
