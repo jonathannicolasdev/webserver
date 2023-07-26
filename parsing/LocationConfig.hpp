@@ -7,126 +7,50 @@
 class LocationConfig
 {
 public:
-    LocationConfig();
-    void print();
+	LocationConfig();
+	void print();
 
-    std::string GetPath() const
-    {
-        return path;
-    }
+	std::string 		GetPath() const;
+	void 				SetPath(const std::string& path);
 
-    void SetPath(std::string path)
-    {
-        LocationConfig::path = path;
-    }
-    std::string GetIndexFile() const
-    {
-        return indexFile;
-    }
+	std::string 		GetIndexFile() const;
+	void				SetIndexFile(const std::string& indexFile);
+	
+	std::string 		GetRoot() const;
+	void				SetRoot(const std::string& root);
+	
+	std::vector<std::string> GetAllowMethods() const;
+	void				AddAllowMethods(const std::string& method);
+	const std::string&	GetReturnPath() const;
+	void 				SetReturnPath(const std::string& returnPath);
+	std::string 		GetAutoIndex() const;
+	void 				SetAutoIndex(const std::string& autoIndex);
+	std::string 		GetMaxBodySize() const;
+	void 				SetMaxBodySize(const std::string& maxBodySize);
+	std::string 		GetAllowDelete() const;
+	void 				SetAllowDelete(const std::string& allowDelete);
+	std::string 		GetUpload() const;
+	void 				SetUpload(const std::string& upload);
 
-    void SetIndexFile(std::string indexFile)
-    {
-        LocationConfig::indexFile = indexFile;
-    }
-    std::string GetRoot() const
-    {
-        return root;
-    }
-
-    void SetRoot(std::string root)
-    {
-        LocationConfig::root = root;
-    }
-    std::vector<std::string> GetAllowMethods() const
-    {
-        return allowMethods;
-    }
-
-    void AddAllowMethods(std::string method)
-    {
-        LocationConfig::allowMethods.push_back(method);
-    }
-
-    std::string GetReturnPath() const
-    {
-        return returnPath;
-    }
-
-    void SetReturnPath(std::string returnPath)
-    {
-        LocationConfig::returnPath = returnPath;
-    }
-
-    std::string GetAutoIndex() const
-    {
-        return autoIndex;
-    }
-
-    void SetAutoIndex(std::string autoIndex)
-    {
-        LocationConfig::autoIndex = autoIndex;
-    }
-
-    std::vector<std::string> GetCgiPaths() const
-    {
-        return cgiPaths;
-    }
-    std::string GetMaxBodySize() const
-    {
-        return maxBodySize;
-    }
-
-    void SetMaxBodySize(std::string maxBodySize)
-    {
-        LocationConfig::maxBodySize = maxBodySize;
-    }
-    std::string GetAllowDelete() const
-    {
-        return allowDelete;
-    }
-
-    void SetAllowDelete(std::string allowDelete)
-    {
-        LocationConfig::allowDelete = allowDelete;
-    }
-    std::string GetUpload() const
-    {
-        return upload;
-    }
-
-    void SetUpload(std::string upload)
-    {
-        LocationConfig::upload = upload;
-    }
-
-    void AddCgiPath(std::string cgiPath)
-    {
-        LocationConfig::cgiPaths.push_back(cgiPath);
-    }
-    std::vector<std::string> GetCgiExts() const
-    {
-        return cgiExts;
-    }
-
-    void AddCgiExt(std::string cgiExt)
-    {
-        LocationConfig::cgiExts.push_back(cgiExt);
-    }
+	void 						AddCgiPath(const std::string& cgiPath);
+	std::vector<std::string>	GetCgiPaths() const;
+	std::vector<std::string> 	GetCgiExts() const;
+	void 						AddCgiExt(const std::string& cgiExt);
 
 private:
-    std::string path;
-    std::vector<std::string> allowMethods;
-    std::string autoIndex;
-    std::string indexFile;
-    std::string returnPath;
-    std::string root;
-    std::vector<std::string> cgiPaths;
-    std::vector<std::string> cgiExts;
-    std::string maxBodySize; // max_body_size
-    std::string upload;
-    std::string allowDelete; // allow_delete on;
+	std::string path;
+	std::vector<std::string> allowMethods;
+	std::string autoIndex;
+	std::string indexFile;
+	std::string returnPath;
+	std::string root;
+	std::vector<std::string> cgiPaths;
+	std::vector<std::string> cgiExts;
+	std::string maxBodySize; // max_body_size
+	std::string upload;
+	std::string allowDelete; // allow_delete on;
 
-    // limit_except, auth
+	// limit_except, auth
 };
 
 #endif

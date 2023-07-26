@@ -12,6 +12,8 @@ server {
  location / {
   root   /sites/html;
   index   index.html;
+  allow_methods GET POST PUT HEAD;
+
  }
 
  location /upload {

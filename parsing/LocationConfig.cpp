@@ -10,6 +10,110 @@ LocationConfig::LocationConfig()
 {
 }
 
+
+std::string LocationConfig::GetPath() const
+{
+    return path;
+}
+void LocationConfig::SetPath(const std::string& path)
+{
+    LocationConfig::path = path;
+}
+
+std::string LocationConfig::GetIndexFile() const
+{
+    return indexFile;
+}
+
+void LocationConfig::SetIndexFile(const std::string& indexFile)
+{
+    LocationConfig::indexFile = indexFile;
+}
+std::string LocationConfig::GetRoot() const
+{
+    return root;
+}
+
+void LocationConfig::SetRoot(const std::string& root)
+{
+    LocationConfig::root = root;
+}
+std::vector<std::string> LocationConfig::GetAllowMethods() const
+{
+    return allowMethods;
+}
+
+void LocationConfig::AddAllowMethods(const std::string& method)
+{
+    allowMethods.push_back(method);
+}
+
+const std::string& LocationConfig::GetReturnPath() const
+{
+    return returnPath;
+}
+
+void LocationConfig::SetReturnPath(const std::string& returnPath)
+{
+    LocationConfig::returnPath = returnPath;
+}
+
+std::string LocationConfig::GetAutoIndex() const
+{
+    return autoIndex;
+}
+
+void LocationConfig::SetAutoIndex(const std::string& autoIndex)
+{
+    LocationConfig::autoIndex = autoIndex;
+}
+
+std::vector<std::string> LocationConfig::GetCgiPaths() const
+{
+    return cgiPaths;
+}
+std::string LocationConfig::GetMaxBodySize() const
+{
+    return maxBodySize;
+}
+
+void LocationConfig::SetMaxBodySize(const std::string& maxBodySize)
+{
+    LocationConfig::maxBodySize = maxBodySize;
+}
+std::string LocationConfig::GetAllowDelete() const
+{
+    return allowDelete;
+}
+
+void LocationConfig::SetAllowDelete(const std::string& allowDelete)
+{
+    LocationConfig::allowDelete = allowDelete;
+}
+std::string LocationConfig::GetUpload() const
+{
+    return upload;
+}
+
+void LocationConfig::SetUpload(const std::string& upload)
+{
+    LocationConfig::upload = upload;
+}
+
+void LocationConfig::AddCgiPath(const std::string& cgiPath)
+{
+    LocationConfig::cgiPaths.push_back(cgiPath);
+}
+std::vector<std::string> LocationConfig::GetCgiExts() const
+{
+    return cgiExts;
+}
+
+void LocationConfig::AddCgiExt(const std::string& cgiExt)
+{
+    LocationConfig::cgiExts.push_back(cgiExt);
+}
+
 void LocationConfig::print()
 {
     std::cout << "\tLocation: " << LocationConfig::GetPath() << std::endl;
@@ -18,7 +122,7 @@ void LocationConfig::print()
     if (allowMethods.size() > 0)
     {
         std::cout << "\t\tmethods: ";
-        for (int i = 0; i < allowMethods.size(); i++)
+        for (uint32_t i = 0; i < allowMethods.size(); i++)
         {
             std::cout << " " << allowMethods[i];
         }
@@ -50,7 +154,7 @@ void LocationConfig::print()
     if (cgiPaths.size() > 0)
     {
         std::cout << "\t\tcgi_path: ";
-        for (int i = 0; i < cgiPaths.size(); i++)
+        for (uint32_t i = 0; i < cgiPaths.size(); i++)
         {
             std::cout << " " << cgiPaths[i];
         }
@@ -60,7 +164,7 @@ void LocationConfig::print()
     if (cgiExts.size() > 0)
     {
         std::cout << "\t\tcgi_ext: ";
-        for (int i = 0; i < cgiExts.size(); i++)
+        for (uint32_t i = 0; i < cgiExts.size(); i++)
         {
             std::cout << " " << cgiExts[i];
         }

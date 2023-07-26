@@ -137,7 +137,7 @@ LocationConfig ConfigBuilder::parseLocation(string content)
         }
         if (directiveLocationKey == "allow_methods")
         {
-            for (int i = 1; i < words.size(); i++)
+            for (uint32_t i = 1; i < words.size(); i++)
                 locationConfig.AddAllowMethods(words[i]);
         }
         if (directiveLocationKey == "return")
@@ -162,12 +162,12 @@ LocationConfig ConfigBuilder::parseLocation(string content)
         }          
         if (directiveLocationKey == "cgi_path")
         {
-            for (int i = 1; i < words.size(); i++)
+            for (uint32_t i = 1; i < words.size(); i++)
                 locationConfig.AddCgiPath(words[i]);
         }
         if (directiveLocationKey == "cgi_ext")
         {
-            for (int i = 1; i < words.size(); i++)
+            for (uint32_t i = 1; i < words.size(); i++)
                 locationConfig.AddCgiExt(words[i]);
         }
     }
@@ -219,7 +219,7 @@ ServerConfig ConfigBuilder::parseServer(string content)
     serverDirectives = locationBlocks[locationBlocks.size() - 1];
     locationBlocks.pop_back();
 
-    for (int i = 0; i < locationBlocks.size(); i++)
+    for (uint32_t i = 0; i < locationBlocks.size(); i++)
     {
         // std::cout << "LOCATION: " << locationBlocks[i] << "\n";
         serverConfig.AddLocations(parseLocation(locationBlocks[i]));
@@ -234,8 +234,7 @@ ServerConfig ConfigBuilder::parseServer(string content)
         if (line[0] == '}')
             break;
         std::vector<std::string> words = split(line, ' ');
-    std:
-        string directiveServerKey = words[0];
+        std::string directiveServerKey = words[0];
 
         if (directiveServerKey == "listen")
         {
@@ -325,7 +324,7 @@ std::vector<std::string> extractServerBlock(const std::string &content)
     return serverBlocks;
 }
 
-std::vector<ServerConfig> ConfigBuilder::parseConfigFile(const std::string filename)
+std::vector<ServerConfig> ConfigBuilder::parseConfigFile(const std::string& filename)
 {
     std::vector<ServerConfig> serverConfigs;
 
@@ -337,7 +336,7 @@ std::vector<ServerConfig> ConfigBuilder::parseConfigFile(const std::string filen
 
         std::vector<std::string> serverBlocks = extractServerBlock(configContent);
 
-        for (int i = 0; i < serverBlocks.size(); i++)
+        for (uint32_t i = 0; i < serverBlocks.size(); i++)
         {
             // std::cout << "SERVER: " << serverBlocks[i] << "\n";
             serverConfigs.push_back(parseServer(serverBlocks[i]));

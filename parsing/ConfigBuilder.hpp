@@ -12,7 +12,7 @@ class ConfigBuilder
 {
 public:
     ConfigBuilder();
-    std::vector<ServerConfig> parseConfigFile(const std::string filename);
+    std::vector<ServerConfig> parseConfigFile(const std::string& filename);
 
 private:
     std::string readConfigFile(const std::string& filename);
