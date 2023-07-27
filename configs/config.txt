@@ -1,0 +1,59 @@
+server {
+ listen   8080;
+ server_name  localhost;
+ # error_page  400 400.html;
+ # error_page  405 405.html;
+ error_page  404 /sites/html/errors/404.html;
+ error_page  500 /sites/html/errors/500.html;
+ root     /docs
+ #index   html/index.html;
+ max_body_size  100000000;
+ 
+ location / {
+  root   /sites/html;
+  index   index.html;
+  allow_methods GET POST PUT HEAD;
+
+ }
+
+ location /upload {
+  root   /upload;
+  max_body_size 100;
+  upload   on;
+  allow_delete on;
+  autoindex  on;
+ }
+
+ location /dindonLocation {
+  root   /dindonLocation;
+  index   index.html;
+ }
+}
+
+server {
+ 
+ listen    8081;
+ server_name   127.0.0.1;
+ root      /docs;
+ index    index.html;
+ 
+ location /sites/127Server {
+  index    index.html;
+  return    https://www.google.com;
+ }
+}
+
+server {
+ 
+ listen     8082;
+ server_name    pouletServer;
+ root       /docs;
+ index     index.html;
+ max_body_size    1678676766776866678678678455345;
+ 
+ location /sites/pouletServer/cgi {
+  root    /cgi;
+  cgi_pass   /usr/bin;
+  }
+}
+
