@@ -26,6 +26,7 @@
 //# include "IServer.hpp"
 # include "AServerDispatchSwitch.hpp"
 # include "Request.hpp"
+# include "Response.hpp"
 # include "Logger.hpp"
 
 /*
@@ -111,7 +112,8 @@ class ServerHTTP: public AServerDispatchSwitch
 		int		receive_request(int clientfd, Request& request);
 		int		parse_request(Request& request) const;// Can take Request ref from the rq attribute or from and locally declared Request instance.
 		//int	prepare_response(Request& request, Response& response) const;
-		int		send_response(int clientfd);//, Response& response) const;
+		//int		send_response(int clientfd);//, Response& response) const;
+		int		send_response(int clientfd, const Response& resp) const;
 
 	public:
 		ServerHTTP(const std::string& rootdir, const std::string& servname,

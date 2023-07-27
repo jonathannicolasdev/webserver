@@ -126,10 +126,11 @@ class	AServerCluster:	public __EventListener, public __BaseSocketOwner
 
 		int				get_nb_managed(void) const;
 		bool			contains(AServerDispatchSwitch *srv) const;
+		
+		virtual int		add_server(AServerDispatchSwitch *srv);// = 0;
 
 		virtual int		bind(void);// = 0;
 		virtual int		start(void);// = 0;
-		virtual int		add_server(AServerDispatchSwitch *srv);// = 0;
 		virtual void	stop(void);// = 0;// stops all its active servers
 		virtual int		reboot(void);// = 0;// stops all its active servers and restarts them.
 		virtual int		terminate(bool force);// = 0;// stops all active servers and deletes them from the cluster.

@@ -29,6 +29,7 @@ SRVCORE_FILES	:= IServer.cpp					\
 #			   ServerFactory.cpp	
 #			   AServerCluster.cpp	
 #			   ClusterWeb.cpp
+
 SRVCORE			:= $(addprefix $(SRVCORE_DIR), $(SRVCORE_FILES))
 
 RQST_FILES		:=	Request.cpp

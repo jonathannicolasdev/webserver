@@ -514,6 +514,7 @@ ServerHTTP::receive_request(int clientfd, Request& request)
 	return (0);
 }
 
+/*
 int
 ServerHTTP::parse_request(Request& request) const
 {
@@ -521,9 +522,9 @@ ServerHTTP::parse_request(Request& request) const
 		return (-1);
 	return (0);
 }
-
+*/
 int
-ServerHTTP::send_response(int clientfd)//(Request& request) const
+ServerHTTP::send_response(int clientfd, const Response& resp) const
 {
 //	char				request_buff[MAX_READ_BUFF + 1];
 //	ssize_t				read_size, send_size;
@@ -533,6 +534,7 @@ ServerHTTP::send_response(int clientfd)//(Request& request) const
 	std::string			response;
 	ssize_t				send_size;
 
+	(void)resp;
 //	UNUSED(request);
 	//while ((read_size = read(clientfd, request_buff, MAX_READ_BUFF)) == MAX_READ_BUFF)
 
@@ -575,13 +577,13 @@ ServerHTTP::send_response(int clientfd)//(Request& request) const
 int
 ServerHTTP::serve_request(int clientfd)
 {
-	Request	req;
-	//Response	resp;
+	Request		req;
+	Response	resp;
 
 	if (	receive_request(clientfd, req) < 0
-		||	parse_request(req) < 0
-//		||	prepare_response(req, resp) < 0
-		||	send_response(clientfd) < 0)
+		||	req.process_raw_request() < 0
+		||	resp.prepare_response(req) < 0
+		||	send_response(clientfd, resp) < 0)
 		return (-1);
 	return (0);
 }
