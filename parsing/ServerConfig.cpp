@@ -108,7 +108,7 @@ void ServerConfig::print()
     std::vector<LocationConfig> locations = GetLocations();
     if (locations.size() > 0)
     {
-        for (uint32_t i = 0; i < locations.size(); i++)
+        for (size_t i = 0; i < locations.size(); i++)
         {
             locations[i].print();
         }

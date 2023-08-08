@@ -122,7 +122,7 @@ void LocationConfig::print()
     if (allowMethods.size() > 0)
     {
         std::cout << "\t\tmethods: ";
-        for (uint32_t i = 0; i < allowMethods.size(); i++)
+        for (size_t i = 0; i < allowMethods.size(); i++)
         {
             std::cout << " " << allowMethods[i];
         }
@@ -154,7 +154,7 @@ void LocationConfig::print()
     if (cgiPaths.size() > 0)
     {
         std::cout << "\t\tcgi_path: ";
-        for (uint32_t i = 0; i < cgiPaths.size(); i++)
+        for (size_t i = 0; i < cgiPaths.size(); i++)
         {
             std::cout << " " << cgiPaths[i];
         }
@@ -164,7 +164,7 @@ void LocationConfig::print()
     if (cgiExts.size() > 0)
     {
         std::cout << "\t\tcgi_ext: ";
-        for (uint32_t i = 0; i < cgiExts.size(); i++)
+        for (size_t i = 0; i < cgiExts.size(); i++)
         {
             std::cout << " " << cgiExts[i];
         }

@@ -137,7 +137,7 @@ LocationConfig ConfigBuilder::parseLocation(string content)
         }
         if (directiveLocationKey == "allow_methods")
         {
-            for (uint32_t i = 1; i < words.size(); i++)
+            for (size_t i = 1; i < words.size(); i++)
                 locationConfig.AddAllowMethods(words[i]);
         }
         if (directiveLocationKey == "return")
@@ -162,12 +162,12 @@ LocationConfig ConfigBuilder::parseLocation(string content)
         }          
         if (directiveLocationKey == "cgi_path")
         {
-            for (uint32_t i = 1; i < words.size(); i++)
+            for (size_t i = 1; i < words.size(); i++)
                 locationConfig.AddCgiPath(words[i]);
         }
         if (directiveLocationKey == "cgi_ext")
         {
-            for (uint32_t i = 1; i < words.size(); i++)
+            for (size_t i = 1; i < words.size(); i++)
                 locationConfig.AddCgiExt(words[i]);
         }
     }
@@ -219,7 +219,7 @@ ServerConfig ConfigBuilder::parseServer(string content)
     serverDirectives = locationBlocks[locationBlocks.size() - 1];
     locationBlocks.pop_back();
 
-    for (uint32_t i = 0; i < locationBlocks.size(); i++)
+    for (size_t i = 0; i < locationBlocks.size(); i++)
     {
         // std::cout << "LOCATION: " << locationBlocks[i] << "\n";
         serverConfig.AddLocations(parseLocation(locationBlocks[i]));
@@ -280,7 +280,7 @@ ServerConfig ConfigBuilder::parseServer(string content)
 string ConfigBuilder::readConfigFile(const std::string &filename)
 {
     std::string fileContent = "";
-    std::ifstream configFile(filename);
+    std::ifstream configFile(filename.c_str());
     // std::ifstream configFile = std::ifstream(filename);
     // The modification made to use direct initialization for the configFile object
     // instead of copy initialization resolves the private copy constructor error.
@@ -336,7 +336,7 @@ std::vector<ServerConfig> ConfigBuilder::parseConfigFile(const std::string& file
 
         std::vector<std::string> serverBlocks = extractServerBlock(configContent);
 
-        for (uint32_t i = 0; i < serverBlocks.size(); i++)
+        for (size_t i = 0; i < serverBlocks.size(); i++)
         {
             // std::cout << "SERVER: " << serverBlocks[i] << "\n";
             serverConfigs.push_back(parseServer(serverBlocks[i]));

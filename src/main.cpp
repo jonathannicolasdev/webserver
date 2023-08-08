@@ -11,6 +11,7 @@
 /* ************************************************************************** */
 
 #include "webserv.hpp"
+# include <string>
 
 void	read_available_addr(void)
 {
@@ -72,9 +73,10 @@ int main(int argc, char **argv, char **envp)
 
 //	std::vector <AServerDispatchSwitch *>	init_servers;
 
-    for(uint32_t i=0; i < serverConfigs.size();i++)
+    for(size_t i=0; i < serverConfigs.size();i++)
     {
-		int64_t	port = std::stoi(serverConfigs[i].GetListenPort());
+		//int64_t	port = std::stoi(serverConfigs[i].GetListenPort());
+		int64_t	port = atoi(serverConfigs[i].GetListenPort().c_str());
 		if (port < 1 || port > 65535)
 			return (Logger::log(LOG_ERROR, "Listening port invalid"));
 		std::cout << "listening port : " << port << std::endl;

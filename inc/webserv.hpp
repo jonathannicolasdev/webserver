@@ -16,6 +16,8 @@
 # include <unistd.h>
 # include <iostream>
 # include <ctime>
+# include <string>
+# include <signal.h>
 # include <limits.h>
 
 //# include "Request.hpp"
