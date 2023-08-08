@@ -15,6 +15,7 @@
 
 # include "IServer.hpp"
 # include "AServerCluster.hpp"
+# include "ServerHTTP.hpp"
 # include "ServerConfig.hpp"
 //# include <netdb.h>
 
@@ -47,7 +48,7 @@ class ServerFactory
 
 	public:
 //		static IServer  *create_server(enum e_srv_type srv_type, uint16_t port, const std::string &rootdir);
-		static bool	create_servers_from_cfg(const ServerConfig& scfg);
+		static bool	create_servers_from_cfg(const ServerConfig& scfg, IServer **built_servers, int *nb_srvs);
 		static AServerCluster  *create_cluster_from_cfg(const std::vector<ServerConfig>& cfg);
 };
 

@@ -53,26 +53,36 @@ bool	_parse_config_ports(const std::string& listen_ports, std::string* listen_ad
 		&& *nb_parsed < MAX_LISTEN_PORTS
 		&& (pos1 = listen_ports.find_first_not_of(" ,\t\n", pos1)) != listen_ports.npos)
 	{
-		pos2 = listen_ports.find_first_of(" ,\t\n");
+		std::cout << "ENTER LISTEN PORT WHILE LOOP." << std::endl;
+		pos2 = listen_ports.find_first_of(" ,\t\n", pos1);
 		if (pos2 == listen_ports.npos)
 			sub = listen_ports.substr(pos1);
 		else
 			sub = listen_ports.substr(pos1, pos2 - pos1);
 
+		std::cout << "STAGE 1 COMPLET : " << sub << std::endl;
+
 		if ((pos_mid = sub.find(':')) == sub.npos)
+		{
 			sub = "0.0.0.0:" + sub;
+			pos_mid = sub.find(':');
+		}
+		std::cout << "STAGE 2 COMPLET : " << sub << ", pos1, mid: " << pos1 << ", " << pos_mid << std::endl;
 		
-		addr = sub.substr(pos1, pos_mid - pos1);
-		if ((net_addr = inet_addr(addr) == INADDR_NONE)
+		addr = sub.substr(0, pos_mid);
+		std::cout << "STAGE 2.5 COMPLET" << std::endl;
+		if ((net_addr = inet_addr(addr.c_str())) == INADDR_NONE)
 		{
 			Logger::log(LOG_ERROR, std::string("Configuration file listen address ") + addr + " is not a valid network ip address.");
 			return (false);
 		}
+		std::cout << "STAGE 3 COMPLET" << std::endl;
 		sub = sub.substr(pos_mid + 1, pos2 - pos_mid - 1);
 		num_port = atoi(sub.c_str());
 		if (num_port < 1 || 65535 < num_port || !is_all_digits(sub))
 		{
 			os << num_port;
+			std::cout << sub.length() << " | " << !is_all_digits(sub) << std::endl;
 			Logger::log(LOG_ERROR, std::string("Configuration file listen port ") + os.str() + " is not a valid port number.");
 			return (false);
 		}
@@ -82,38 +92,41 @@ bool	_parse_config_ports(const std::string& listen_ports, std::string* listen_ad
 		std::cout << "listen addr: " << listen_addrs[*nb_parsed - 1] << std::endl;
 		std::cout << "listen port: " << ports[*nb_parsed - 1] << std::endl;
 		pos1 = pos2;
+		std::cout << "new pos1 : " << pos1 << std::endl;
 	}
 	if (*nb_parsed == 0)
 	{
 		addr = "0.0.0.0";
 		listen_addrs[0] = "0.0.0.0";
-		listen_ports[(*nb_parsed)++] = 80;
+		ports[0] = 80;
+		(*nb_parsed)++;
 	}
 	return (true);
 }
 
-bool	ServerFactory::create_servers_from_cfg(const ServerConfig& scfg, IServer* built_servers, int *nb_srvs)
+bool	ServerFactory::create_servers_from_cfg(const ServerConfig& scfg, IServer **built_servers, int *nb_srvs)
 {
-	IServer				*new_server = NULL;
-	std::string			listenPorts, serverName, rootDir;
+	//IServer				*new_server = NULL;
+	std::string			listen_str, serverName, rootDir;
 	std::string			s;
 	std::string			listen_addr[MAX_LISTEN_PORTS];
 	int					listen_ports[MAX_LISTEN_PORTS];
 	int					nb_ports;
 
-
+	*nb_srvs = 0;
 	std::cout << "Pretend Create server from factory" << std::endl;
-	listen_ports = scfg.GetListenPort().empty();
+	listen_str = scfg.GetListenPort();
+	std::cout << "listen str : " << listen_str << std::endl;
 
-	if (!_parse_config_ports(listen_ports, listen_addr, ports, &nb_ports))
+	if (!_parse_config_ports(listen_str, listen_addr, listen_ports, &nb_ports))
 		return (false);
 	// DO SOMETHING 
 
 //	new_server = ServerHTTP(scfg.GetServerName(), );
-	for (int i=0; i < nb_ports; ++i)
+	for (int i=0; i < nb_ports; ++i, (*nb_srvs)++)
 	{
-		built_servers[(*nb_srvs)++] = ServerHTTP(scfg.GetServerName(), scfg.GetRoot(),
-												listen_addr[*nb_srvs], listen_ports[*nb_srvs], SRVHTTP_DEFAULT_TIMOUT, &scfg);
+		built_servers[*nb_srvs] = new ServerHTTP(scfg.GetServerName(), scfg.GetRoot(),
+												listen_addr[*nb_srvs], listen_ports[*nb_srvs], SRVHTTP_DEFAULT_TIMEOUT, &scfg);
 	}
 	return (true);
 }

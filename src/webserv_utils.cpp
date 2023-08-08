@@ -10,7 +10,7 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "webserv.hpp"
+#include "webserv_utils.hpp"
 
 /*
 // Probably required globally accessible application componants for signal handling
@@ -30,7 +30,7 @@ t_webs  *get_webserv_main_struct(void)
 
 bool	is_all_digits(const std::string& s)
 {
-	return (s.find_first_not_of("0123456789") != s.npos);
+	return (s.find_first_not_of("0123456789") == s.npos);
 }
 
 void    gen_timestamp(std::string& ret)

@@ -434,7 +434,7 @@ ServerHTTP::ServerHTTP(const std::string& servname, const std::string& rootdir,
 	if (!cfg)
 		Logger::log(LOG_WARNING, std::string("Server on ") + ip + ":" + os.str() + " started without ServerConfig and might not behave as expected.");
 	else
-		_cfg = *cfg;
+		_cfgs[servname] = *cfg;
 /*
 	if (ip.empty())
 		ipaddr = INADDR_ANY;

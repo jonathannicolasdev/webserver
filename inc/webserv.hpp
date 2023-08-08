@@ -13,23 +13,16 @@
 #ifndef WEBSERV_HPP
 # define WEBSERV_HPP
 
-# include <unistd.h>
-# include <iostream>
-# include <ctime>
-# include <string>
-# include <signal.h>
-# include <limits.h>
-
 //# include "Request.hpp"
 # include "ServerHTTP.hpp"
 # include "AServerCluster.hpp"
-#include "ConfigBuilder.hpp"
-#include "ServerConfig.hpp"
-#include "Logger.hpp"
-#include "ServerFactory.hpp"
+# include "ConfigBuilder.hpp"
+# include "ServerConfig.hpp"
+# include "Logger.hpp"
+# include "ServerFactory.hpp"
+# include "webserv_utils.hpp"
 //# include "ClusterWeb.hpp"
 
-# define UNUSED(o) (void)(o)
 
 /*
 typedef struct s_webserv
@@ -45,10 +38,5 @@ t_webs  *get_webserv_main_struct(void);
 */
 // Signal handlers
 //void	webs_sigint_handler(int signum);
-
-// Webserv utils
-bool		is_all_digits(const std::string& s);
-void		gen_timestamp(std::string& ret);
-std::string get_working_path(void);
 
 #endif

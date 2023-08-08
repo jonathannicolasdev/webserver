@@ -30,11 +30,11 @@
 # include "Response.hpp"
 # include "Logger.hpp"
 
-# define SRVHTTP_DEFAULT_NAME	""
-# define SRVHTTP_DEFAULT_ROOT	"/"
-# define SRVHTTP_DEFAULT_INADDR	"0.0.0.0"
-# define SRVHTTP_DEFAULT_PORT	(uint16_t)80
-# define SRVHTTP_DEFAULT_TIMOUT	10000
+# define SRVHTTP_DEFAULT_NAME		""
+# define SRVHTTP_DEFAULT_ROOT		"/"
+# define SRVHTTP_DEFAULT_INADDR		"0.0.0.0"
+# define SRVHTTP_DEFAULT_PORT		(uint16_t)80
+# define SRVHTTP_DEFAULT_TIMEOUT	10000
 
 /*
 # define MAX_PENDING_CONN 128
@@ -110,7 +110,8 @@ class ServerHTTP: public AServerDispatchSwitch
 	private:
 		const std::string					_rootdir;
 		const std::string					_server_name;
-		ServerConfig						_cfg;
+		std::map<std::string, ServerConfig>	_cfgs;
+		//ServerConfig						_cfg;
 //		std::map<std::string, std::string>	_locations;
 		std::ostringstream					_raw_request;
 		Request								rq;
@@ -126,7 +127,7 @@ class ServerHTTP: public AServerDispatchSwitch
 	public:
 		ServerHTTP(const std::string& servname=SRVHTTP_DEFAULT_NAME, const std::string& rootdir=SRVHTTP_DEFAULT_ROOT,
 			const std::string& ip=SRVHTTP_DEFAULT_INADDR, uint16_t port=SRVHTTP_DEFAULT_PORT,
-			int timeout=SRVHTTP_DEFAULT_TIMOUT, const ServerConfig* cfg=NULL);
+			int timeout=SRVHTTP_DEFAULT_TIMEOUT, const ServerConfig* cfg=NULL);
 
 		virtual ~ServerHTTP(void);
 
