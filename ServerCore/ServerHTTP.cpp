@@ -408,19 +408,33 @@ ServerHTTP::stop(void)
 }
 */
 
-ServerHTTP::ServerHTTP(const std::string& rootdir, const std::string& servname,
-	const std::string& ip, uint16_t port, int timeout):
+ServerHTTP::ServerHTTP(const std::string& servname, const std::string& rootdir,
+	const std::string& ip, uint16_t port, int timeout, const ServerConfig* cfg):
 	AServerDispatchSwitch(port, SRV_UNBOUND, true, timeout),
 	_rootdir(rootdir), _server_name(servname)
 {
+	in_addr_t			addr;
+	std::ostringstream	os;
 
+	os << port;
 //	in_addr_t	ipaddr;
-	(void)ip;
+//	(void)ip;
 //	this->_server_addr.sin_family = AF_INET;
 //	this->_server_addr.sin_port = htons(80);
 //	this->_server_addr.sin_addr.s_addr = INADDR_ANY;//htons(80);
 
 	std::cout << "ServerHTTP constructor" << std::endl;
+	if (ip != "0.0.0.0")
+	{
+		if ((addr = inet_addr(ip.c_str())) != INADDR_NONE)
+			this->_server_addr.sin_addr.s_addr = addr;
+		else
+			Logger::log(LOG_ERROR, std::string("Given Listen IP address is invalid : ") + ip);
+	}
+	if (!cfg)
+		Logger::log(LOG_WARNING, std::string("Server on ") + ip + ":" + os.str() + " started without ServerConfig and might not behave as expected.");
+	else
+		_cfg = *cfg;
 /*
 	if (ip.empty())
 		ipaddr = INADDR_ANY;
@@ -603,8 +617,8 @@ ServerHTTP::get_srv_state(void)
 const std::string& ServerHTTP::get_server_name(void) const {return (this->_server_name);}
 const std::string& ServerHTTP::get_rootdir(void) const {return (this->_rootdir);}
 
-const std::map<std::string, std::string>&
-ServerHTTP::get_srv_locations(void) const {return (this->_locations);}
+//const std::map<std::string, std::string>&
+//ServerHTTP::get_srv_locations(void) const {return (this->_locations);}
 
 
 // std::ostream&	operator<<(std::ostream& ostream, ServerHTTP& srv)

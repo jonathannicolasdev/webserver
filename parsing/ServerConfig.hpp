@@ -2,6 +2,7 @@
 #define SERVER_CONFIG_HPP
 
 #include <iostream>
+#include <ostream>
 #include <vector>
 #include <map>
 #include <memory>
@@ -30,16 +31,18 @@ public:
     std::string GetMaxBodySize() const;
     void        SetMaxBodySize(const std::string& max_body_size);
 
-    void print();
+    void print() const;
 
 private:
-    std::string listenPort;
-    std::string        serverName;
-    std::string        hostIp;
-    std::string        root;
-    std::string        indexFile;
+    std::string         listenPort;
+    std::string         serverName;
+    std::string         hostIp;
+    std::string         root;
+    std::string         indexFile;
     std::vector<LocationConfig> locations;
     std::map<int, string>       error_pages;
     std::string                 maxBodySize; // max_body_size
 };
+
+std::ostream&    operator<<(std::ostream& o, const ServerConfig& cfg);
 #endif

@@ -27,6 +27,12 @@ t_webs  *get_webserv_main_struct(void)
 	return (&webs);
 }
 */
+
+bool	is_all_digits(const std::string& s)
+{
+	return (s.find_first_not_of("0123456789") != s.npos);
+}
+
 void    gen_timestamp(std::string& ret)
 {
 	char					time_buff[128];

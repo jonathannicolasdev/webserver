@@ -25,6 +25,8 @@
 # include <arpa/inet.h>
 //# include <netinet/ip.h>
 
+# include "ServerConfig.hpp"
+
 enum e_server_status_codes
 {
 	SRV_UNBOUND,
@@ -75,6 +77,9 @@ class	__BaseSocketOwner
 
 class   IServer:	public __BaseSocketOwner
 {
+	private:
+		friend class	ServerFactory;
+
 	protected:
 //		AServerCuster*				_owner;/// Value should be set to owner cluster if server is
 										// attached to a cluster else defaults to NULL.
@@ -86,9 +91,11 @@ class   IServer:	public __BaseSocketOwner
 		bool						_is_running;
 		bool						_is_dispatch_switch;
 		bool						_is_reactive;
+		bool						_is_multi_domain;// If multiple server configs are run from the same port.
 		enum e_server_status_codes	_status;
 
-		std::map<std::string, std::string>	_locations;
+//		std::map<std::string, std::string>	_locations;
+		std::map<std::string, ServerConfig>	configs;// takes hostname as key and returns its config.
 
 		// A pointer to this struct is returned by get_srv_state() call. The specific
 		// implementation of get_srv_state should be implemented in the concrete server classes.

@@ -13,38 +13,38 @@ ServerConfig::ServerConfig()
 
 std::string ServerConfig::GetHostIp() const
 {
-    return hostIp;
+    return this->hostIp;
 }
 void ServerConfig::SetHostIp(std::string hostIp)
 {
-    ServerConfig::hostIp = hostIp;
+    this->hostIp = hostIp;
 }
 std::string ServerConfig::GetRoot() const
 {
-    return root;
+    return this->root;
 }
 
 void ServerConfig::SetRoot(std::string root)
 {
-    ServerConfig::root = root;
+    this->root = root;
 }
 std::string ServerConfig::GetIndexFile() const
 {
-    return indexFile;
+    return this->indexFile;
 }
 
 void ServerConfig::SetIndexFile(std::string indexFile)
 {
-    ServerConfig::indexFile = indexFile;
+    this->indexFile = indexFile;
 }
 std::vector<LocationConfig> ServerConfig::GetLocations() const
 {
-    return locations;
+    return this->locations;
 }
 
 void ServerConfig::AddLocations(LocationConfig location)
 {
-    ServerConfig::locations.push_back(location);
+    this->locations.push_back(location);
 }
 
 std::map<int, string> ServerConfig::GetError_pages() const
@@ -54,21 +54,22 @@ std::map<int, string> ServerConfig::GetError_pages() const
 
 void ServerConfig::AddError_page(int errorCode, std::string error_page)
 {
-    ServerConfig::error_pages[errorCode] = error_page;
+    this->error_pages[errorCode] = error_page;
 }
+
 std::string ServerConfig::GetListenPort() const
 {
-    return listenPort;
+    return this->listenPort;
 }
 
 void ServerConfig::SetListenPort(std::string listenPort)
 {
-    ServerConfig::listenPort = listenPort;
+    this->listenPort = listenPort;
 }
 
 void ServerConfig::SetServerName(std::string serverName)
 {
-    ServerConfig::serverName = serverName;
+    this->serverName = serverName;
 }
 std::string ServerConfig::GetServerName() const
 {
@@ -86,7 +87,7 @@ void ServerConfig::SetMaxBodySize(const std::string& max_body_size)
 }
 
 
-void ServerConfig::print()
+void ServerConfig::print() const
 {
     std::cout << "\tServer: " << GetServerName() << std::endl;
 
@@ -124,5 +125,12 @@ void ServerConfig::print()
             std::cout << "\t\t " << it->first << "  " << it->second << std::endl;
         }
     }
-    std::cout << "-------------------------------------------\n";
+    std::cout << "-------------------------------------------\n" << std::endl;
+}
+
+std::ostream&    operator<<(std::ostream& o, const ServerConfig& cfg)
+{
+    (void)o;
+    cfg.print();
+    return (o);
 }

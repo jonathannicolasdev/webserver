@@ -26,6 +26,7 @@
 #include "ConfigBuilder.hpp"
 #include "ServerConfig.hpp"
 #include "Logger.hpp"
+#include "ServerFactory.hpp"
 //# include "ClusterWeb.hpp"
 
 # define UNUSED(o) (void)(o)
@@ -46,6 +47,7 @@ t_webs  *get_webserv_main_struct(void);
 //void	webs_sigint_handler(int signum);
 
 // Webserv utils
+bool		is_all_digits(const std::string& s);
 void		gen_timestamp(std::string& ret);
 std::string get_working_path(void);
 

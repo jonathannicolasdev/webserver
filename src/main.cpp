@@ -12,7 +12,7 @@
 
 #include "webserv.hpp"
 # include <string>
-
+/*
 void	read_available_addr(void)
 {
 	struct addrinfo	af, *res, *ap;
@@ -32,10 +32,12 @@ void	read_available_addr(void)
 	}
 	freeaddrinfo(res);
 }
+*/
+static AServerCluster	*srv_clu;
 
-int	clean_exit(AServerCluster& clu)
+int	clean_exit(AServerCluster* clu)
 {
-	clu.terminate(true);
+	clu->terminate(true);// Forced termination (true)
 	return (1);
 }
 
@@ -44,6 +46,8 @@ void	sigint_handler(int signum)
 	UNUSED(signum);
 	std::cerr << "Received SIGINT signal. Exiting." << std::endl;
 	// Don't do this.
+	if (srv_clu)
+		srv_clu->terminate(true);
 	exit(SIGINT);
 }
 
@@ -57,7 +61,7 @@ void	sigpipe_handler(int signum)
 
 int main(int argc, char **argv, char **envp)
 {
-	AServerCluster	clu;
+//	AServerCluster	clu;
 	ConfigBuilder	configBuilder;// = ConfigBuilder();
 	std::string		config_path;
 	std::vector<ServerConfig> serverConfigs;
@@ -71,9 +75,12 @@ int main(int argc, char **argv, char **envp)
 
 	serverConfigs = configBuilder.parseConfigFile(config_path);
 
-//	std::vector <AServerDispatchSwitch *>	init_servers;
+	srv_clu = ServerFactory::create_cluster_from_cfg(serverConfigs);
+	return (1);
 
-    for(size_t i=0; i < serverConfigs.size();i++)
+//	std::vector <AServerDispatchSwitch *>	init_servers;
+/*
+    for(size_t i=0; i < serverConfigs.size(); ++i)
     {
 		//int64_t	port = std::stoi(serverConfigs[i].GetListenPort());
 		int64_t	port = atoi(serverConfigs[i].GetListenPort().c_str());
@@ -86,7 +93,7 @@ int main(int argc, char **argv, char **envp)
 				serverConfigs[i].GetHostIp(), port)) < 0)
 			return (Logger::log(LOG_ERROR, "Adding Server Failed."));
     }
-
+*/
 //	ServerHTTP	*srv = new ServerHTTP("www/", "Jimbo Jones", "", 3738);
 //	ServerHTTP	*srv2 = new ServerHTTP("www/", "Jimby Jims", "", 80);
 
@@ -97,11 +104,11 @@ int main(int argc, char **argv, char **envp)
 //	if (clu.add_server(srv) < 0 || clu.add_server(srv2) < 0)
 //		return (clean_exit(clu));
 	
-	if (clu.bind() < 0)
-		return (clean_exit(clu));
+	if (srv_clu->bind() < 0)
+		return (clean_exit(srv_clu));
 
-	if (clu.start() < 0)
-		return (clean_exit(clu));
+	if (srv_clu->start() < 0)
+		return (clean_exit(srv_clu));
 
 /*
 	if (srv.bind_server() < 0)// || srv.)

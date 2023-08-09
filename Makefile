@@ -25,8 +25,8 @@ SRVCORE_FILES	:= IServer.cpp					\
 				   AServerDispatchSwitch.cpp	\
 				   ServerHTTP.cpp				\
 				   __EventListener.cpp			\
-				   AServerCluster.cpp
-#			   ServerFactory.cpp	
+				   AServerCluster.cpp			\
+				   ServerFactory.cpp	
 #			   AServerCluster.cpp	
 #			   ClusterWeb.cpp
 
