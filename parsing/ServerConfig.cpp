@@ -37,7 +37,7 @@ void ServerConfig::SetIndexFile(std::string indexFile)
 {
     this->indexFile = indexFile;
 }
-std::vector<LocationConfig> ServerConfig::GetLocations() const
+const std::vector<LocationConfig>&  ServerConfig::GetLocations() const
 {
     return this->locations;
 }

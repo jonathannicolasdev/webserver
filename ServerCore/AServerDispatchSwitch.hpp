@@ -115,13 +115,13 @@ class	AServerDispatchSwitch: public AServerReactive
 		// conn_timout in ms
 		AServerDispatchSwitch(uint16_t _port, //bool _close_rqst, bool _is_running,
 			enum e_server_status_codes _status, bool conn_persistance, int conn_timout=10000);
-		virtual	~AServerDispatchSwitch();
 
 		virtual int		disconnect_oldest(int *disconn_clients, int max_disconn);
 		
 
 	public:
 			
+		virtual	~AServerDispatchSwitch();
 		virtual int		bind_server(void);
 		virtual int		start(void);
 		virtual void	stop(void);
@@ -146,14 +146,18 @@ class	AServerDispatchSwitch: public AServerReactive
 		virtual int			do_maintenance(int *disconn_clients, int max_disconn);
 		//virtual int			do_maintenance(void);
 
+		virtual const std::vector<ServerConfig>&	get_config(void) const;
 		virtual uint16_t	get_port(void) const;
-		int					get_timeout(void) const;
+		virtual in_addr_t	get_addr(void) const;
+		virtual int			get_timeout(void) const;
 //		virtual int			get_socket(void) const;		
 		const t_clt_conn*	get_client_state(int client_fd) const;
 		
+		virtual bool		add_virtual_server(const IServer& other) = 0;
 		// TODO
 //		void			flush_timouts(void);
 //		void			flush_oldest(int n);
+		virtual bool	operator==(const IServer& other) const;
 };
 
 std::ostream&	operator<<(std::ostream& ostream, AServerDispatchSwitch& srv);

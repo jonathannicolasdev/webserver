@@ -84,6 +84,7 @@ class   IServer:	public __BaseSocketOwner
 //		AServerCuster*				_owner;/// Value should be set to owner cluster if server is
 										// attached to a cluster else defaults to NULL.
 		std::string					_server_name;
+		std::vector<ServerConfig>	_cfgs;
 //		int							_sockfd;
 		uint16_t					_port;
 		struct sockaddr_in			_server_addr;
@@ -102,22 +103,28 @@ class   IServer:	public __BaseSocketOwner
 		t_srv_state             _srv_state_view;
 
 		IServer(uint16_t _port, bool _close_rqst, bool _is_running, bool _is_reactive, bool _is_dispatch_switch, enum e_server_status_codes _status);
-		virtual ~IServer(void);
 
 		bool		is_dispatch_switch(void) const;
 		bool		is_reactive(void) const;
 
 
 	public:
+		virtual ~IServer(void);
 		virtual int			bind_server(void) = 0;
 		virtual int			start(void) = 0;
 		virtual void		stop(void) = 0;
 		virtual t_srv_state	*get_srv_state(void) = 0;
 		virtual bool		is_serving(int client_fd) const = 0;// if concrete server does not track client connection state (is stateless), implement with return (false);.
 
-		virtual uint16_t	get_port(void) const = 0;
-		virtual bool		is_running(void) const = 0;
+		virtual const std::vector<ServerConfig>&	get_config(void) const = 0;
+		virtual const std::string&	get_server_name(void) const = 0;
+		virtual uint16_t			get_port(void) const = 0;
+		virtual in_addr_t			get_addr(void) const = 0;
+		virtual bool				is_running(void) const = 0;
+	
+		virtual bool		add_virtual_server(const IServer& other) = 0;// Merges both configs in this server. Adds a reachable domain name on this server with its own configuration and contant. Both need to be open on same network interface.
 		
+		virtual bool		operator==(const IServer& other) const = 0;
 
 //		virtual int			get_socket(void) const = 0;
 //		virtual	std::map<std::string, std::string>&	get_srv_locations(void) = 0;

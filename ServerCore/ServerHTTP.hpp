@@ -14,7 +14,8 @@
 # define SERVER_HTTP_HPP
 
 # include <cerrno>
-# include <map>
+//# include <map>
+# include <vector>
 # include <set>
 # include <ctime>
 //# include <cstring>
@@ -109,8 +110,7 @@ class ServerHTTP: public AServerDispatchSwitch
 {
 	private:
 		const std::string					_rootdir;
-		const std::string					_server_name;
-		std::map<std::string, ServerConfig>	_cfgs;
+		
 		//ServerConfig						_cfg;
 //		std::map<std::string, std::string>	_locations;
 		std::ostringstream					_raw_request;
@@ -132,14 +132,22 @@ class ServerHTTP: public AServerDispatchSwitch
 		virtual ~ServerHTTP(void);
 
 		int		start(void);
-
 //		int		parse_request(int clientfd);// raw_request should have been read already.
 		int		serve_request(int clientfd);
 
 		t_srv_state	*get_srv_state(void);
-		const std::map<std::string, std::string>&	get_srv_locations(void) const;
-		const std::string&							get_server_name(void) const;
-		const std::string&							get_rootdir(void) const;
+//		const std::map<std::string, std::string>&	get_srv_locations(void) const;
+		const std::vector<LocationConfig>&		get_srv_locations(void) const;
+		const std::vector<LocationConfig>*		get_srv_locations(const std::string& host) const;// Returns pointer instead of ref to indicate if requested host exists.
+		const std::string&						get_server_name(void) const;
+		const std::string&						get_rootdir(void) const;
+
+		const ServerConfig&	get_config_for_host(const std::string& host) const;
+		bool				add_virtual_server(const IServer& other);
+
+		//bool	add_virtual_server(const ServerHTTP& other);
+//		bool	add_virtual_server(const IServer& other);
+
 };
 
 #endif

@@ -96,8 +96,9 @@ AServerDispatchSwitch::disconnect(int clt_fd, bool force)
 		return (Logger::log(LOG_WARNING, err_msg.str()));
 	}
 	it = this->_active_connections.find(clt_fd);
-	if (it == this->_active_connections.end()
-		|| (!force && it->second.conn_status & CLT_PROCESSING))
+	if (it == this->_active_connections.end())
+		return (-1);
+	if (!force && (it->second.conn_status & CLT_PROCESSING))
 		return (-1);
 	close(clt_fd);
 	this->_active_connections.erase(it);
@@ -108,24 +109,8 @@ AServerDispatchSwitch::disconnect(int clt_fd, bool force)
 void
 AServerDispatchSwitch::disconnect_all(bool force)
 {
-	std::map<int, t_clt_conn>::iterator it;
-	//int									clt_fd;
-
-	for (it=this->_active_connections.begin(); it != this->_active_connections.end(); ++it)
-	{
-//		if (!force && it->second.conn_status & CLT_PROCESSING);
-//			continue ;
-//		close(it->first);
-		if (this->disconnect(it->second.clt_fd, force) == 0)
-			--it;
-	}
-//	this->_active_connections.clear();
-//		clt_fd = it->second.clt_fd;
-//		if (!force && it->second.conn_status & CLT_PROCESSING)
-//			continue ;
-//		close(it->second.clt_fd);
-//		this->_active_connections.erase(it);
-//	}
+	while (!this->_active_connections.empty())
+		this->disconnect(this->_active_connections.begin()->second.clt_fd, force);
 }
 
 // disconnect {max_disconn} oldest active connections.
@@ -268,8 +253,14 @@ AServerDispatchSwitch::get_client_state(int client_fd) const
 	return (&it->second);
 }
 
+const std::vector<ServerConfig>&
+AServerDispatchSwitch::get_config(void) const {return (this->_cfgs);}
+
 uint16_t
 AServerDispatchSwitch::get_port(void) const {return (this->_port);}
+
+in_addr_t
+AServerDispatchSwitch::get_addr(void) const {return (this->_server_addr.sin_addr.s_addr);}
 
 int
 AServerDispatchSwitch::get_timeout(void) const {return (this->_conn_timeout);}
@@ -325,6 +316,18 @@ AServerDispatchSwitch::start(void)
 	return (this->_sockfd);
 //	return (0);
 }
+
+bool
+AServerDispatchSwitch::operator==(const IServer& other) const
+{
+//	return ((this->_server_addr.sin_addr.s_addr == other._server_addr.sin_addr.s_addr)
+//		&& (this->_port == other._port));
+	return ((this->_server_addr.sin_addr.s_addr == other.get_addr())
+		&& (this->_port == other.get_port()));
+	//return (std::memcmp(this->_server_addr, other._server_addr, sizeof(this->_server_addr)) == 0);
+}
+
+
 
 std::ostream&	operator<<(std::ostream& ostream, AServerDispatchSwitch& srv)
 {

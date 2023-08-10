@@ -20,7 +20,7 @@ public:
     void        SetRoot(std::string root);
     std::string GetIndexFile() const;
     void        SetIndexFile(std::string indexFile);
-    std::vector<LocationConfig> GetLocations() const;
+    const std::vector<LocationConfig>& GetLocations() const;
     void        AddLocations(LocationConfig location);
     std::map<int, string> GetError_pages() const;
     void        AddError_page(int errorCode, std::string error_page);

@@ -411,7 +411,7 @@ ServerHTTP::stop(void)
 ServerHTTP::ServerHTTP(const std::string& servname, const std::string& rootdir,
 	const std::string& ip, uint16_t port, int timeout, const ServerConfig* cfg):
 	AServerDispatchSwitch(port, SRV_UNBOUND, true, timeout),
-	_rootdir(rootdir), _server_name(servname)
+	_rootdir(rootdir)
 {
 	in_addr_t			addr;
 	std::ostringstream	os;
@@ -424,6 +424,8 @@ ServerHTTP::ServerHTTP(const std::string& servname, const std::string& rootdir,
 //	this->_server_addr.sin_addr.s_addr = INADDR_ANY;//htons(80);
 
 	std::cout << "ServerHTTP constructor" << std::endl;
+
+	_server_name = servname;
 	if (ip != "0.0.0.0")
 	{
 		if ((addr = inet_addr(ip.c_str())) != INADDR_NONE)
@@ -434,7 +436,8 @@ ServerHTTP::ServerHTTP(const std::string& servname, const std::string& rootdir,
 	if (!cfg)
 		Logger::log(LOG_WARNING, std::string("Server on ") + ip + ":" + os.str() + " started without ServerConfig and might not behave as expected.");
 	else
-		_cfgs[servname] = *cfg;
+		_cfgs.push_back(*cfg);
+		//_cfgs[servname] = *cfg;
 /*
 	if (ip.empty())
 		ipaddr = INADDR_ANY;
@@ -542,13 +545,13 @@ ServerHTTP::send_response(int clientfd, const Response& resp) const
 {
 //	char				request_buff[MAX_READ_BUFF + 1];
 //	ssize_t				read_size, send_size;
-	std::string			header;
-	std::string			body;
-	std::ostringstream	content_length;
-	std::string			response;
+//	std::string			header;
+//	std::string			body;
+//	std::ostringstream	content_length;
+//	std::string&		response;
 	ssize_t				send_size;
 
-	(void)resp;
+//	(void)resp;
 //	UNUSED(request);
 	//while ((read_size = read(clientfd, request_buff, MAX_READ_BUFF)) == MAX_READ_BUFF)
 
@@ -556,6 +559,7 @@ ServerHTTP::send_response(int clientfd, const Response& resp) const
 //		return (Logger::log(LOG_ERROR, "failed to read() client request after accept()."));
 //	request_buff[read_size] = '\0';
 //	req_str += request_buff;
+/*
 	header = "HTTP/1.1 200 OK\n";
 	header += "Content-type: text/html\n";
 	
@@ -576,8 +580,12 @@ ServerHTTP::send_response(int clientfd, const Response& resp) const
 	header += content_length.str();
 	header += "\r\n\r\n";
 	response = header + body;
+*/
 	std::cout << "Sending response page" << std::endl;
 	
+	const std::string&		response = resp.get_response();
+
+
 	if ((send_size = write(clientfd, response.c_str(), response.length())) < 0)
 	{
 		std::cout << "write failed" << std::endl;
@@ -591,16 +599,25 @@ ServerHTTP::send_response(int clientfd, const Response& resp) const
 int
 ServerHTTP::serve_request(int clientfd)
 {
-	Request		req;
-	Response	resp;
+	Request				req;
+	Response			resp;
+	const std::string	*requested_host;
 
 	if (	receive_request(clientfd, req) < 0
-		||	req.process_raw_request() < 0
-		||	resp.prepare_response(req) < 0
+		||	req.process_raw_request() < 0)
+		return (-1);
+
+	requested_host = req["Host"];
+	const ServerConfig&	cfg = get_config_for_host(*requested_host);
+
+	if (	resp.prepare_response(*this, req, cfg) < 0
 		||	send_response(clientfd, resp) < 0)
 		return (-1);
 	return (0);
 }
+
+
+
 
 t_srv_state*
 ServerHTTP::get_srv_state(void)
@@ -616,6 +633,52 @@ ServerHTTP::get_srv_state(void)
 
 const std::string& ServerHTTP::get_server_name(void) const {return (this->_server_name);}
 const std::string& ServerHTTP::get_rootdir(void) const {return (this->_rootdir);}
+
+
+const ServerConfig&
+ServerHTTP::get_config_for_host(const std::string& host) const
+{
+	std::vector<ServerConfig>::const_iterator		cfgs_it;
+
+	for (cfgs_it = _cfgs.begin(); cfgs_it != _cfgs.end(); ++cfgs_it)
+		if (cfgs_it->GetServerName() == host)
+			return (*cfgs_it);
+
+	return (*_cfgs.begin());
+}
+
+bool
+//ServerHTTP::add_virtual_server(const ServerHTTP& other)
+ServerHTTP::add_virtual_server(const IServer& other)
+{
+	std::vector<ServerConfig>::iterator			cfgs_it;
+
+	if (!(*this == other))
+		return (Logger::log(LOG_ERROR, "Failed to merge 2 servers. Merging servers requires that both share the same network interface."));
+	for (cfgs_it = _cfgs.begin(); cfgs_it != _cfgs.end(); ++cfgs_it)
+	{
+		if (other.get_server_name() == cfgs_it->GetServerName())
+			return (Logger::log(LOG_ERROR, "Failed to merge 2 servers. Cannot Merge servers on same network interface, responding to requests to the same host. Would overwrite previous config."));
+	}
+//	_cfgs.insert(_cfgs.end(), other._cfgs.begin(), other._cfgs.end());
+	_cfgs.insert(_cfgs.end(), other.get_config().begin(), other.get_config().end());
+	//_cfgs.push_back(other._cfg);
+	return (true);
+}
+
+const std::vector<LocationConfig>&
+ServerHTTP::get_srv_locations(void) const {return (_cfgs[0].GetLocations());}
+
+const std::vector<LocationConfig>*
+ServerHTTP::get_srv_locations(const std::string& host) const
+{
+	std::vector<ServerConfig>::const_iterator	cfgs_it = _cfgs.begin();
+
+	for (; cfgs_it != _cfgs.end(); ++cfgs_it)
+		if (cfgs_it->GetServerName() == host)
+			return (&cfgs_it->GetLocations());
+	return (&_cfgs[0].GetLocations());
+}
 
 //const std::map<std::string, std::string>&
 //ServerHTTP::get_srv_locations(void) const {return (this->_locations);}

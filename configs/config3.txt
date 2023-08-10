@@ -38,7 +38,7 @@ server {
 
 # Linux
 server {
-  listen 8002;
+  listen 8000;
 
   server_name www.localhost localhost;
   root www;

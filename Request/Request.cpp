@@ -123,6 +123,7 @@ Request::process_header(void)//const std::string& raw_header)
 int
 Request::process_body(void)
 {
+	// TODO ... or not
 	return (0);
 }
 
@@ -163,11 +164,12 @@ Request::is_method(enum e_method method) const {return (this->_method == method)
 
 const std::string*	Request::operator[](const std::string& key) const
 {
+	static const std::string	nullstr = "";
 	std::map<std::string, std::string>::const_iterator	it;
 	
 	it = this->header.find(key);
 	if (it == this->header.end())
-		return (NULL);
+		return (&nullstr);
 	return (&it->second);
 }
 

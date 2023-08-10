@@ -35,19 +35,25 @@ void	read_available_addr(void)
 */
 static AServerCluster	*srv_clu;
 
-int	clean_exit(AServerCluster* clu)
+int	clean_exit(AServerCluster* clu, int exit_status)
 {
+	if (!clu)
+		return (exit_status);
 	clu->terminate(true);// Forced termination (true)
-	return (1);
+//	delete clu;
+	return (exit_status);
 }
 
 void	sigint_handler(int signum)
 {
 	UNUSED(signum);
 	std::cerr << "Received SIGINT signal. Exiting." << std::endl;
-	// Don't do this.
 	if (srv_clu)
+	{
 		srv_clu->terminate(true);
+//		delete srv_clu;
+	}
+	// Don't do this.
 	exit(SIGINT);
 }
 
@@ -55,6 +61,11 @@ void	sigpipe_handler(int signum)
 {
 	UNUSED(signum);
 	std::cerr << "Received SIGPIPE signal. Exiting." << std::endl;
+	if (srv_clu)
+	{
+		srv_clu->terminate(true);
+//		delete srv_clu;// implicitally called by ServerCluster destructor
+	}
 	// Don't do this.
 	exit(SIGINT);
 }
@@ -76,7 +87,7 @@ int main(int argc, char **argv, char **envp)
 	serverConfigs = configBuilder.parseConfigFile(config_path);
 
 	srv_clu = ServerFactory::create_cluster_from_cfg(serverConfigs);
-	return (1);
+//	return (1);
 
 //	std::vector <AServerDispatchSwitch *>	init_servers;
 /*
@@ -105,10 +116,10 @@ int main(int argc, char **argv, char **envp)
 //		return (clean_exit(clu));
 	
 	if (srv_clu->bind() < 0)
-		return (clean_exit(srv_clu));
+		return (clean_exit(srv_clu, EXIT_FAILURE));
 
 	if (srv_clu->start() < 0)
-		return (clean_exit(srv_clu));
+		return (clean_exit(srv_clu, EXIT_FAILURE));
 
 /*
 	if (srv.bind_server() < 0)// || srv.)
@@ -119,5 +130,6 @@ int main(int argc, char **argv, char **envp)
 		return (2);
 */
 	std::cout << "Exiting peacefully" << std::endl;
-	return (0);
+	return (clean_exit(srv_clu, EXIT_SUCCESS));
+	//return (cle);
 }

@@ -287,7 +287,7 @@ AServerCluster::__cluster_mainloop(void)
 				return (Logger::log(LOG_CRITICAL, "POLLING MECH RECEIVED EVENT FROM UNIDENTIFIED FD. THE TRUTH IS OUT THERE !!"));
 		}
 	}
-	std::cout << "__cluster_mainloop EXITED LIKE MAD LOOP  !!" << std::endl;
+	std::cout << "__cluster_mainloop EXITED LOOP LIKE MAD MAN !!" << std::endl;
 	return (0);
 }
 

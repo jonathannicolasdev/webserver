@@ -45,6 +45,9 @@ class	AServerReactive: public IServer
 
 		AServerReactive(uint16_t _port, bool _close_rqst, bool _is_running, bool _is_dispatch_switch, enum e_server_status_codes _status);
 		virtual	~AServerReactive();
+
+	public:
+		virtual bool		add_virtual_server(const IServer& other) = 0;
 };
 
 #endif
