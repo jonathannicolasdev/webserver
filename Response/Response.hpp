@@ -29,7 +29,8 @@ class Response
 		~Response(void);
 
 		//int prepare_response(const Request& req);
-		int prepare_response(const ServerHTTP& srv, const Request& req, const ServerConfig& cfg);
+		const int prepare_response(const ServerHTTP& srv, const Request& req, const ServerConfig& cfg) ;
+
 		const std::string&	get_response(void) const;
 };
 

@@ -12,13 +12,13 @@
 
 #include "Request.hpp"
 
-Request::Request(const std::string& raw_request): _method(NULL_M)
+Request::Request(const std::string &raw_request) : _method(NULL_M)
 {
 	std::cout << "Request Constructor" << std::endl;
 	this->_raw_request = raw_request;
 }
 
-Request::Request(void): _method(NULL_M)
+Request::Request(void) : _method(NULL_M)
 {
 	std::cout << "Request default constructor" << std::endl;
 }
@@ -28,25 +28,29 @@ Request::~Request()
 	std::cout << "Request Destructor" << std::endl;
 }
 
-int
-Request::process_request_line(void)
+std::string Request::get_path() const
 {
-	size_t		line_end, p1, p2;
-	std::string	method;
-//	std::string	path;
-//	std::string	proto;
-	//std::getline(this->_raw_request, this->_raw_request_line, '\n');
+	return path;
+}
+
+int Request::process_request_line(void)
+{
+	size_t line_end, p1, p2;
+	std::string method;
+	//	std::string	path;
+	//	std::string	proto;
+	// std::getline(this->_raw_request, this->_raw_request_line, '\n');
 	line_end = this->_raw_request.find_first_of("\r\n");
 	this->_raw_request_line = this->_raw_request.substr(0, line_end);
-//	this->_raw_request = this->_raw_request.substr(line_end + this->_raw_request_line);
+	//	this->_raw_request = this->_raw_request.substr(line_end + this->_raw_request_line);
 	this->_raw_request = this->_raw_request.substr(this->_raw_request.find_first_not_of("\r\n", line_end));
 
 	p1 = this->_raw_request_line.find(' ');
 	p2 = this->_raw_request_line.find_last_of(" ");
 
-	method =			this->_raw_request_line.substr(0, p1);
-	this->path =		this->_raw_request_line.substr(p1 + 1, p2 - p1 - 1);
-	this->protocol =	this->_raw_request_line.substr(p2 + 1);
+	method = this->_raw_request_line.substr(0, p1);
+	this->path = this->_raw_request_line.substr(p1 + 1, p2 - p1 - 1);
+	this->protocol = this->_raw_request_line.substr(p2 + 1);
 
 	if (method == "GET")
 		this->_method = GET_M;
@@ -67,7 +71,7 @@ Request::process_request_line(void)
 	}
 
 	// DEBUG
-	std::ostringstream	ss, ss2, ss3, ss4;
+	std::ostringstream ss, ss2, ss3, ss4;
 	std::cout << "Split request line info : " << std::endl;
 	ss << method.length();
 	std::cout << " - method : " << method << " (length : " << ss.str() << ")" << std::endl;
@@ -85,17 +89,15 @@ Request::process_request_line(void)
 }
 
 // splits header passed and puts key, value pairs in header map.
-int
-Request::process_header(void)//const std::string& raw_header)
+int Request::process_header(void) // const std::string& raw_header)
 {
-	size_t		line_start, column_pos, line_end;
-	std::string	key, value;
-	bool		stop = 0;
+	size_t line_start, column_pos, line_end;
+	std::string key, value;
+	bool stop = 0;
 
 	std::cout << "Request::process_header() : " << std::endl;
 	line_start = 0;
-	while (!stop && this->_raw_request[line_start]
-		&& !isspace(this->_raw_request[line_start]))
+	while (!stop && this->_raw_request[line_start] && !isspace(this->_raw_request[line_start]))
 	{
 		column_pos = this->_raw_request.find(':', line_start);
 		line_end = this->_raw_request.find_first_of("\r\n", column_pos);
@@ -111,8 +113,7 @@ Request::process_header(void)//const std::string& raw_header)
 		this->header[key] = value;
 		line_start = line_end;
 		stop = (this->_raw_request.compare(line_start, 4, "\r\n\r\n") == 0);
-		while (this->_raw_request[line_start]
-			&& isspace(this->_raw_request[line_start]))
+		while (this->_raw_request[line_start] && isspace(this->_raw_request[line_start]))
 			line_start++;
 	}
 	if (this->_raw_request[line_start])
@@ -120,19 +121,15 @@ Request::process_header(void)//const std::string& raw_header)
 	return (0);
 }
 
-int
-Request::process_body(void)
+int Request::process_body(void)
 {
 	// TODO ... or not
 	return (0);
 }
 
-int
-Request::process_raw_request(void)//const std::string& raw_request)
+int Request::process_raw_request(void) // const std::string& raw_request)
 {
-	if (	this->process_request_line() < 0
-		||	this->process_header() < 0
-		||	this->process_body() < 0)
+	if (this->process_request_line() < 0 || this->process_header() < 0 || this->process_body() < 0)
 		return (-1);
 	/*
 	size_t	pos;
@@ -157,24 +154,22 @@ Request::process_raw_request(void)//const std::string& raw_request)
 }
 
 enum e_method
-Request::get_method(void) const {return (this->_method);}
+Request::get_method(void) const { return (this->_method); }
 
-bool
-Request::is_method(enum e_method method) const {return (this->_method == method);}
+bool Request::is_method(enum e_method method) const { return (this->_method == method); }
 
-const std::string*	Request::operator[](const std::string& key) const
+const std::string *Request::operator[](const std::string &key) const
 {
-	static const std::string	nullstr = "";
-	std::map<std::string, std::string>::const_iterator	it;
-	
+	static const std::string nullstr = "";
+	std::map<std::string, std::string>::const_iterator it;
+
 	it = this->header.find(key);
 	if (it == this->header.end())
 		return (&nullstr);
 	return (&it->second);
 }
 
-bool
-Request::is_empty(void)
+bool Request::is_empty(void)
 {
 	return (this->_raw_request.empty());
 }
@@ -185,7 +180,7 @@ Request::length(void) const
 	return (this->_raw_request.length());
 }
 
-Request&
+Request &
 Request::operator<<(char *req_buff)
 {
 	this->_raw_request += req_buff;

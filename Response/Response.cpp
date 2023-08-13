@@ -44,16 +44,30 @@ void	_prepare_dummy_response(std::string& text_response)
 	text_response = header + body;
 }
 
+
 /// REQUIRED METHODS BY SERVER ///////////////
-int Response::prepare_response(const ServerHTTP& srv, const Request& req, const ServerConfig& cfg)
+int Response::prepare_response(const ServerHTTP& srv, const Request& req, const ServerConfig& cfg) const
 {
 	(void)srv;
 	(void)req;
 	(void)cfg;
+
+	std::cout << " ******************* PATH:" << req.get_path() <<"\n";
+	std::cout << " ******************* SERVERCONFIG :"  ;
+	cfg.print();
 	std::cout << "Preparing Response." << std::endl;
-	
+	int locationIndex = cfg.getBestLocationMatch(req.get_path());
+	if (locationIndex==-1)
+	{
+		std::cout << "no location found";
+	}
+	else{
+		LocationConfig bestLocation = cfg.GetLocations().at(locationIndex);
+		bestLocation.print();
+	}
+
 	// DUMMY RESPONSE. DELETE ME
-	_prepare_dummy_response(_text);
+	//_prepare_dummy_response(_text);
 	return (0);
 }
 

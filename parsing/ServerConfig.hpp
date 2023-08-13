@@ -30,6 +30,7 @@ public:
     std::string GetServerName() const;
     std::string GetMaxBodySize() const;
     void        SetMaxBodySize(const std::string& max_body_size);
+    int getBestLocationMatch(const std::string& path) const;
 
     void print() const;
 
