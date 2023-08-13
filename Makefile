@@ -35,7 +35,7 @@ SRVCORE			:= $(addprefix $(SRVCORE_DIR), $(SRVCORE_FILES))
 RQST_FILES		:=	Request.cpp
 RQST			:= $(addprefix $(RQST_DIR), $(RQST_FILES))
 
-RESP_FILES		:=	Response.cpp
+RESP_FILES		:=	Response.cpp ErrorResponse.cpp
 RESP			:= $(addprefix $(RESP_DIR), $(RESP_FILES))
 
 LOGGER_FILES	:=	Logger.cpp

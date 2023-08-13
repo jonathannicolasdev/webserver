@@ -65,7 +65,8 @@ class Request
 		bool			is_empty(void);
 
 		// Returns the header element at given key.
-		const std::string*	operator[](const std::string& key) const;// access header tag values by indexing Request instance like a map. Returns NULL if not tag not in header, returns a string otherwise.
+//		const std::string*	operator[](const std::string& key) const;// access header tag values by indexing Request instance like a map. Returns NULL if not tag not in header, returns a string otherwise.
+		const std::string&	operator[](const std::string& key) const;// access header tag values by indexing Request instance like a map. Returns NULL if not tag not in header, returns a string otherwise.
 		Request&			operator<<(char *req_buff);// push raw request from client inside Request instance.
 };
 

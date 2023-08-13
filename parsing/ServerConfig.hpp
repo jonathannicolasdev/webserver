@@ -22,7 +22,7 @@ public:
     void        SetIndexFile(std::string indexFile);
     const std::vector<LocationConfig>& GetLocations() const;
     void        AddLocations(LocationConfig location);
-    std::map<int, string> GetError_pages() const;
+    const std::map<int, std::string>& GetError_pages() const;
     void        AddError_page(int errorCode, std::string error_page);
     std::string GetListenPort() const;
     void        SetListenPort(std::string listenPort);

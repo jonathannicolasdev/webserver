@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Response.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: iamongeo <iamongeo@student.42.fr>          +#+  +:+       +#+        */
+/*   By: marvin <marvin@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/26 18:42:23 by iamongeo          #+#    #+#             */
-/*   Updated: 2023/08/09 20:35:02 by iamongeo         ###   ########.fr       */
+/*   Updated: 2023/08/12 17:48:07 by marvin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -59,3 +59,6 @@ int Response::prepare_response(const ServerHTTP& srv, const Request& req, const 
 
 const std::string&	Response::get_response(void) const {return (this->_text);}
 /// END OF REQUIRED METHODS BY SERVER /////////////
+
+bool
+Response::empty(void) const {return (this->_text.empty());}

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Response.hpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: iamongeo <iamongeo@student.42.fr>          +#+  +:+       +#+        */
+/*   By: marvin <marvin@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/26 18:40:57 by iamongeo          #+#    #+#             */
-/*   Updated: 2023/08/09 19:44:16 by iamongeo         ###   ########.fr       */
+/*   Updated: 2023/08/12 18:42:16 by marvin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,16 +21,18 @@ class ServerHTTP;
 
 class Response
 {
-	private:
+	protected:
 		std::string		_text;
 
 	public:
 		Response(void);    
-		~Response(void);
+		virtual ~Response(void);
 
 		//int prepare_response(const Request& req);
-		int prepare_response(const ServerHTTP& srv, const Request& req, const ServerConfig& cfg);
+		virtual int prepare_response(const ServerHTTP& srv, const Request& req, const ServerConfig& cfg);
 		const std::string&	get_response(void) const;
+
+		bool	empty(void) const;
 };
 
 #endif
