@@ -6,7 +6,7 @@
 /*   By: iamongeo <iamongeo@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/26 18:42:23 by iamongeo          #+#    #+#             */
-/*   Updated: 2023/08/13 16:52:33 by iamongeo         ###   ########.fr       */
+/*   Updated: 2023/08/13 17:25:07 by iamongeo         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -51,19 +51,23 @@ int Response::prepare_response(const ServerHTTP& srv, const Request& req, const 
 	(void)srv;
 	(void)req;
 	(void)cfg;
+	const LocationConfig*	best_match;
 
 	std::cout << " ******************* PATH:" << req.get_path() <<"\n";
 	std::cout << " ******************* SERVERCONFIG :"  ;
 	cfg.print();
 	std::cout << "Preparing Response." << std::endl;
-	int locationIndex = cfg.getBestLocationMatch(req.get_path());
-	if (locationIndex==-1)
+	//int locationIndex = cfg.getBestLocationMatch(req.get_path());
+	best_match = cfg.getBestLocationMatch(req.get_path());
+//	if (locationIndex==-1)
+	if (best_match == NULL)
 	{
 		std::cout << "no location found";
 	}
-	else{
-		LocationConfig bestLocation = cfg.GetLocations().at(locationIndex);
-		bestLocation.print();
+	else {
+//		const LocationConfig* bestLocation = cfg.GetLocations().at(locationIndex);
+		//bestLocation.print();
+		best_match->print();
 	}
 
 	// DUMMY RESPONSE. DELETE ME

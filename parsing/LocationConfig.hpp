@@ -8,7 +8,7 @@ class LocationConfig
 {
 public:
 	LocationConfig();
-	void print();
+	void print() const;
 
 	std::string 		GetPath() const;
 	void 				SetPath(const std::string& path);

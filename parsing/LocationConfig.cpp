@@ -114,10 +114,11 @@ void LocationConfig::AddCgiExt(const std::string& cgiExt)
     LocationConfig::cgiExts.push_back(cgiExt);
 }
 
-void LocationConfig::print()
+void LocationConfig::print() const
 {
     std::cout << "\tLocation: " << LocationConfig::GetPath() << std::endl;
 
+    std::cout << "here we go !" << std::endl;
     std::vector<std::string> allowMethods = LocationConfig::GetAllowMethods();
     if (allowMethods.size() > 0)
     {

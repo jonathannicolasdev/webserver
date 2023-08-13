@@ -136,11 +136,13 @@ std::ostream&    operator<<(std::ostream& o, const ServerConfig& cfg)
 }
 
 
-int ServerConfig::getBestLocationMatch(const std::string& path) const {
+//int ServerConfig::getBestLocationMatch(const std::string& path) const {
+const LocationConfig* ServerConfig::getBestLocationMatch(const std::string& path) const {
     size_t biggest_match = 0;
-    std::vector<LocationConfig> locations = GetLocations();
-    int bestMatch=-1;
-    int i=0;
+    const std::vector<LocationConfig>& locations = GetLocations();
+    const LocationConfig*   best_match = NULL;
+//    int bestMatch=-1;
+//    int i=0;
     for (std::vector<LocationConfig>::const_iterator it = locations.begin(); it != locations.end(); ++it)
     {
         if (path.find(it->GetPath()) == 0)
@@ -150,12 +152,14 @@ int ServerConfig::getBestLocationMatch(const std::string& path) const {
                 if (it->GetPath().length() > biggest_match)
                 {
                     biggest_match = it->GetPath().length();
-                    bestMatch = i;
+                    //bestMatch = i;
+                    best_match = &(*it);
                 }
             }
         }
-        i++;
+//       i++;
     }
-    return bestMatch;
+    return best_match;
+//    return bestMatch;
 }
 
