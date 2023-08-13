@@ -11,7 +11,7 @@ server {
   }
 cgi .php php-cgi_ubuntu;
 
-  location /autoindex/ {
+  location /autoindex {
     autoindex on;
   }
 
@@ -30,6 +30,12 @@ cgi .php php-cgi_ubuntu;
     root www/admin;
     index index.html;
   }
-    error_page 404 /my_errors/404.html;
+  location /autoindex/admin {
+    auth admin:admin;
+    root www/admin;
+    index index.html;
+  }
+  
+  error_page 404 /my_errors/404.html;
 
 }
