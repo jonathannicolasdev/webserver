@@ -71,6 +71,9 @@ const std::map<int, std::string> ErrorResponse::status_msgs = status_msgs_init()
 ErrorResponse::ErrorResponse(const ServerHTTP& srv, const Request& req, const ServerConfig& cfg):
 	_srv(srv), _req(req), _cfg(cfg)
 {
+	(void)_srv;
+	(void)_req;
+	(void)_cfg;
 }
 
 ErrorResponse::~ErrorResponse(void) {}

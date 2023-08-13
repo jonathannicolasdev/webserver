@@ -28,7 +28,7 @@ Request::~Request()
 	std::cout << "Request Destructor" << std::endl;
 }
 
-std::string Request::get_path() const
+const std::string& Request::get_path() const
 {
 	return path;
 }
