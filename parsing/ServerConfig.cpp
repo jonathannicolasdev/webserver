@@ -47,7 +47,7 @@ void ServerConfig::AddLocations(LocationConfig location)
     this->locations.push_back(location);
 }
 
-std::map<int, string> ServerConfig::GetError_pages() const
+const std::map<int, std::string>& ServerConfig::GetError_pages() const
 {
     return error_pages;
 }

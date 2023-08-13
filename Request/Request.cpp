@@ -158,15 +158,17 @@ Request::get_method(void) const { return (this->_method); }
 
 bool Request::is_method(enum e_method method) const { return (this->_method == method); }
 
-const std::string *Request::operator[](const std::string &key) const
+const std::string&	Request::operator[](const std::string& key) const
 {
 	static const std::string nullstr = "";
 	std::map<std::string, std::string>::const_iterator it;
 
 	it = this->header.find(key);
 	if (it == this->header.end())
-		return (&nullstr);
-	return (&it->second);
+		return (nullstr);
+		//return (&nullstr);
+	return (it->second);
+	//return (&it->second);
 }
 
 bool Request::is_empty(void)

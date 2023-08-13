@@ -540,59 +540,41 @@ ServerHTTP::parse_request(Request& request) const
 	return (0);
 }
 */
+
+
+/// This method should be noexcept. As long as clientfd is open, should either send
+/// the response or an error page.
 int
 ServerHTTP::send_response(int clientfd, const Response& resp) const
 {
+	std::cout << "Sending response page" << std::endl;
 //	char				request_buff[MAX_READ_BUFF + 1];
 //	ssize_t				read_size, send_size;
 //	std::string			header;
 //	std::string			body;
 //	std::ostringstream	content_length;
 //	std::string&		response;
-	ssize_t				send_size;
-
-//	(void)resp;
-//	UNUSED(request);
-	//while ((read_size = read(clientfd, request_buff, MAX_READ_BUFF)) == MAX_READ_BUFF)
-
-//	if (read_size == -1)
-//		return (Logger::log(LOG_ERROR, "failed to read() client request after accept()."));
-//	request_buff[read_size] = '\0';
-//	req_str += request_buff;
-/*
-	header = "HTTP/1.1 200 OK\n";
-	header += "Content-type: text/html\n";
-	
-	body +=	"<!DOCTYPE html>";
-	body +=	"<html>";
-	body +=	"	<head>";
-	body +=	"		<title>Webserv Index</title>";
-	body +=	"	</head>";
-	body +=	"	<body>";
-	body +=	"		<h1>Hello World page1</h1>";
-	body +=	"		<img src=\"asdf.jpg\" width=100 height=100>";
-	body +=	"		<a href=\"page2.html\">My beautiful link</a>";
-	body +=	"	</body>";
-	body +=	"</html>";
-
-	header += "Content-length: ";
-	content_length << body.length();
-	header += content_length.str();
-	header += "\r\n\r\n";
-	response = header + body;
-*/
-	std::cout << "Sending response page" << std::endl;
-	
 	const std::string&		response = resp.get_response();
-
+	ssize_t					send_size;
 
 	if ((send_size = write(clientfd, response.c_str(), response.length())) < 0)
 	{
-		std::cout << "write failed" << std::endl;
+		std::cerr << "Write failed" << std::endl;
 		return (Logger::log(LOG_ERROR, "failed to write() client request after read()."));
 	}
 	std::cout << "Response page SENT !" << std::endl;
 	return (0);
+}
+
+int	ServerHTTP::_serve_internal_error(int clientfd, const Request& req, const ServerConfig& cfg) const
+{
+	ErrorResponse		err(*this, req, cfg);
+
+	std::cerr << "Serving Internal Error Response Page " << std::endl;
+	err.prepare_response(500);
+	std::cout << err.get_response() << std::endl;
+	this->send_response(clientfd, err);
+	return (-1);
 }
 
 /// Full service function wrapping together the whole process of servicing a client request.
@@ -601,22 +583,37 @@ ServerHTTP::serve_request(int clientfd)
 {
 	Request				req;
 	Response			resp;
-	const std::string	*requested_host;
+//	const std::string	*requested_host;
 
 	if (	receive_request(clientfd, req) < 0
 		||	req.process_raw_request() < 0)
-		return (-1);
+	{
+		/// SEND ERROR PAGE
+//		ErrorResponse		err(*this, req, this->_cfgs[0]);
+//		err.prepare_response(500);
+//		send_response(clientfd, err);
+		return (_serve_internal_error(clientfd, req, this->_cfgs[0]));
+	}
 
-	requested_host = req["Host"];
-	const ServerConfig&	cfg = get_config_for_host(*requested_host);
+	/// DEBUG DELETE ME
+//	return (_serve_internal_error(clientfd, req, this->_cfgs[0]));
+
+	//requested_host = req["Host"];
+	const ServerConfig&	cfg = get_config_for_host(req["Host"]);
+//	const ServerConfig&	cfg = get_config_for_host(*requested_host);
+
 
 	if (	resp.prepare_response(*this, req, cfg) < 0
 		||	send_response(clientfd, resp) < 0)
-		return (-1);
+	{
+		/// SEND ERROR PAGE
+//		ErrorResponse		err(*this, req, cfg);
+//		err.prepare_response(500);
+//		send_response(clientfd, err);
+		return (_serve_internal_error(clientfd, req, cfg));
+	}
 	return (0);
 }
-
-
 
 
 t_srv_state*

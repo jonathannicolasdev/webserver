@@ -6,7 +6,7 @@
 /*   By: iamongeo <iamongeo@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/26 18:42:23 by iamongeo          #+#    #+#             */
-/*   Updated: 2023/08/13 17:25:07 by iamongeo         ###   ########.fr       */
+/*   Updated: 2023/08/13 17:52:15 by iamongeo         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -77,3 +77,6 @@ int Response::prepare_response(const ServerHTTP& srv, const Request& req, const 
 
 const std::string&	Response::get_response(void) const {return (this->_text);}
 /// END OF REQUIRED METHODS BY SERVER /////////////
+
+bool
+Response::empty(void) const {return (this->_text.empty());}

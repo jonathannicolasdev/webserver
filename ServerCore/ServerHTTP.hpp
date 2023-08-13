@@ -29,6 +29,7 @@
 # include "AServerDispatchSwitch.hpp"
 # include "Request.hpp"
 # include "Response.hpp"
+# include "ErrorResponse.hpp"
 # include "Logger.hpp"
 
 # define SRVHTTP_DEFAULT_NAME		""
@@ -119,10 +120,11 @@ class ServerHTTP: public AServerDispatchSwitch
 
 		// Series of functions called by serve_request()
 		int		receive_request(int clientfd, Request& request);
-		int		parse_request(Request& request) const;// Can take Request ref from the rq attribute or from and locally declared Request instance.
+//		int		parse_request(Request& request) const;// Can take Request ref from the rq attribute or from and locally declared Request instance.
 		//int	prepare_response(Request& request, Response& response) const;
 		//int		send_response(int clientfd);//, Response& response) const;
 		int		send_response(int clientfd, const Response& resp) const;
+		int		_serve_internal_error(int clientfd, const Request& req, const ServerConfig& cfg) const;
 
 	public:
 		ServerHTTP(const std::string& servname=SRVHTTP_DEFAULT_NAME, const std::string& rootdir=SRVHTTP_DEFAULT_ROOT,
