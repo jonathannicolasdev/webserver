@@ -17,6 +17,7 @@
 # include <iostream>
 # include <ctime>
 # include <string>
+# include <vector>
 # include <signal.h>
 # include <limits.h>
 
@@ -25,5 +26,6 @@
 bool		is_all_digits(const std::string& s);
 void		gen_timestamp(std::string& ret);
 std::string get_working_path(void);
+void	    join_strings(const std::vector<std::string>& sv, std::string& ret_string);
 
 #endif

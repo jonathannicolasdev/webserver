@@ -28,6 +28,38 @@ t_webs  *get_webserv_main_struct(void)
 }
 */
 
+void	join_strings(const std::vector<std::string>& sv, char delim, std::string& ret_str)
+{
+	std::vector<std::string>::const_iterator	it;
+	
+	if (sv.size() == 0)
+		return ;
+
+	for (it = sv.begin(); it != sv.end(); ++it)
+	{
+		ret_str += delim;
+		ret_str += *it;
+	}
+}
+
+void	split_string(const std::string& s, char delim, std::vector<std::string>& ret_vect)
+{
+	std::vector<std::string>::iterator	it;
+	size_t	p1 = 0, p2 = 0;
+
+	if (s.length() == 0)
+		return ;
+
+	while ((p2 = s.find(delim, p1)) != s.npos)
+	{
+		ret_vect.push_back(s.substr(p1, p2 - p1));
+		p2 = s.find_first_not_of(delim, p2);
+		p1 = p2;
+	}
+	if (p1 < (s.length() - 1))
+		ret_vect.push_back(s.substr(p1, p2 - p1));
+}
+
 bool	is_all_digits(const std::string& s)
 {
 	return (s.find_first_not_of("0123456789") == s.npos);
