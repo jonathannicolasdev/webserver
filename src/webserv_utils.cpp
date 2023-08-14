@@ -65,6 +65,20 @@ bool	is_all_digits(const std::string& s)
 	return (s.find_first_not_of("0123456789") == s.npos);
 }
 
+bool	get_file_last_modified_time(const std::string& filepath, std::string& ret)
+{
+	char			time_buff[128];
+	struct stat		result;
+	struct tm		*timeinfo;
+
+	if (stat(filepath.c_str(), &result) < 0)
+		return (false);
+	timeinfo = std::gmtime(&result.st_mtime);
+	strftime(time_buff, 128, "%c GMT", timeinfo);
+	ret = time_buff;
+	return (true);
+}
+
 void    gen_timestamp(std::string& ret)
 {
 	char					time_buff[128];
@@ -77,7 +91,7 @@ void    gen_timestamp(std::string& ret)
 //	timeinfo = localtime(&t);
 //	strftime(time_buff, 80, "%H:%M:%S %d/%m/%Y", timeinfo);
 //	strftime(time_buff, 80, "%a, %d %m %Y %T GMT", timeinfo);
-	strftime(time_buff, 80, "%c GMT", timeinfo);
+	strftime(time_buff, 128, "%c GMT", timeinfo);
 	ret = time_buff;
 //        timestamp << std::put_time(std::localtime(&t), "%Y%m%d_%H%M%S");
 //	timestamp << std::put_time(std::localtime(&t), "%H:%M:%S %d/%m/%Y");

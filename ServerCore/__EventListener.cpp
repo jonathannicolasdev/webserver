@@ -79,7 +79,7 @@ __EventListener::unpoll_socket(int sockfd)
 #ifdef __APPLE__
 	EV_SET(&this->_new_event, sockfd, EVFILT_READ | EVFILT_WRITE, EV_DELETE, 0, 0, 0);
 	if (kevent(this->_pollfd, &this->_new_event, 1, NULL, 0, NULL) < 0)
-		return (Logger::log(LOG_ERROR, "Failed to poll new socket"));
+		return (Logger::log(LOG_WARNING, "Failed to unpoll socket"));
 #elif __linux__
 	//if (this->_events[sockfd].data.fd < 3)
 	//	return (0);

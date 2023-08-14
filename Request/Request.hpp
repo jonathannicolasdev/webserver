@@ -34,6 +34,7 @@ class Request
 {
 	private:
 		enum e_method			_method;
+		std::string				_method_str;
 
 		std::string				_raw_request;
 		std::string				_raw_request_line;
@@ -60,14 +61,18 @@ class Request
 		int				process_raw_request(void);//const std::string& raw_request);
 
 		size_t			length(void) const;
-		enum e_method	get_method(void) const;
+		const std::string&	get_method(void) const;
 		bool			is_method(enum e_method method) const;
 		bool			is_empty(void);
+		const std::string&	get_path() const;
+		const std::string&	get_raw_request() const;
 
 		// Returns the header element at given key.
 //		const std::string*	operator[](const std::string& key) const;// access header tag values by indexing Request instance like a map. Returns NULL if not tag not in header, returns a string otherwise.
 		const std::string&	operator[](const std::string& key) const;// access header tag values by indexing Request instance like a map. Returns NULL if not tag not in header, returns a string otherwise.
 		Request&			operator<<(char *req_buff);// push raw request from client inside Request instance.
 };
+
+std::ostream&			operator<<(std::ostream&, const Request& req);
 
 #endif

@@ -1,35 +1,44 @@
 server {
   listen 8000;
 
-  root www;
+  root /www/;
   
 	server_name localhost;
 	index index.html;
 
   location / {
+    root /www/;
     index index.html;
   }
 cgi .php php-cgi_ubuntu;
 
-  location /autoindex/ {
+  location /autoindex {
     autoindex on;
   }
 
   location /data {
-    root www/data;
+    root /www/data/;
     index index.html;
     limit_except GET;
   }
 
   location /my_errors {
-    root www/errors;
+    root /www/errors;
   }
 
   location /admin {
     auth admin:admin;
-    root www/admin;
+    root /www/admin/;
     index index.html;
   }
-    error_page 404 /my_errors/404.html;
-
+  location /autoindex/admin {
+    auth admin:admin;
+    root /www/admin/;
+    index index.html;
+  }
+  location /assets {
+    root /www/assets/;
+  }
+  
+  error_page 404 /my_errors/404.html;
 }

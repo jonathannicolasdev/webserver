@@ -14,6 +14,7 @@
 # define WEBSERV_UTILS_HPP
 
 # include <unistd.h>
+# include <sys/stat.h>
 # include <iostream>
 # include <ctime>
 # include <string>
@@ -25,6 +26,7 @@
 
 bool		is_all_digits(const std::string& s);
 void		gen_timestamp(std::string& ret);
+bool	    get_file_last_modified_time(const std::string& filepath, std::string& ret);
 std::string get_working_path(void);
 void	    join_strings(const std::vector<std::string>& sv, std::string& ret_string);
 
