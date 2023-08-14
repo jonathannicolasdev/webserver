@@ -525,7 +525,15 @@ ServerHTTP::receive_request(int clientfd, Request& request)
 		Logger::log(LOG_DEBUG, "Client has disconnected. Closing client socket.");
 		return (-1);
 	}
+//	if (read_size < 0)
+//	{
+//		Logger::log(LOG_WARNING, "Reading from client socket returned -1.");
+//		return (-1);
+//	}
 	std::cout << "Read " << request.length() << " chars from client." << std::endl;
+	std::cout << "** ------------------------ [RECEIVED REQUEST] -------------------------- **" << std::endl;
+	std::cout << request << std::endl;
+	std::cout << "** ---------------------- [RECEIVED REQUEST END] -------------------------- **" << std::endl;
 //	if (req_str.length() == 0)
 //		return (0);
 	return (0);
@@ -588,6 +596,7 @@ ServerHTTP::serve_request(int clientfd)
 	if (	receive_request(clientfd, req) < 0
 		||	req.process_raw_request() < 0)
 	{
+		std::cerr << "Receive request failed " << std::endl;
 		/// SEND ERROR PAGE
 //		ErrorResponse		err(*this, req, this->_cfgs[0]);
 //		err.prepare_response(500);
@@ -598,15 +607,14 @@ ServerHTTP::serve_request(int clientfd)
 	/// DEBUG DELETE ME
 //	return (_serve_internal_error(clientfd, req, this->_cfgs[0]));
 
-	//requested_host = req["Host"];
 	const ServerConfig&	cfg = get_config_for_host(req["Host"]);
-//	const ServerConfig&	cfg = get_config_for_host(*requested_host);
 
 
 	if (	resp.prepare_response(*this, req, cfg) < 0
 		||	send_response(clientfd, resp) < 0)
 	{
 		/// SEND ERROR PAGE
+		std::cerr << "Prepare response failed " << std::endl;
 //		ErrorResponse		err(*this, req, cfg);
 //		err.prepare_response(500);
 //		send_response(clientfd, err);

@@ -3,6 +3,7 @@
 
 #include <iostream>
 #include <vector>
+#include <algorithm>
 
 class LocationConfig
 {
@@ -21,6 +22,8 @@ public:
 	
 	std::vector<std::string> GetAllowMethods() const;
 	void				AddAllowMethods(const std::string& method);
+	bool				IsAllowedMethod(const std::string& method) const;
+
 	const std::string&	GetReturnPath() const;
 	void 				SetReturnPath(const std::string& returnPath);
 	std::string 		GetAutoIndex() const;

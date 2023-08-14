@@ -127,6 +127,7 @@ bool	ErrorResponse::__prepare_error(const std::string& dir_path, int error_code)
 	header += "Content-type: text/html; charset=utf-8\r\n";
 
 	file_buff << fs.rdbuf();
+	fs.close();
 //	body += file_buff.str();
 
 //	std::cout << body;

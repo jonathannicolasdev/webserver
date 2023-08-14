@@ -4,9 +4,12 @@
 #include <iostream>
 #include <fstream>
 #include <sstream>
+#include <string>
 #include <vector>
 #include "ServerConfig.hpp"
 #include "LocationConfig.hpp"
+
+class ServerConfig;
 
 class ConfigBuilder
 {
@@ -18,8 +21,8 @@ private:
     std::string readConfigFile(const std::string& filename);
     std::string cleanSpaces(const std::string &content);
     std::string cleanComments(const std::string &content);
-    LocationConfig parseLocation(string content);
-    ServerConfig parseServer(string content);  
+    LocationConfig parseLocation(std::string content);
+    ServerConfig parseServer(std::string content);  
     void setListenPort(int port);
     void setServerName(const std::string &name);
     void setHost(const std::string &host);

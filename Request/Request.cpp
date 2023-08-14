@@ -63,6 +63,8 @@ int Request::process_request_line(void)
 	else
 		return (Logger::log(LOG_WARNING, "Received request with invalid method"));
 
+	_method_str = method;
+
 	if ((p1 = this->path.find('?')) != this->path.npos)
 	{
 		printf("FOUND ? IN PATH !!\n");
@@ -153,10 +155,13 @@ int Request::process_raw_request(void) // const std::string& raw_request)
 	return (0);
 }
 
-enum e_method
-Request::get_method(void) const { return (this->_method); }
+const std::string&
+Request::get_method(void) const { return (this->_method_str); }
 
 bool Request::is_method(enum e_method method) const { return (this->_method == method); }
+
+const std::string&	Request::get_raw_request(void) const {return (_raw_request);}
+
 
 const std::string&	Request::operator[](const std::string& key) const
 {
@@ -187,4 +192,10 @@ Request::operator<<(char *req_buff)
 {
 	this->_raw_request += req_buff;
 	return (*this);
+}
+
+std::ostream&			operator<<(std::ostream& os, const Request& req)
+{
+	os << req.get_raw_request();
+	return (os);
 }
