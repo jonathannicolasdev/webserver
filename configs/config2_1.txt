@@ -1,9 +1,9 @@
 server {
-  listen 8000;
+  listen 8080;
 
   root /www/;
   
-	server_name localhost1;
+	server_name localhost;
 	index index.html;
 
   location / {
@@ -25,6 +25,10 @@ cgi .php php-cgi_ubuntu;
     root /errors;
   }
 
+  #localhost:80/imgs/webp/jambon.jpg
+  #localhost:80/assets/webp/jambon.jpg
+
+
   location /admin {
     auth admin:admin;
     root /admin/;
@@ -44,9 +48,9 @@ cgi .php php-cgi_ubuntu;
 
 server {
   
-  listen 80
-  root /germain_www/PortFolio/
-	server_name localhost;
+  listen 8081
+  root /germain_www/PortFolio/;
+	server_name germain;
 
   location / {
     index index.html;

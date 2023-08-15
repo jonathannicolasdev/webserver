@@ -6,7 +6,7 @@
 /*   By: iamongeo <iamongeo@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/26 18:42:23 by iamongeo          #+#    #+#             */
-/*   Updated: 2023/08/14 19:35:46 by iamongeo         ###   ########.fr       */
+/*   Updated: 2023/08/14 23:31:07 by iamongeo         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -74,7 +74,7 @@ void	_build_get_http_header(const std::string& filepath, std::string& header,
 	header += "Last-Modified: " + last_modified_time + "\r\n";
 	
 	/// Had this to send the file as a downloadable attachment rather then a display item.
-//	header += std::string("Content-Disposition: attachment; filename=\"example.jpg\"") + "\r\n";	
+	header += std::string("Content-Disposition: attachment; filename=\"example.jpg\"") + "\r\n";	
 	header += "\r\n";
 	/// ..., maybe
 }

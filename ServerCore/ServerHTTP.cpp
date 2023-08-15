@@ -659,11 +659,11 @@ ServerHTTP::add_virtual_server(const IServer& other)
 	std::vector<ServerConfig>::iterator			cfgs_it;
 
 	if (!(*this == other))
-		return (Logger::log(LOG_ERROR, "Failed to merge 2 servers. Merging servers requires that both share the same network interface."));
+		return (Logger::log(LOG_ERROR, "Failed to merge 2 servers. Merging servers requires that both share the same network interface."), false);
 	for (cfgs_it = _cfgs.begin(); cfgs_it != _cfgs.end(); ++cfgs_it)
 	{
 		if (other.get_server_name() == cfgs_it->GetServerName())
-			return (Logger::log(LOG_ERROR, "Failed to merge 2 servers. Cannot Merge servers on same network interface, responding to requests to the same host. Would overwrite previous config."));
+			return (Logger::log(LOG_ERROR, "Failed to merge 2 servers. Cannot Merge servers on same network interface, responding to requests to the same host. Would overwrite previous config."), false);
 	}
 //	_cfgs.insert(_cfgs.end(), other._cfgs.begin(), other._cfgs.end());
 	_cfgs.insert(_cfgs.end(), other.get_config().begin(), other.get_config().end());

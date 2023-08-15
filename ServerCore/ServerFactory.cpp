@@ -128,6 +128,7 @@ bool	_flush_servers_after_error(AServerCluster* clu, std::vector<AServerDispatch
 {
 	std::vector<AServerDispatchSwitch*>::iterator		srv_it = built_servers->begin();
 
+	std::cerr << "Flushing ServerFactory Servers after bad config error." << std::endl;
 	//for (int i=0; i < nb_srvs; ++i)
 	if (clu)
 		delete clu;
