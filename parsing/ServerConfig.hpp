@@ -26,10 +26,11 @@ public:
 	void        SetHostIp(std::string hostIp);
 	std::string GetRoot() const;
 	void        SetRoot(std::string root);
+	const std::vector<std::string>& GetSplitRoot() const;
 	std::string GetIndexFile() const;
 	void        SetIndexFile(std::string indexFile);
 	const std::vector<LocationConfig>& GetLocations() const;
-	void        AddLocations(LocationConfig location);
+	void        AddLocations(const LocationConfig& location);
 	const std::map<int, std::string>& GetError_pages() const;
 	void        AddError_page(int errorCode, std::string error_page);
 	std::string GetListenPort() const;
@@ -48,6 +49,7 @@ private:
 	std::string         serverName;
 	std::string         hostIp;
 	std::string         root;
+	std::vector<std::string>	split_root;
 	std::string         indexFile;
 	std::vector<LocationConfig> locations;
 	std::map<int, string>       error_pages;

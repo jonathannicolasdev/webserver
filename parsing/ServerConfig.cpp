@@ -31,10 +31,15 @@ std::string ServerConfig::GetRoot() const
 {
 	return this->root;
 }
+const std::vector<std::string>& ServerConfig::GetSplitRoot() const
+{
+	return (this->split_root);
+}
 
 void ServerConfig::SetRoot(std::string root)
 {
 	this->root = root;
+	split_string(root, '/', this->split_root);
 }
 std::string ServerConfig::GetIndexFile() const
 {
@@ -50,7 +55,7 @@ const std::vector<LocationConfig>&  ServerConfig::GetLocations() const
 	return this->locations;
 }
 
-void ServerConfig::AddLocations(LocationConfig location)
+void ServerConfig::AddLocations(const LocationConfig& location)
 {
 	this->locations.push_back(location);
 }
@@ -153,6 +158,7 @@ const LocationConfig* ServerConfig::getBestLocationMatch(const std::string& path
 //    int i=0;
 	for (std::vector<LocationConfig>::const_iterator it = locations.begin(); it != locations.end(); ++it)
 	{
+		std::cout << "Best match path : " << path << " vs *it : " << it->GetPath() << std::endl;
 		if (path.find(it->GetPath()) == 0)
 		{
 			if (it->GetPath() == "/" || path.length() == it->GetPath().length() || path[it->GetPath().length()] == '/')

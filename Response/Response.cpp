@@ -6,7 +6,7 @@
 /*   By: iamongeo <iamongeo@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/26 18:42:23 by iamongeo          #+#    #+#             */
-/*   Updated: 2023/08/13 23:48:05 by iamongeo         ###   ########.fr       */
+/*   Updated: 2023/08/14 19:35:46 by iamongeo         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,6 +44,19 @@ void	_prepare_dummy_response(std::string& text_response)
 	text_response = header + body;
 }
 
+const std::string	_discover_content_type(const std::string& path)
+{
+	if (string_endswith(path, ".html"))
+		return ("text/html");
+	else if (string_endswith(path, ".jpg") || string_endswith(path, ".jpeg"))
+		return ("image/jpeg");
+	else if (string_endswith(path, ".js"))
+		return ("text/javascript");
+	else if (string_endswith(path, ".css"))
+		return ("text/css");
+	//...
+	return ("");
+}
 
 void	_build_get_http_header(const std::string& filepath, std::string& header,
 	const std::string& content_length, const std::string& content_type)
@@ -55,7 +68,8 @@ void	_build_get_http_header(const std::string& filepath, std::string& header,
 	header = "HTTP/1.1 200 OK\r\n";
 	header += "Date: " + cur_timestamp + "\r\n";
 	
-	header += "Content-type: " + content_type + "\r\n";
+	if (!content_type.empty())
+		header += "Content-type: " + content_type + "\r\n";
 	header += "Content-length: " + content_length + "\r\n";
 	header += "Last-Modified: " + last_modified_time + "\r\n";
 	
@@ -79,16 +93,17 @@ bool	Response::_process_get_request(const Request& req, const ServerConfig& srv_
 	
 	if (_requested_endpoint)
 	{
-		if (loc_cfg.GetIndexFile()[0] != '/')
-			_internal_path += '/';
-		_internal_path += loc_cfg.GetIndexFile();
+		if (loc_cfg.GetIndexFile().empty())
+			_internal_path += "/index.html";
+		else
+			_internal_path += loc_cfg.GetIndexFile();
 	}
 
 	std::cout << "GET REQUEST internal path : " << _internal_path << std::endl;
 	
 	if (access(_internal_path.c_str(), F_OK) < 0)
 	{
-		/// 403 File not found
+		/// 404 File not found
 		_error_code = 404;
 		//...
 		return (false);
@@ -115,7 +130,9 @@ bool	Response::_process_get_request(const Request& req, const ServerConfig& srv_
 
 	/// DEBUG ONLY. ACTUALLY FIND THE CORRECT CONTENT TYPE.
 	//content_type = "image/jpeg";
-	content_type = "text/html";
+	//content_type = req["Content"];//"text/html";
+
+	content_type = _discover_content_type(_internal_path);
 
 	_build_get_http_header(_internal_path, header, content_length.str(), content_type);
 	this->_text = header + body;
@@ -158,15 +175,31 @@ bool	Response::_validate_request(const Request& req, const ServerConfig& srv_cfg
 }
 
 /// If this is called, we know the location path matches the requested path at least in part, but the path may not be valid.
-void	Response::_get_internal_path(const Request& req, const LocationConfig& loc_cfg)
+std::string&	Response::_parse_internal_path(const Request& req, const LocationConfig& loc_cfg)
 {
 	const std::string&	req_path = req.get_path();
 	const std::string&	loc_path = loc_cfg.GetPath();
-	std::string			spec_requested;
+	std::string			spec_requested = req_path.substr(loc_path.length());
+//	std::vector<std::string>	req_path_split;
+//	std::vector<std::string>	loc_path_split;
+	std::vector<std::string>	spec_path_split;
+
+//	std::string					full_internal_path = _location_path;
 	//(void)req;
-	spec_requested = req_path.substr(loc_path.length());
-	std::cout << "spec_requested : " << spec_requested << std::endl;
-	_internal_path = _location_path + spec_requested;
+//	spec_requested = req_path.substr(loc_path.length());
+
+	_internal_path = _location_path;
+//	split_string(req_path, '/', req_path_split);
+//	split_string(loc_path, '/', loc_path_split);
+	split_string(spec_requested, '/', spec_path_split);
+
+//	join_strings(req_path_split, '/', full_internal_path);
+//	join_strings(loc_path_split, '/', full_internal_path);
+//	join_strings(spec_path_split, '/', full_internal_path);
+	join_strings(spec_path_split, '/', _internal_path);
+	
+//	std::cout << "spec_requested : " << spec_requested << std::endl;
+//	_internal_path = full_internal_path;//_location_path + spec_requested;
 	if (loc_path == req_path)// && loc_cfg.GetIndexFile())
 	{
 		_requested_endpoint = true;
@@ -174,6 +207,15 @@ void	Response::_get_internal_path(const Request& req, const LocationConfig& loc_
 //		_internal_path += loc_cfg.GetIndexFile();
 	}
 	std::cout << "Full internal path : " << _internal_path << std::endl;
+	return (_internal_path);
+}
+
+std::string&	Response::_parse_location_path(const ServerConfig& scfg, const LocationConfig& lcfg)
+{
+	_location_path = ServerConfig::cwd;
+	join_strings(scfg.GetSplitRoot(), '/', _location_path);
+	join_strings(lcfg.GetSplitRoot(), '/', _location_path);
+	return (_location_path);
 }
 
 /// REQUIRED METHODS BY SERVER ///////////////
@@ -185,11 +227,12 @@ int Response::prepare_response(const ServerHTTP& srv, const Request& req, const 
 	const LocationConfig*	best_match;
 
 	std::cout << " ******************* PATH:" << req.get_path() <<"\n";
-	std::cout << " ******************* SERVERCONFIG :"  ;
+	std::cout << " ******************* SERVERCONFIG :";
 	std::cout << " ******************* cwd : " << ServerConfig::cwd << std::endl;
 	cfg.print();
 	std::cout << "Preparing Response." << std::endl;
 	//int locationIndex = cfg.getBestLocationMatch(req.get_path());
+	std::cout << "Request path : " << req.get_path() << std::endl;
 	best_match = cfg.getBestLocationMatch(req.get_path());
 //	if (locationIndex==-1)
 	if (best_match == NULL)
@@ -208,13 +251,15 @@ int Response::prepare_response(const ServerHTTP& srv, const Request& req, const 
 			return (-1);
 		}
 		std::cout << "cwd : " << ServerConfig::cwd << std::endl;
+		_parse_location_path(cfg, *best_match);
+		std::cout << "Parsed location path : " << _location_path << std::endl;
 		//_location_path = ServerConfig::cwd + (*best_match).GetPath();
-		_location_path = ServerConfig::cwd + (*best_match).GetRoot();
+//		_location_path = ServerConfig::cwd + (*best_match).GetRoot();
 		
 		std::cout << std::endl << "Best match path : " << (*best_match).GetPath() << std::endl;
 		std::cout << "Requested path : " << req.get_path() << std::endl;
 		std::cout << "Location path : " << _location_path << std::endl;
-		_get_internal_path(req, *best_match);
+		_parse_internal_path(req, *best_match);
 
 		if (req.get_method() == "GET")
 			_process_get_request(req, cfg, *best_match);

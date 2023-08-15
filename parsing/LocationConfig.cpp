@@ -6,12 +6,61 @@
 #include <vector>
 #include <algorithm>
 
+/*
 LocationConfig::LocationConfig()
 {
 	// Allowed by default
 	allowMethods.push_back("GET");
 //	allowMethods.push_back("HEAD");
 //	allowMethods.push_back("POST");
+}
+*/
+LocationConfig::LocationConfig(ServerConfig& cfg): srv_cfg(cfg)
+{
+	// Allowed by default
+	allowMethods.push_back("GET");
+//	allowMethods.push_back("HEAD");
+//	allowMethods.push_back("POST");
+}
+
+LocationConfig::LocationConfig(const LocationConfig& other): srv_cfg(other.srv_cfg)
+{
+	if (this == &other)
+		return ;
+	srv_cfg = other.srv_cfg;
+	path = other.path;
+	allowMethods = other.allowMethods;
+	autoIndex = other.autoIndex;
+	indexFile = other.indexFile;
+	returnPath = other.returnPath;
+	root = other.root;
+	split_root = other.split_root;
+	cgiPaths = other.cgiPaths;
+	cgiExts = other.cgiExts;
+	maxBodySize = other.maxBodySize; // max_body_size
+	upload = other.upload;
+	allowDelete = other.allowDelete; // allow_delete on;
+	return ;
+}
+
+LocationConfig&	LocationConfig::operator=(const LocationConfig& other)
+{
+	if (this == &other)
+		return (*this);
+	srv_cfg = other.srv_cfg;
+	path = other.path;
+	allowMethods = other.allowMethods;
+	autoIndex = other.autoIndex;
+	indexFile = other.indexFile;
+	returnPath = other.returnPath;
+	root = other.root;
+	split_root = other.split_root;
+	cgiPaths = other.cgiPaths;
+	cgiExts = other.cgiExts;
+	maxBodySize = other.maxBodySize; // max_body_size
+	upload = other.upload;
+	allowDelete = other.allowDelete; // allow_delete on;
+	return (*this);
 }
 
 
@@ -21,7 +70,7 @@ std::string LocationConfig::GetPath() const
 }
 void LocationConfig::SetPath(const std::string& path)
 {
-	LocationConfig::path = path;
+	this->path = path;
 }
 
 std::string LocationConfig::GetIndexFile() const
@@ -31,16 +80,26 @@ std::string LocationConfig::GetIndexFile() const
 
 void LocationConfig::SetIndexFile(const std::string& indexFile)
 {
-	LocationConfig::indexFile = indexFile;
+	if (indexFile.empty())
+		return ;
+	else if (indexFile[0] != '/')
+		this->indexFile = std::string("/") + indexFile;
+	else
+		this->indexFile = indexFile;
 }
 std::string LocationConfig::GetRoot() const
 {
 	return root;
 }
+const std::vector<std::string>& LocationConfig::GetSplitRoot() const
+{
+	return (this->split_root);
+}
 
 void LocationConfig::SetRoot(const std::string& root)
 {
-	LocationConfig::root = root;
+	this->root = root;
+	split_string(root, '/', this->split_root);
 }
 std::vector<std::string> LocationConfig::GetAllowMethods() const
 {
@@ -65,7 +124,7 @@ const std::string& LocationConfig::GetReturnPath() const
 
 void LocationConfig::SetReturnPath(const std::string& returnPath)
 {
-	LocationConfig::returnPath = returnPath;
+	this->returnPath = returnPath;
 }
 
 std::string LocationConfig::GetAutoIndex() const
@@ -75,7 +134,7 @@ std::string LocationConfig::GetAutoIndex() const
 
 void LocationConfig::SetAutoIndex(const std::string& autoIndex)
 {
-	LocationConfig::autoIndex = autoIndex;
+	this->autoIndex = autoIndex;
 }
 
 std::vector<std::string> LocationConfig::GetCgiPaths() const
@@ -89,7 +148,7 @@ std::string LocationConfig::GetMaxBodySize() const
 
 void LocationConfig::SetMaxBodySize(const std::string& maxBodySize)
 {
-	LocationConfig::maxBodySize = maxBodySize;
+	this->maxBodySize = maxBodySize;
 }
 std::string LocationConfig::GetAllowDelete() const
 {
@@ -98,7 +157,7 @@ std::string LocationConfig::GetAllowDelete() const
 
 void LocationConfig::SetAllowDelete(const std::string& allowDelete)
 {
-	LocationConfig::allowDelete = allowDelete;
+	this->allowDelete = allowDelete;
 }
 std::string LocationConfig::GetUpload() const
 {
@@ -107,12 +166,12 @@ std::string LocationConfig::GetUpload() const
 
 void LocationConfig::SetUpload(const std::string& upload)
 {
-	LocationConfig::upload = upload;
+	this->upload = upload;
 }
 
 void LocationConfig::AddCgiPath(const std::string& cgiPath)
 {
-	LocationConfig::cgiPaths.push_back(cgiPath);
+	this->cgiPaths.push_back(cgiPath);
 }
 std::vector<std::string> LocationConfig::GetCgiExts() const
 {
@@ -121,7 +180,7 @@ std::vector<std::string> LocationConfig::GetCgiExts() const
 
 void LocationConfig::AddCgiExt(const std::string& cgiExt)
 {
-	LocationConfig::cgiExts.push_back(cgiExt);
+	this->cgiExts.push_back(cgiExt);
 }
 
 void LocationConfig::print() const

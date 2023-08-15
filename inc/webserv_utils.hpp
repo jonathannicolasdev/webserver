@@ -28,6 +28,8 @@ bool		is_all_digits(const std::string& s);
 void		gen_timestamp(std::string& ret);
 bool	    get_file_last_modified_time(const std::string& filepath, std::string& ret);
 std::string get_working_path(void);
-void	    join_strings(const std::vector<std::string>& sv, std::string& ret_string);
+bool	    string_endswith(const std::string& fullstr, const std::string& ending);
+void    	join_strings(const std::vector<std::string>& sv, char delim, std::string& ret_str);
+void	    split_string(const std::string& s, char delim, std::vector<std::string>& ret_vect);
 
 #endif

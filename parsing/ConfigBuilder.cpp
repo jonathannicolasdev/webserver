@@ -111,9 +111,9 @@ string ConfigBuilder::cleanComments(const std::string &content)
     }
     return buffer.str();
 }
-LocationConfig ConfigBuilder::parseLocation(string content)
+LocationConfig ConfigBuilder::parseLocation(ServerConfig& srv_cfg, const std::string& content)
 {
-    LocationConfig locationConfig = LocationConfig();
+    LocationConfig locationConfig(srv_cfg);
 
     std::istringstream iss(content);
     std::string line;
@@ -222,7 +222,7 @@ ServerConfig ConfigBuilder::parseServer(string content)
     for (size_t i = 0; i < locationBlocks.size(); i++)
     {
         // std::cout << "LOCATION: " << locationBlocks[i] << "\n";
-        serverConfig.AddLocations(parseLocation(locationBlocks[i]));
+        serverConfig.AddLocations(parseLocation(serverConfig, locationBlocks[i]));
     }
 
     // std::cout << "SERVER: " << serverDirectives;

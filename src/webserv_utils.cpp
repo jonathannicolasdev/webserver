@@ -28,6 +28,13 @@ t_webs  *get_webserv_main_struct(void)
 }
 */
 
+bool	string_endswith(const std::string& fullstr, const std::string& ending)
+{
+	if (ending.length() > fullstr.length())
+		return (false);
+	return (fullstr.compare(fullstr.length() - ending.length(), ending.length(), ending) == 0);
+}
+
 void	join_strings(const std::vector<std::string>& sv, char delim, std::string& ret_str)
 {
 	std::vector<std::string>::const_iterator	it;
@@ -35,11 +42,16 @@ void	join_strings(const std::vector<std::string>& sv, char delim, std::string& r
 	if (sv.size() == 0)
 		return ;
 
+//	std::cout << "join_strings entered with ret_str : " << ret_str << std::endl;
+
 	for (it = sv.begin(); it != sv.end(); ++it)
 	{
+		if ((*it).empty())
+			continue ;
 		ret_str += delim;
 		ret_str += *it;
 	}
+//	std::cout << "join_strings exits with ret_str : " << ret_str << std::endl;
 }
 
 void	split_string(const std::string& s, char delim, std::vector<std::string>& ret_vect)
@@ -52,7 +64,8 @@ void	split_string(const std::string& s, char delim, std::vector<std::string>& re
 
 	while ((p2 = s.find(delim, p1)) != s.npos)
 	{
-		ret_vect.push_back(s.substr(p1, p2 - p1));
+		if (p2 > p1)
+			ret_vect.push_back(s.substr(p1, p2 - p1));
 		p2 = s.find_first_not_of(delim, p2);
 		p1 = p2;
 	}

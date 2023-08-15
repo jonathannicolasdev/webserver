@@ -5,10 +5,19 @@
 #include <vector>
 #include <algorithm>
 
+#include "ServerConfig.hpp"
+#include "webserv_utils.hpp"
+
+class ServerConfig;
+
 class LocationConfig
 {
 public:
 	LocationConfig();
+	LocationConfig(ServerConfig& cfg);
+	LocationConfig(const LocationConfig& other);
+	LocationConfig&	operator=(const LocationConfig& other);
+
 	void print() const;
 
 	std::string 		GetPath() const;
@@ -19,6 +28,7 @@ public:
 	
 	std::string 		GetRoot() const;
 	void				SetRoot(const std::string& root);
+	const std::vector<std::string>& GetSplitRoot() const;
 	
 	std::vector<std::string> GetAllowMethods() const;
 	void				AddAllowMethods(const std::string& method);
@@ -41,12 +51,14 @@ public:
 	void 						AddCgiExt(const std::string& cgiExt);
 
 private:
-	std::string path;
+	ServerConfig&	srv_cfg;
+	std::string		path;
 	std::vector<std::string> allowMethods;
 	std::string autoIndex;
 	std::string indexFile;
 	std::string returnPath;
 	std::string root;
+	std::vector<std::string> split_root;
 	std::vector<std::string> cgiPaths;
 	std::vector<std::string> cgiExts;
 	std::string maxBodySize; // max_body_size
