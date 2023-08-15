@@ -101,6 +101,7 @@ class	AServerCluster:	public __EventListener, public __BaseSocketOwner
 		int			_timeout;// minimum none 0 timeout in member servers.
 		time_t		_start_time;
 		time_t		_last_maintenance_time;
+		AServerDispatchSwitch*		_currently_serving;// server currently serving a client.
 //		int			_timeout_clientfd[MAX_CONCUR_POLL];// array to receive the fds from timed out clients from servers.
 		
 //		std::vector<AServerDispatchSwitch *>	_servers;//	All servers in cluster
@@ -134,6 +135,7 @@ class	AServerCluster:	public __EventListener, public __BaseSocketOwner
 		virtual void	stop(void);// = 0;// stops all its active servers
 		virtual int		reboot(void);// = 0;// stops all its active servers and restarts them.
 		virtual int		terminate(bool force);// = 0;// stops all active servers and deletes them from the cluster.
+		virtual void	track_bad_client(void);// Disconnect the client currently beeing served, on the server currently servicing its request.
 
 		// Potentialy add multiple overloads for stopping / rebooting / starting ... by Server type.
 };

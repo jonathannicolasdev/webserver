@@ -15,7 +15,8 @@
 AServerDispatchSwitch::AServerDispatchSwitch(uint16_t _port,// bool _close_rqst, bool _is_running,
 	enum e_server_status_codes _status, bool conn_persistance, int conn_timout):
 	AServerReactive(_port, false, false, true, _status),
-	_keep_alive(conn_persistance), _conn_timeout(conn_timout)
+	_keep_alive(conn_persistance), _conn_timeout(conn_timout),
+	_currently_serving(0), _client_disconnect_signaled(false)
 {
 	std::cout << "AServerDispatchSwitch constructor" << std::endl;
 }
@@ -149,6 +150,14 @@ AServerDispatchSwitch::disconnect_oldest(int *disconn_clients, int max_disconn)
 	}
 	return (nb_disconn);
 }
+
+void
+AServerDispatchSwitch::disconnect_current_client(void)
+{
+	_client_disconnect_signaled = true;
+	this->disconnect(_currently_serving, true);
+}
+
 
 int
 AServerDispatchSwitch::do_maintenance(int *disconn_clients, int max_disconn)

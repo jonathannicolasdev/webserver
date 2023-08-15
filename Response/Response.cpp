@@ -6,7 +6,7 @@
 /*   By: iamongeo <iamongeo@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/26 18:42:23 by iamongeo          #+#    #+#             */
-/*   Updated: 2023/08/14 23:31:07 by iamongeo         ###   ########.fr       */
+/*   Updated: 2023/08/15 17:05:27 by iamongeo         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -48,18 +48,22 @@ const std::string	_discover_content_type(const std::string& path)
 {
 	if (string_endswith(path, ".html"))
 		return ("text/html");
-	else if (string_endswith(path, ".jpg") || string_endswith(path, ".jpeg"))
-		return ("image/jpeg");
 	else if (string_endswith(path, ".js"))
 		return ("text/javascript");
 	else if (string_endswith(path, ".css"))
 		return ("text/css");
+	else if (string_endswith(path, ".jpg") || string_endswith(path, ".jpeg"))
+		return ("image/jpeg");
+	else if (string_endswith(path, ".png"))
+		return ("image/png");
+	else if (string_endswith(path, ".pdf"))
+		return ("application/pdf");
 	//...
 	return ("");
 }
 
 void	_build_get_http_header(const std::string& filepath, std::string& header,
-	const std::string& content_length, const std::string& content_type)
+	const std::string& content_length, const std::string& content_type, bool is_attachment)
 {
 	std::string			cur_timestamp, last_modified_time;
 	
@@ -74,7 +78,20 @@ void	_build_get_http_header(const std::string& filepath, std::string& header,
 	header += "Last-Modified: " + last_modified_time + "\r\n";
 	
 	/// Had this to send the file as a downloadable attachment rather then a display item.
-	header += std::string("Content-Disposition: attachment; filename=\"example.jpg\"") + "\r\n";	
+	//header += std::string("Content-Disposition: attachment; filename=\"example.jpg\"") + "\r\n";
+	if (is_attachment)// Makes GET file downloadable rather then displayable.
+	{
+		header += "Cache-Control: private\r\n";
+		header += "Content-Disposition: attachment;";
+
+		header += " filename=\"";// + "example.jpg" + "\"";
+		size_t	last_slash = filepath.find_last_of('/');
+		if (last_slash == filepath.npos)
+			header += filepath;
+		else
+			header += filepath.substr(filepath.find_last_of('/') + 1);
+		header += "\"\r\n";
+	}
 	header += "\r\n";
 	/// ..., maybe
 }
@@ -134,7 +151,7 @@ bool	Response::_process_get_request(const Request& req, const ServerConfig& srv_
 
 	content_type = _discover_content_type(_internal_path);
 
-	_build_get_http_header(_internal_path, header, content_length.str(), content_type);
+	_build_get_http_header(_internal_path, header, content_length.str(), content_type, false);//true);
 	this->_text = header + body;
 	std::cout << std::endl << "RESPONSE HEADER : " << std::endl;
 	std::cout << header << std::endl;

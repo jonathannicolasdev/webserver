@@ -563,14 +563,44 @@ ServerHTTP::send_response(int clientfd, const Response& resp) const
 //	std::ostringstream	content_length;
 //	std::string&		response;
 	const std::string&		response = resp.get_response();
-	ssize_t					send_size;
+	ssize_t					sent_size;
+	size_t					to_send = response.length();
+	const char*				msg = response.c_str();
+	int						max_retries = SRVHTTP_MAX_SEND_RETRIES;
 
+	std::cout << "Server Sending response size : " << to_send << std::endl;
+	while (to_send > 0)
+	//while ((send_size = write(clientfd, response.c_str(), to_send)) > 0)
+	{
+		std::cout << "Sending one chunk " << std::endl;
+		if ((sent_size = write(clientfd, msg, to_send)) < 0)
+		{
+			if (max_retries <= 0)
+			{
+				Logger::log(LOG_WARNING, "Client disconnected before full response could be sent.");
+				return (-1);;
+			}
+			--max_retries;
+			usleep(10000);
+			continue ;
+		}
+		if (_client_disconnect_signaled)
+			return (-1);
+		max_retries = SRVHTTP_MAX_SEND_RETRIES;
+		std::cout << sent_size << " successfully sent." << std::endl;
+		to_send -= sent_size;
+		msg += sent_size;
+	}
+
+/*
 	if ((send_size = write(clientfd, response.c_str(), response.length())) < 0)
 	{
 		std::cerr << "Write failed" << std::endl;
 		return (Logger::log(LOG_ERROR, "failed to write() client request after read()."));
 	}
 	std::cout << "Response page SENT !" << std::endl;
+*/
+	std::cout << "Full Response successfully SENT !" << std::endl;
 	return (0);
 }
 
@@ -593,6 +623,7 @@ ServerHTTP::serve_request(int clientfd)
 	Response			resp;
 //	const std::string	*requested_host;
 
+	_currently_serving = clientfd;
 	if (	receive_request(clientfd, req) < 0
 		||	req.process_raw_request() < 0)
 	{
@@ -601,6 +632,7 @@ ServerHTTP::serve_request(int clientfd)
 //		ErrorResponse		err(*this, req, this->_cfgs[0]);
 //		err.prepare_response(500);
 //		send_response(clientfd, err);
+		_currently_serving = 0;
 		return (_serve_internal_error(clientfd, req, this->_cfgs[0]));
 	}
 
@@ -618,8 +650,10 @@ ServerHTTP::serve_request(int clientfd)
 //		ErrorResponse		err(*this, req, cfg);
 //		err.prepare_response(500);
 //		send_response(clientfd, err);
+		_currently_serving = 0;
 		return (_serve_internal_error(clientfd, req, cfg));
 	}
+	_currently_serving = 0;
 	return (0);
 }
 
@@ -644,11 +678,17 @@ const ServerConfig&
 ServerHTTP::get_config_for_host(const std::string& host) const
 {
 	std::vector<ServerConfig>::const_iterator		cfgs_it;
+	size_t	pos;
 
 	for (cfgs_it = _cfgs.begin(); cfgs_it != _cfgs.end(); ++cfgs_it)
-		if (cfgs_it->GetServerName() == host)
+	{
+		pos = cfgs_it->GetServerName().find_last_of(':');
+		if (pos == std::string::npos && cfgs_it->GetServerName() == host)
 			return (*cfgs_it);
-
+		else if (pos != std::string::npos
+			&& cfgs_it->GetServerName().compare(0, pos, host) == 0)
+			return (*cfgs_it);
+	}
 	return (*_cfgs.begin());
 }
 

@@ -60,14 +60,16 @@ void	sigint_handler(int signum)
 void	sigpipe_handler(int signum)
 {
 	UNUSED(signum);
-	std::cerr << "Received SIGPIPE signal. Exiting." << std::endl;
+	std::cerr << "Received SIGPIPE signal." << std::endl;
+	Logger::log(LOG_WARNING, "Received SIGPIPE signal and handling it majestically by disconnecting problematic client.");
 	if (srv_clu)
 	{
-		srv_clu->terminate(true);
+		//srv_clu->terminate(true);
 //		delete srv_clu;// implicitally called by ServerCluster destructor
+		srv_clu->track_bad_client();
 	}
 	// Don't do this.
-	exit(SIGINT);
+//	exit(SIGINT);
 }
 
 int main(int argc, char **argv, char **envp)

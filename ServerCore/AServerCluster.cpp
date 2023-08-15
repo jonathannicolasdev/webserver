@@ -42,7 +42,7 @@ int	AServerCluster::generate_id(void)
 }
 
 AServerCluster::AServerCluster(void): __EventListener(), _id(generate_id()),
-	_status(CLU_UNBOUND), _request_stop(false), _timeout(-1)
+	_status(CLU_UNBOUND), _request_stop(false), _timeout(-1), _currently_serving(NULL)
 {
 	std::cout << "AServerCluster constructor" << std::endl;
 //	std::memset(this->_events, 0, sizeof(this->_events));
@@ -272,6 +272,7 @@ AServerCluster::__cluster_mainloop(void)
 			}
 			else if ((srv = this->find_owner(eventfd)))
 			{
+				_currently_serving = srv;
 				std::cout << "Cluster found eventfd " << eventfd << " is client socket." << std::endl;
 				// The event was triggered by clientfd and we must serve the requested content.
 				clientfd = eventfd;
@@ -282,6 +283,7 @@ AServerCluster::__cluster_mainloop(void)
 					this->unpoll_socket(clientfd);
 					srv->disconnect(clientfd, true);
 				}
+				_currently_serving = NULL;
 			}
 			else
 				return (Logger::log(LOG_CRITICAL, "POLLING MECH RECEIVED EVENT FROM UNIDENTIFIED FD. THE TRUTH IS OUT THERE !!"));
@@ -321,6 +323,17 @@ AServerCluster::start(void)
 	this->_last_maintenance_time = this->_start_time;
 	return (this->__cluster_mainloop());
 	//return (0);
+}
+
+void
+AServerCluster::track_bad_client(void)
+{
+	AServerDispatchSwitch*	srv;
+	
+	srv = _currently_serving;
+	if (!srv)
+		return;
+	srv->disconnect_current_client();
 }
 
 void

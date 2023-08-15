@@ -111,6 +111,8 @@ class	AServerDispatchSwitch: public AServerReactive
 		int				_pollfd;// will be kqueue fd on MacOS;
 		std::time_t		_srv_start_time;
 		std::time_t		_last_maintenance_time;// 
+		int				_currently_serving;
+		bool			_client_disconnect_signaled;
 
 		// conn_timout in ms
 		AServerDispatchSwitch(uint16_t _port, //bool _close_rqst, bool _is_running,
@@ -127,6 +129,7 @@ class	AServerDispatchSwitch: public AServerReactive
 		virtual void	stop(void);
 		virtual int		disconnect(int clt_fd, bool force);
 		virtual void	disconnect_all(bool force);
+		virtual void	disconnect_current_client(void);
 		virtual void	switch_connection_persistance(void);// Switches the _keep_alive bool on/off. 
 		virtual int		connect(int *disconn_clients, int max_disconn, int *ret_clientfd);// Is called either to wait for a knew connection or to use as a callback for the EVNT_ACCEPT_CONNECTION event.
 		virtual bool	is_running(void) const;
