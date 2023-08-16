@@ -48,9 +48,9 @@ cgi .php php-cgi_ubuntu;
 
 server {
   
-  listen 8081
-  root /germain_www/PortFolio/;
-	server_name germain;
+  listen 80
+  root /www2;
+	server_name pulsar;
 
   location / {
     index index.html;

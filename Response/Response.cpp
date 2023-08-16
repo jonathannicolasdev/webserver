@@ -6,7 +6,7 @@
 /*   By: iamongeo <iamongeo@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/26 18:42:23 by iamongeo          #+#    #+#             */
-/*   Updated: 2023/08/15 17:05:27 by iamongeo         ###   ########.fr       */
+/*   Updated: 2023/08/15 22:26:37 by iamongeo         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -121,13 +121,17 @@ bool	Response::_process_get_request(const Request& req, const ServerConfig& srv_
 	if (access(_internal_path.c_str(), F_OK) < 0)
 	{
 		/// 404 File not found
+		std::cerr << "ERROR 404 Not Found" << std::endl;
+		Logger::log(LOG_DEBUG, "ERROR 404 Not Found");
 		_error_code = 404;
 		//...
 		return (false);
 	}
 	else if (access(_internal_path.c_str(), R_OK) < 0)
 	{
-		/// 403 Forbiden
+		/// 403 Forbidden
+		std::cerr << "ERROR 403 Not Found" << std::endl;
+		Logger::log(LOG_DEBUG, "ERROR 403 Forbidden");
 		_error_code = 403;
 		//...
 		return (false);
@@ -136,6 +140,8 @@ bool	Response::_process_get_request(const Request& req, const ServerConfig& srv_
 	if (!fs.is_open())
 	{
 		/// 500 Internal Error ... Or something else.
+		std::cerr << "ERROR 500 Not Found" << std::endl;
+		Logger::log(LOG_DEBUG, "ERROR 500 Internal Error");
 		// At this point the filepath should be confirmed valid, so not being able to open it is unexpected.
 		_error_code = 500;
 		return (false);
@@ -158,6 +164,7 @@ bool	Response::_process_get_request(const Request& req, const ServerConfig& srv_
 //	std::cout << "** ------------------------ [BUILT RESPONSE] -------------------------- **" << std::endl;
 //	std::cout << this->_text << std::endl;
 //	std::cout << "** ---------------------- [BUILT RESPONSE END] -------------------------- **" << std::endl;
+	std::cout << "GET REQUEST HANDLED" << std::endl;
 	return (true);
 }
 
@@ -197,31 +204,15 @@ std::string&	Response::_parse_internal_path(const Request& req, const LocationCo
 	const std::string&	req_path = req.get_path();
 	const std::string&	loc_path = loc_cfg.GetPath();
 	std::string			spec_requested = req_path.substr(loc_path.length());
-//	std::vector<std::string>	req_path_split;
-//	std::vector<std::string>	loc_path_split;
 	std::vector<std::string>	spec_path_split;
 
-//	std::string					full_internal_path = _location_path;
-	//(void)req;
-//	spec_requested = req_path.substr(loc_path.length());
-
 	_internal_path = _location_path;
-//	split_string(req_path, '/', req_path_split);
-//	split_string(loc_path, '/', loc_path_split);
 	split_string(spec_requested, '/', spec_path_split);
-
-//	join_strings(req_path_split, '/', full_internal_path);
-//	join_strings(loc_path_split, '/', full_internal_path);
-//	join_strings(spec_path_split, '/', full_internal_path);
 	join_strings(spec_path_split, '/', _internal_path);
-	
-//	std::cout << "spec_requested : " << spec_requested << std::endl;
-//	_internal_path = full_internal_path;//_location_path + spec_requested;
-	if (loc_path == req_path)// && loc_cfg.GetIndexFile())
+	if (loc_path == req_path)
 	{
 		_requested_endpoint = true;
 		std::cout << "IS REQUESTED ENDPOINT !!" << std::endl;
-//		_internal_path += loc_cfg.GetIndexFile();
 	}
 	std::cout << "Full internal path : " << _internal_path << std::endl;
 	return (_internal_path);
@@ -234,6 +225,27 @@ std::string&	Response::_parse_location_path(const ServerConfig& scfg, const Loca
 	join_strings(lcfg.GetSplitRoot(), '/', _location_path);
 	return (_location_path);
 }
+
+
+/// CGI RELATED METHODS
+bool	Response::_check_if_cgi_exec(const Request& req, const LocationConfig& cfg)
+{
+	std::vector<std::string>::iterator	it = cfg.GetCgiPaths().begin();
+	std::string		path_info;
+	
+	size_t	pos = _internal_path.find(".py");
+	if (pos == _internal_path.npos)
+		return (false);
+	path_info = _internal_path.substr(pos + 3);
+
+//	for (; it != cfg.GetCgiPaths().end(); ++it)
+//	{		
+//	}
+	return (false);
+}
+/// END OF CGI RELATED METHODS
+
+
 
 /// REQUIRED METHODS BY SERVER ///////////////
 int Response::prepare_response(const ServerHTTP& srv, const Request& req, const ServerConfig& cfg)
@@ -278,12 +290,27 @@ int Response::prepare_response(const ServerHTTP& srv, const Request& req, const 
 		std::cout << "Location path : " << _location_path << std::endl;
 		_parse_internal_path(req, *best_match);
 
+		if (_check_if_cgi_exec(req, *best_match))
+			return (0);
+
 		if (req.get_method() == "GET")
-			_process_get_request(req, cfg, *best_match);
+		{
+			if (!_process_get_request(req, cfg, *best_match))
+			{
+				std::cout << "WOWOW GOT GET METHOD BUT process_get_request FAILED !" << std::endl;
+				return (-1);
+			}
+		}
 		else if (req.get_method() == "POST")
-			_process_post_request(req, cfg, *best_match);
+		{
+			if (!_process_post_request(req, cfg, *best_match))
+				return (-1);
+		}
 		else if (req.get_method() == "DELETE")
-			_process_delete_request(req, cfg, *best_match);
+		{
+			if (!_process_delete_request(req, cfg, *best_match))
+				return (-1);
+		}
 	}
 
 	// DUMMY RESPONSE. DELETE ME

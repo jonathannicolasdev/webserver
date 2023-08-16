@@ -623,6 +623,7 @@ ServerHTTP::serve_request(int clientfd)
 	Response			resp;
 //	const std::string	*requested_host;
 
+	std::cout << std::endl << std::endl << "*------------------------{SERVER RECEIVED NEW REQUEST}-------------------------*" << std::endl;
 	_currently_serving = clientfd;
 	if (	receive_request(clientfd, req) < 0
 		||	req.process_raw_request() < 0)
@@ -642,17 +643,22 @@ ServerHTTP::serve_request(int clientfd)
 	const ServerConfig&	cfg = get_config_for_host(req["Host"]);
 
 
-	if (	resp.prepare_response(*this, req, cfg) < 0
-		||	send_response(clientfd, resp) < 0)
+	if (resp.prepare_response(*this, req, cfg) < 0)
 	{
 		/// SEND ERROR PAGE
 		std::cerr << "Prepare response failed " << std::endl;
-//		ErrorResponse		err(*this, req, cfg);
-//		err.prepare_response(500);
+		int	error_code = resp.get_error_code();
+		ErrorResponse		err(*this, req, cfg);
+		if (error_code)
+			err.prepare_response(error_code);
+		else
+			err.prepare_response(500);
 //		send_response(clientfd, err);
-		_currently_serving = 0;
-		return (_serve_internal_error(clientfd, req, cfg));
+//		return (_serve_internal_error(clientfd, req, cfg));
+		send_response(clientfd, err);
 	}
+	else
+		send_response(clientfd, resp);
 	_currently_serving = 0;
 	return (0);
 }
@@ -680,15 +686,27 @@ ServerHTTP::get_config_for_host(const std::string& host) const
 	std::vector<ServerConfig>::const_iterator		cfgs_it;
 	size_t	pos;
 
+	std::cout << "Looking for location config :" << std::endl;
 	for (cfgs_it = _cfgs.begin(); cfgs_it != _cfgs.end(); ++cfgs_it)
 	{
-		pos = cfgs_it->GetServerName().find_last_of(':');
-		if (pos == std::string::npos && cfgs_it->GetServerName() == host)
+		std::cout << "Comparing location server_name " << cfgs_it->GetServerName() << " vs " << host << std::endl;
+		pos = host.find_last_of(':');
+//		if (pos != std::string::npos)
+//		{
+//			std::cout << "req host up to ':' char : " << host.substr(0, pos) << ", pos : " << pos << std::endl;
+//			std::cout << "req host cmp srv_name : " << host.compare(0, pos, cfgs_it->GetServerName()) << std::endl;
+//			std::cout << "req host name up to pos : '" << host.substr(0, pos) << "'" << std::endl;
+//			std::cout << "req srv_name name up to pos : '" << host.substr(0, pos) << "'" << std::endl;
+//		}
+		if (cfgs_it->GetServerName() == host)
 			return (*cfgs_it);
+//		if (pos == std::string::npos && cfgs_it->GetServerName() == host)
+//			return (*cfgs_it);
 		else if (pos != std::string::npos
-			&& cfgs_it->GetServerName().compare(0, pos, host) == 0)
+			&& host.compare(0, pos, cfgs_it->GetServerName()) == 0)
 			return (*cfgs_it);
 	}
+	std::cout << "Serving default location config :" << std::endl;
 	return (*_cfgs.begin());
 }
 

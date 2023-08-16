@@ -6,7 +6,7 @@
 /*   By: iamongeo <iamongeo@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/26 18:40:57 by iamongeo          #+#    #+#             */
-/*   Updated: 2023/08/14 18:36:49 by iamongeo         ###   ########.fr       */
+/*   Updated: 2023/08/15 22:21:42 by iamongeo         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,7 +43,8 @@ class Response
 		bool	_validate_request(const Request& req, const ServerConfig& srv_cfg, const LocationConfig& loc_cfg);
 		std::string&	_parse_internal_path(const Request& req, const LocationConfig& loc_cfg);
 		std::string&	_parse_location_path(const ServerConfig& scfg, const LocationConfig& lcfg);
-		
+		bool			_check_if_cgi_exec(const Request& req, const LocationConfig& cfg);
+
 	public:
 		Response(void);    
 		virtual ~Response(void);
