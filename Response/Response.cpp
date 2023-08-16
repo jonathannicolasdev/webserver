@@ -160,12 +160,61 @@ bool	Response::_process_get_request(const Request& req, const ServerConfig& srv_
 //	std::cout << "** ---------------------- [BUILT RESPONSE END] -------------------------- **" << std::endl;
 	return (true);
 }
+/*
+bool Response::_process_post_request(const Request& req, const ServerConfig& srv_cfg, const LocationConfig& loc_cfg)
+{
+    (void)srv_cfg;  // Unused parameter
+    (void)loc_cfg;  // Unused parameter
+    // Check if the target file exists
+    if (fileExists(_target_file))
+    {
+        _error_code = 204; // No Content
+        return true;
+    }
+    // Attempt to open the target file for writing
+    std::ofstream file(_target_file.c_str(), std::ios::binary);
+    if (file.fail())
+    {
+        _error_code = 404; // Not Found
+        return false;
+    }
+    // Check if the request contains multipart form data
+    if (req.getMultiformFlag())
+    {
+        // Remove boundary and extract the body
+        std::string body = req.getBody();
+        body = removeBoundary(body, req.getBoundary());
+        // Write the processed body to the file
+        file.write(body.c_str(), body.length());
+    }
+    else
+    {
+        // Write the request body directly to the file
+        file.write(req.getBody().c_str(), req.getBody().length());
+    }
+    // Prepare a response indicating successful upload
+    std::string response_body = "File uploaded successfully.";
+    std::string header;
+    _build_get_http_header("", header, std::to_string(response_body.length()), "text/plain", false);
+    _text = header + response_body;
+    // Set the HTTP response code to 201 (Created)
+    _error_code = 201;
+    return true;
+}
+*/
 
 bool	Response::_process_post_request(const Request& req, const ServerConfig& srv_cfg, const LocationConfig& loc_cfg)
 {
 	(void)req;
 	(void)srv_cfg;
 	(void)loc_cfg;
+	const std::string& post_data = req.get_body();
+	std::string response_body = "Received post data:\n" + post_data;
+	std::string header;
+	_build_get_http_header("", header, std::to_string(response_body.length()), "text/plain", false);
+	std::cout << "response body : " << response_body << std::endl;
+	_text = header + response_body;
+	_error_code = 200;
 	return (true);
 }
 

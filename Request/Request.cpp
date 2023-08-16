@@ -33,6 +33,11 @@ const std::string& Request::get_path() const
 	return path;
 }
 
+const std::string& Request::get_body() const
+{
+	return body;
+}
+
 int Request::process_request_line(void)
 {
 	size_t line_end, p1, p2;

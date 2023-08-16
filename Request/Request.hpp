@@ -65,7 +65,8 @@ class Request
 		bool			is_method(enum e_method method) const;
 		bool			is_empty(void);
 		const std::string&	get_path() const;
-		const std::string&	get_raw_request() const;
+    const std::string&  get_body() const;
+    const std::string&	get_raw_request() const;
 
 		// Returns the header element at given key.
 //		const std::string*	operator[](const std::string& key) const;// access header tag values by indexing Request instance like a map. Returns NULL if not tag not in header, returns a string otherwise.
