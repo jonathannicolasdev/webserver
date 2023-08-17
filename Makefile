@@ -32,7 +32,7 @@ SRVCORE_FILES	:= IServer.cpp					\
 
 SRVCORE			:= $(addprefix $(SRVCORE_DIR), $(SRVCORE_FILES))
 
-RQST_FILES		:=	Request.cpp
+RQST_FILES		:=	Request.cpp DataPart.cpp
 RQST			:= $(addprefix $(RQST_DIR), $(RQST_FILES))
 
 RESP_FILES		:=	Response.cpp ErrorResponse.cpp

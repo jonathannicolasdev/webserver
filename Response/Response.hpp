@@ -53,7 +53,7 @@ class Response
 		const std::string&	get_response(void) const;
 
 		bool	empty(void) const;
-		int		get_error_code(void) const;
+		int		get_error_code(void) const;		
 };
 
 #endif

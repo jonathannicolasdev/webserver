@@ -16,9 +16,11 @@
 # include <string>
 # include <iostream>
 # include <map>
+#include <vector>
 
 # include "Logger.hpp"
 //# include "webserv.hpp"
+#include "DataPart.hpp"
 
 enum e_method
 {
@@ -67,11 +69,16 @@ class Request
 		const std::string&	get_path() const;
     const std::string&  get_body() const;
     const std::string&	get_raw_request() const;
-
+	  bool getMultiformFlag() const;
+	  std::string getBoundary() const;
 		// Returns the header element at given key.
 //		const std::string*	operator[](const std::string& key) const;// access header tag values by indexing Request instance like a map. Returns NULL if not tag not in header, returns a string otherwise.
 		const std::string&	operator[](const std::string& key) const;// access header tag values by indexing Request instance like a map. Returns NULL if not tag not in header, returns a string otherwise.
 		Request&			operator<<(char *req_buff);// push raw request from client inside Request instance.
+		
+		std::vector<DataPart> extract_multipart() const;
+
+
 };
 
 std::ostream&			operator<<(std::ostream&, const Request& req);

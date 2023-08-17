@@ -28,12 +28,12 @@ Request::~Request()
 	std::cout << "Request Destructor" << std::endl;
 }
 
-const std::string& Request::get_path() const
+const std::string &Request::get_path() const
 {
 	return path;
 }
 
-const std::string& Request::get_body() const
+const std::string &Request::get_body() const
 {
 	return body;
 }
@@ -160,15 +160,17 @@ int Request::process_raw_request(void) // const std::string& raw_request)
 	return (0);
 }
 
-const std::string&
+const std::string &
 Request::get_method(void) const { return (this->_method_str); }
 
 bool Request::is_method(enum e_method method) const { return (this->_method == method); }
 
-const std::string&	Request::get_raw_request(void) const {return (_raw_request);}
+const std::string &Request::get_raw_request(void) const { return (_raw_request); }
 
+bool Request::getMultiformFlag() const { return false; }
+std::string Request::getBoundary() const { return ""; }
 
-const std::string&	Request::operator[](const std::string& key) const
+const std::string &Request::operator[](const std::string &key) const
 {
 	static const std::string nullstr = "";
 	std::map<std::string, std::string>::const_iterator it;
@@ -176,9 +178,9 @@ const std::string&	Request::operator[](const std::string& key) const
 	it = this->header.find(key);
 	if (it == this->header.end())
 		return (nullstr);
-		//return (&nullstr);
+	// return (&nullstr);
 	return (it->second);
-	//return (&it->second);
+	// return (&it->second);
 }
 
 bool Request::is_empty(void)
@@ -199,7 +201,24 @@ Request::operator<<(char *req_buff)
 	return (*this);
 }
 
-std::ostream&			operator<<(std::ostream& os, const Request& req)
+std::vector<DataPart> Request::extract_multipart() const
+{
+	std::vector<DataPart> dataparts;
+
+	std::vector<std::string> datablock;
+    std::istringstream iss(get_body());
+    std::string datapart_str;
+	std::string boundary = "--"+getBoundary();
+/*
+    while (std::getline(iss, datapart_str, boundary))
+    {
+        dataparts.push_back(DataPart(datapart_str));
+    }
+*/
+    return dataparts;
+}
+
+std::ostream &operator<<(std::ostream &os, const Request &req)
 {
 	os << req.get_raw_request();
 	return (os);
