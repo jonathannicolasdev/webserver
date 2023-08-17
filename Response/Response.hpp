@@ -6,7 +6,7 @@
 /*   By: iamongeo <iamongeo@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/26 18:40:57 by iamongeo          #+#    #+#             */
-/*   Updated: 2023/08/15 22:21:42 by iamongeo         ###   ########.fr       */
+/*   Updated: 2023/08/16 20:07:16 by iamongeo         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,6 +20,7 @@
 # include <sstream>
 
 # include "Request.hpp"
+# include "CGIAgent.hpp"
 //# include "ServerHTTP.hpp"
 # include "ServerConfig.hpp"
 # include "webserv_utils.hpp"
@@ -28,6 +29,9 @@ class ServerHTTP;
 
 class Response
 {
+	private:
+		friend class	CGIAgent;
+
 	protected:
 		std::string		_text;
 		int				_error_code;
@@ -44,6 +48,7 @@ class Response
 		std::string&	_parse_internal_path(const Request& req, const LocationConfig& loc_cfg);
 		std::string&	_parse_location_path(const ServerConfig& scfg, const LocationConfig& lcfg);
 		bool			_check_if_cgi_exec(const Request& req, const LocationConfig& cfg);
+		int				_process_cgi_request(const Request& req, const ServerConfig& srv_cfg, const LocationConfig& loc_cfg);
 
 	public:
 		Response(void);    

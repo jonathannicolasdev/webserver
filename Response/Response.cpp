@@ -6,7 +6,7 @@
 /*   By: iamongeo <iamongeo@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/26 18:42:23 by iamongeo          #+#    #+#             */
-/*   Updated: 2023/08/15 22:26:37 by iamongeo         ###   ########.fr       */
+/*   Updated: 2023/08/16 21:44:45 by iamongeo         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -230,19 +230,45 @@ std::string&	Response::_parse_location_path(const ServerConfig& scfg, const Loca
 /// CGI RELATED METHODS
 bool	Response::_check_if_cgi_exec(const Request& req, const LocationConfig& cfg)
 {
-	std::vector<std::string>::iterator	it = cfg.GetCgiPaths().begin();
-	std::string		path_info;
-	
-	size_t	pos = _internal_path.find(".py");
-	if (pos == _internal_path.npos)
-		return (false);
-	path_info = _internal_path.substr(pos + 3);
+//	std::vector<std::string>::const_iterator	it = cfg.GetCgiPaths().begin();
+//	std::string		path_info = req.get_path();
 
+	(void)req;
+	(void)cfg;
+
+	if (string_endswith(req.get_path(), ".py"))
+		return (true);
+//	size_t	pos = _internal_path.find(".py");
+//	if (pos == _internal_path.npos)
+//		return (false);
+	
+//	path_info = _internal_path.substr(pos + 3);
+	//std::cout << "_check_if_cgi_exec :: path info : " << path_info << std::endl;
+	
 //	for (; it != cfg.GetCgiPaths().end(); ++it)
 //	{		
 //	}
 	return (false);
 }
+
+int	Response::_process_cgi_request(const Request& req, const ServerConfig& srv_cfg, const LocationConfig& loc_cfg)
+{
+	std::string		rel_internal_path;
+
+	if (loc_cfg.GetCgiPaths().size() != 0)
+		rel_internal_path = loc_cfg.GetCgiPaths()[0];
+
+	CGIAgent	cgi(req, loc_cfg, _internal_path, _text);
+
+//	(void)req;
+	(void)srv_cfg;
+	//(void)cgi;
+	std::cout << "CGI REQUEST WAS PROCESSED" << std::endl;
+	
+	cgi.run();// Because we give cgi the response._text reference in its constructor, the response is writen right in the response's _text and is ready to get.
+	return (0);
+}
+
 /// END OF CGI RELATED METHODS
 
 
@@ -255,6 +281,7 @@ int Response::prepare_response(const ServerHTTP& srv, const Request& req, const 
 	(void)cfg;
 	const LocationConfig*	best_match;
 
+	_error_code = 0;
 	std::cout << " ******************* PATH:" << req.get_path() <<"\n";
 	std::cout << " ******************* SERVERCONFIG :";
 	std::cout << " ******************* cwd : " << ServerConfig::cwd << std::endl;
@@ -288,10 +315,16 @@ int Response::prepare_response(const ServerHTTP& srv, const Request& req, const 
 		std::cout << std::endl << "Best match path : " << (*best_match).GetPath() << std::endl;
 		std::cout << "Requested path : " << req.get_path() << std::endl;
 		std::cout << "Location path : " << _location_path << std::endl;
+		
 		_parse_internal_path(req, *best_match);
 
+
+
 		if (_check_if_cgi_exec(req, *best_match))
-			return (0);
+			return (_process_cgi_request(req, cfg, *best_match));
+
+
+
 
 		if (req.get_method() == "GET")
 		{

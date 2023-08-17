@@ -161,6 +161,7 @@ Request::get_method(void) const { return (this->_method_str); }
 bool Request::is_method(enum e_method method) const { return (this->_method == method); }
 
 const std::string&	Request::get_raw_request(void) const {return (_raw_request);}
+const std::string&	Request::get_query(void) const {return (query);}
 
 
 const std::string&	Request::operator[](const std::string& key) const

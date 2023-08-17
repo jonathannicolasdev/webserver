@@ -58,13 +58,14 @@ class Request
 		Request(const std::string& raw_request);
 		~Request(void);
 		
-		int				process_raw_request(void);//const std::string& raw_request);
+		int					process_raw_request(void);//const std::string& raw_request);
 
-		size_t			length(void) const;
+		size_t				length(void) const;
 		const std::string&	get_method(void) const;
-		bool			is_method(enum e_method method) const;
-		bool			is_empty(void);
+		bool				is_method(enum e_method method) const;
+		bool				is_empty(void);
 		const std::string&	get_path() const;
+		const std::string&	get_query() const;
 		const std::string&	get_raw_request() const;
 
 		// Returns the header element at given key.

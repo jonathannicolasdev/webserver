@@ -42,6 +42,10 @@ cgi .php php-cgi_ubuntu;
   location /imgs {
     root /assets/;
   }
+  location /cgi {
+    root /cgi-bin/;
+    cgi .py python3
+  }
   
   error_page 404 /my_errors/404.html;
 }

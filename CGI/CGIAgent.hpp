@@ -13,34 +13,64 @@
 #ifndef CGIAGENT_HPP
 # define CGIAGENT_HPP
 
+# include <unistd.h>
+# include <stdlib.h>
+# include <signal.h>
 # include <iostream>
 # include <string>
 # include <vector>
+# include <ctime>
+# include <sstream>
+
+# include "ServerConfig.hpp"
+# include "LocationConfig.hpp"
+# include "Request.hpp"
+
+# define MAX_CGI_TIMEWAIT 2// in sec
 
 struct CGIConfig
 {
+	std::string		path_info;
 	std::string		host;
 	std::string		content_type;
-	std::string		;
-	std::string		host;
-	std::string		host;
-	std::string		host;
-	std::string		host;
 };
 
 
 class CGIAgent
 {
 	private:
+		const Request&			_req;
+		const ServerConfig&		_srv_cfg;
+		const LocationConfig&	_loc_cfg;
+
+
+		std::string				_script_internal_path;
+//		char**					_script_args;
+//		char**					_script_env;
+		std::vector<const char *>	_argv;
+		std::vector<const char *>	_env;
 
 		std::vector<std::string>	env_str;
 		std::vector<char*>			env_vect;
+		int							_error_code;
+
+		std::string					_dir_path;
+		std::string					_script_name;
+		std::string					_header;
+		std::string&				_text;
 
 	public:
-		CGIAgent(void);
-		CGIAgent(const Request& req);
+//		CGIAgent(void);
+	//	CGIAgent(const Request& req, const LocationConfig& loc_srv, const std::string& rel_internal_path, const std::string& abs_internal_path, std::string& response);
+		CGIAgent(const Request& req, const LocationConfig& loc_srv, const std::string& abs_internal_path, std::string& response);
+		//CGIAgent(const Request& req);
 		~CGIAgent(void);
 
+		int	run(void);
+//		int	run(const std::string& rel_internal_path);
+
+		int	get_error_code() const;
+		const std::string&	get_response() const;
 };
 
 #endif
