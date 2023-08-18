@@ -167,48 +167,6 @@ bool Response::_process_get_request(const Request &req, const ServerConfig &srv_
 	//	std::cout << "** ---------------------- [BUILT RESPONSE END] -------------------------- **" << std::endl;
 	return (true);
 }
-/*
-bool Response::_process_post_request(const Request& req, const ServerConfig& srv_cfg, const LocationConfig& loc_cfg)
-{
-	(void)srv_cfg;  // Unused parameter
-	(void)loc_cfg;  // Unused parameter
-	// Check if the target file exists
-	if (fileExists(_target_file))
-	{
-		_error_code = 204; // No Content
-		return true;
-	}
-	// Attempt to open the target file for writing
-	std::ofstream file(_target_file.c_str(), std::ios::binary);
-	if (file.fail())
-	{
-		_error_code = 404; // Not Found
-		return false;
-	}
-	// Check if the request contains multipart form data
-	if (req.getMultiformFlag())
-	{
-		// Remove boundary and extract the body
-		std::string body = req.getBody();
-		body = removeBoundary(body, req.getBoundary());
-		// Write the processed body to the file
-		file.write(body.c_str(), body.length());
-	}
-	else
-	{
-		// Write the request body directly to the file
-		file.write(req.getBody().c_str(), req.getBody().length());
-	}
-	// Prepare a response indicating successful upload
-	std::string response_body = "File uploaded successfully.";
-	std::string header;
-	_build_get_http_header("", header, std::to_string(response_body.length()), "text/plain", false);
-	_text = header + response_body;
-	// Set the HTTP response code to 201 (Created)
-	_error_code = 201;
-	return true;
-}
-*/
 
 bool Response::_process_post_request(const Request &req, const ServerConfig &srv_cfg, const LocationConfig &loc_cfg)
 {
@@ -218,27 +176,32 @@ bool Response::_process_post_request(const Request &req, const ServerConfig &srv
 	const std::string &post_data = req.get_body();
 	std::string response_body = "Received post data:\n" + post_data;
 	std::string header;
-
+		fileExists(_internal_path);
+/**
 	if (fileExists(_internal_path))
 	{
 		_error_code = 204;
 		return (0);
 	}
+			std::cout << "ggggggggggggg2" << std::endl;
+
 	std::ofstream file(_internal_path.c_str(), std::ios::binary);
 	if (file.fail())
 	{
 		_error_code = 404;
 		return (1);
 	}
-
+		std::cout << "ggggggggggggg3" << std::endl;
+*/
 	if (req.getMultiformFlag())
 	{
+
 		std::string body = req.get_body();
 		std::vector<DataPart> dataparts = req.extract_multipart();
 		for (size_t i = 0; i < dataparts.size(); i++)
 		{
 			if (dataparts[i].getName()=="file")
-			{
+			{/*
 				std::ofstream file(dataparts[i].getFilename().c_str(), std::ios::binary);
 				if (file.fail())
 				{
@@ -246,18 +209,18 @@ bool Response::_process_post_request(const Request &req, const ServerConfig &srv
 					// decide if you have to continue or stop
 				}
 				file.write(dataparts[i].getContent().c_str(), dataparts[i].getContent().length());
-			}
+			*/}
 			else { //case of name=description
 
 			}
 
 		}
 
-		file.write(body.c_str(), body.length());
+		//file.write(body.c_str(), body.length());
 	}
 	else
 	{
-		file.write(req.get_body().c_str(), req.get_body().length());
+		//file.write(req.get_body().c_str(), req.get_body().length());
 	}
 
 	_build_get_http_header("", header, std::to_string(response_body.length()), "text/plain", false);

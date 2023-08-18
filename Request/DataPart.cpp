@@ -1,41 +1,53 @@
 
 #include "DataPart.hpp"
+/*
+\r\n
+Content-Disposition: form-data; name="description"\r\n\r\n
+This is a description for the uploaded files.\r\n
+*/
 
 DataPart::DataPart(std::string datapart_str)
 {
-    (void) datapart_str;
-    DataPart::_content="";
-    DataPart::_ContentDisposition="";
-    DataPart::_ContentType="";
-    DataPart::_filename="";
-    DataPart::_name="";
-	std::cout << "DataPart default constructor" << std::endl;
+    std::string contentMarquer="\n\n";
+
+    size_t contentStart = datapart_str.find(contentMarquer, 0);
+
+    size_t contentEnd = datapart_str.length();
+    
+    std::cout << "||||||||||||||||" << datapart_str <<","<<contentStart<<","<<contentEnd << std::endl;
+
+    DataPart::_content = datapart_str.substr(contentStart,(contentEnd-contentStart)+1);
+
+    DataPart::_content = "";
+    DataPart::_ContentDisposition = "";
+    DataPart::_ContentType = "";
+    DataPart::_filename = "";
+    DataPart::_name = "";
+    std::cout << "||||||||||||||||" << DataPart::getContent()  << std::endl;
 }
 
 DataPart::~DataPart()
 {
-	std::cout << "DataPart Destructor" << std::endl;
+    std::cout << "DataPart Destructor" << std::endl;
 }
 
-
-    std::string DataPart::getContentDisposition() const
-    {
-        return "";
-    }
-    std::string DataPart::getName() const 
-    {
-        return "";
-    }
-    std::string DataPart::getFilename() const 
-    {
-        return "";
-    }
-    std::string DataPart::getContentType() const 
-    {
-        return "";
-    }
-    std::string DataPart::getContent() const 
-    {
-        return "";
-    }
-
+std::string DataPart::getContentDisposition() const
+{
+    return "";
+}
+std::string DataPart::getName() const
+{
+    return "";
+}
+std::string DataPart::getFilename() const
+{
+    return "";
+}
+std::string DataPart::getContentType() const
+{
+    return "";
+}
+std::string DataPart::getContent() const
+{
+    return _content;
+}

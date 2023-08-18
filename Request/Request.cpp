@@ -167,8 +167,45 @@ bool Request::is_method(enum e_method method) const { return (this->_method == m
 
 const std::string &Request::get_raw_request(void) const { return (_raw_request); }
 
-bool Request::getMultiformFlag() const { return false; }
-std::string Request::getBoundary() const { return ""; }
+bool Request::getMultiformFlag() const 
+{ 
+	
+	std::map<std::string, std::string>::iterator it;
+
+	for (it = Request::header.begin(); it != Request::header.end(); ++it)
+	{
+		if (it->first == "Content-Type")
+		{
+			int pos = it->second.find("multipart/form-data", 0);
+			if (pos != std::string::npos)
+			{
+				return true;
+			}
+		}
+	}
+	return false;
+ }
+
+
+std::string Request::getBoundary() const
+{
+	//  -H "Content-Type: multipart/form-data; boundary=boundary123456789" \
+
+	std::map<std::string, std::string>::iterator it;
+
+	for (it = Request::header.begin(); it != Request::header.end(); ++it)
+	{
+		if (it->first == "Content-Type")
+		{
+			int pos = it->second.find("boundary=", 0);
+			if (pos != std::string::npos)
+			{
+				return it->second.substr(pos, it->second.length() - pos);
+			}
+		}
+	}
+	return "";
+}
 
 const std::string &Request::operator[](const std::string &key) const
 {
@@ -201,21 +238,108 @@ Request::operator<<(char *req_buff)
 	return (*this);
 }
 
+std::string removeBoundary(std::string &body, std::string &boundary)
+{
+	std::string buffer;
+	std::string new_body;
+	std::string filename;
+	bool is_boundary = false;
+	bool is_content = false;
+
+	if (body.find("--" + boundary) != std::string::npos && body.find("--" + boundary + "--") != std::string::npos)
+	{
+		for (size_t i = 0; i < body.size(); i++)
+		{
+			buffer.clear();
+			while (body[i] != '\n')
+			{
+				buffer += body[i];
+				i++;
+			}
+			if (!buffer.compare(("--" + boundary + "--\r")))
+			{
+				is_content = true;
+				is_boundary = false;
+			}
+			if (!buffer.compare(("--" + boundary + "\r")))
+			{
+				is_boundary = true;
+			}
+			if (is_boundary)
+			{
+				if (!buffer.compare(0, 31, "Content-Disposition: form-data;"))
+				{
+					size_t start = buffer.find("filename=\"");
+					if (start != std::string::npos)
+					{
+						size_t end = buffer.find("\"", start + 10);
+						if (end != std::string::npos)
+							filename = buffer.substr(start + 10, end);
+					}
+				}
+				else if (!buffer.compare(0, 1, "\r") && !filename.empty())
+				{
+					is_boundary = false;
+					is_content = true;
+				}
+			}
+			else if (is_content)
+			{
+				if (!buffer.compare(("--" + boundary + "\r")))
+				{
+					is_boundary = true;
+				}
+				else if (!buffer.compare(("--" + boundary + "--\r")))
+				{
+					new_body.erase(new_body.end() - 1);
+					break;
+				}
+				else
+					new_body += (buffer + "\n");
+			}
+		}
+	}
+
+	body.clear();
+	return (new_body);
+}
+std::vector<std::string> extractContents(const std::string &body, const std::string &boundary)
+{
+	std::vector<std::string> contents;
+
+	size_t startPos = 0;
+	size_t endPos;
+
+	while ((endPos = body.find(boundary, startPos)) != std::string::npos)
+	{
+		if (endPos != 0)
+			contents.push_back(body.substr(startPos, endPos - startPos));
+		startPos = endPos + boundary.length();
+	}
+
+	return contents;
+}
+
 std::vector<DataPart> Request::extract_multipart() const
 {
 	std::vector<DataPart> dataparts;
+	std::string body = get_body();
+	std::string boundary = "--" + getBoundary();
+	std::string datapart_str;
+	size_t startPos = 0;
+	size_t endPos;
 
-	std::vector<std::string> datablock;
-    std::istringstream iss(get_body());
-    std::string datapart_str;
-	std::string boundary = "--"+getBoundary();
-/*
-    while (std::getline(iss, datapart_str, boundary))
-    {
-        dataparts.push_back(DataPart(datapart_str));
-    }
-*/
-    return dataparts;
+	while ((endPos = body.find(boundary, startPos)) != std::string::npos)
+	{
+		if (endPos != 0)
+		{
+			datapart_str = body.substr(startPos, endPos - startPos);
+			dataparts.push_back(DataPart(datapart_str));
+		}
+		startPos = endPos + boundary.length();
+	}
+
+	return dataparts;
 }
 
 std::ostream &operator<<(std::ostream &os, const Request &req)
