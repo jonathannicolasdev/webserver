@@ -46,6 +46,8 @@ class Request
 		std::string							query;
 		std::string							protocol;
 		std::string							body;
+		size_t								content_length_;
+		std::string							content_length_str;
 
 		// Takes the raw request received from constructor, split the header and body
 		// and split the header as a map to put in the header attribute.
@@ -67,6 +69,9 @@ class Request
 		const std::string&	get_path() const;
 		const std::string&	get_query() const;
 		const std::string&	get_raw_request() const;
+		size_t				get_content_length() const;
+		const std::string&	get_content_length_str() const;
+
 
 		// Returns the header element at given key.
 //		const std::string*	operator[](const std::string& key) const;// access header tag values by indexing Request instance like a map. Returns NULL if not tag not in header, returns a string otherwise.

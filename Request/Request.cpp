@@ -95,7 +95,8 @@ int Request::process_header(void) // const std::string& raw_header)
 {
 	size_t line_start, column_pos, line_end;
 	std::string key, value;
-	bool stop = 0;
+	bool stop = false;
+	std:ostringstream	os;
 
 	std::cout << "Request::process_header() : " << std::endl;
 	line_start = 0;
@@ -119,7 +120,12 @@ int Request::process_header(void) // const std::string& raw_header)
 			line_start++;
 	}
 	if (this->_raw_request[line_start])
+	{
 		this->body = this->_raw_request.substr(line_start);
+		os << this->body.length();
+		content_length_str = os.str();
+		content_length = this->body.length();;
+	}
 	return (0);
 }
 
@@ -133,27 +139,10 @@ int Request::process_raw_request(void) // const std::string& raw_request)
 {
 	if (this->process_request_line() < 0 || this->process_header() < 0 || this->process_body() < 0)
 		return (-1);
-	/*
-	size_t	pos;
-
-	if (this->is_empty())
-		return (Logger::log(LOG_WARNING, "Trying to process raw request but request is empty"));
-//	pos = raw_request.find("\n\r\n\r\n");
-	if (pos == raw_request.npos)
-	{
-		// Process only header
-		this->_raw_header = raw_request;
-	}
-	else
-	{
-		this->_raw_header = raw_request.substr(0, pos);
-		this->body = raw_request.substr(pos + 5);
-		// Process header + body
-
-	}
-	*/
 	return (0);
 }
+
+
 
 const std::string&
 Request::get_method(void) const { return (this->_method_str); }
@@ -162,6 +151,9 @@ bool Request::is_method(enum e_method method) const { return (this->_method == m
 
 const std::string&	Request::get_raw_request(void) const {return (_raw_request);}
 const std::string&	Request::get_query(void) const {return (query);}
+
+size_t				Request::get_content_length(void) const {return (this->content_length);}
+const std::string&	Request::get_content_length_str(void) const {this->content_length_str}
 
 
 const std::string&	Request::operator[](const std::string& key) const
