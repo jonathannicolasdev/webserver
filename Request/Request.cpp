@@ -363,17 +363,29 @@ std::vector<DataPart> Request::extract_multipart() const
 	std::cout << body << std::endl;
 	std::cout << "boundary.length() :"  << boundary.length() << std::endl;
 
+	startPos = boundary.length();
+	std::cout << "first startPos : " << startPos << std::endl;
 
-	while ((endPos = body.find(boundary, startPos)) != std::string::npos)
+
+	while ((endPos = body.find(boundary, startPos)) != std::string::npos && (endPos != startPos))
 	{
-		if (endPos != 0)
-		{
-			datapart_str = body.substr(startPos, endPos - startPos);
-			std::cout << "datapart_str : " << datapart_str << std::endl;
-			dataparts.push_back(DataPart(datapart_str));
+		startPos = body.find_first_not_of("\r\n", startPos);
+	//	if (endPos != 0)
+	//	{
+		std::cout << "startPos : " << startPos << ", endPos : " << endPos << std::endl;
+		datapart_str = body.substr(startPos, endPos - startPos);
+
+//		std::cout << "newline index : " << datapart_str.find("\r\n") << std::endl;
+		std::cout << "datapart_str : " << datapart_str << std::endl;
+//		dataparts.push_back(DataPart(datapart_str));
 		//	std::cout << dataparts[dataparts.size() - 1] << std::endl;
-		}
+	//	}
+		std::cout << "old startPos : " << startPos << std::endl;
 		startPos = endPos + boundary.length();
+//		startPos += datapart_str.length();
+//		startPos = body.find_first_not_of("\r\n", startPos);
+		std::cout << "new startPos : " << startPos << std::endl;
+		//startPos = endPos + boundary.length();
 	}
 
 	return dataparts;
