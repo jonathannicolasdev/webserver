@@ -6,7 +6,7 @@
 /*   By: iamongeo <iamongeo@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/26 18:42:23 by iamongeo          #+#    #+#             */
-/*   Updated: 2023/08/18 15:54:30 by iamongeo         ###   ########.fr       */
+/*   Updated: 2023/08/18 16:52:49 by iamongeo         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -174,9 +174,12 @@ bool Response::_process_post_request(const Request &req, const ServerConfig &srv
 	(void)srv_cfg;
 	(void)loc_cfg;
 	const std::string &post_data = req.get_body();
+
+	std::cout << "HANDELING POST REQUEST !" << std::endl;
+
 	std::string response_body = "Received post data:\n" + post_data;
 	std::string header;
-		fileExists(_internal_path);
+	fileExists(_internal_path);
 /**
 	if (fileExists(_internal_path))
 	{
@@ -221,13 +224,14 @@ bool Response::_process_post_request(const Request &req, const ServerConfig &srv
 	}
 	else
 	{
+		std::cout << "IS NOT MULTIPART !" << std::endl;
 		//file.write(req.get_body().c_str(), req.get_body().length());
 	}
 
 	_build_get_http_header("", header, std::to_string(response_body.length()), "text/plain", false);
-	std::cout << "response body : " << response_body << std::endl;
+//	std::cout << "response body : " << response_body << std::endl;
 	_text = header + response_body;
-	_error_code = 200;
+	_error_code = 0;
 
 	return (true);
 }
@@ -350,6 +354,8 @@ int Response::prepare_response(const ServerHTTP &srv, const Request &req, const 
 			_process_post_request(req, cfg, *best_match);
 		else if (req.get_method() == "DELETE")
 			_process_delete_request(req, cfg, *best_match);
+		else
+			std::cerr << "METHOD NOT RECOGNIZED !" << std::endl;
 	}
 
 	// DUMMY RESPONSE. DELETE ME

@@ -95,25 +95,33 @@ int Request::process_request_line(void)
 	return (0);
 }
 
-bool Request::getMultiformFlag(void) const {return (this->is_multipart);}
+//bool Request::getMultiformFlag(void) const {return (this->is_multipart);}
+bool Request::getMultiformFlag(void) const {return (true);}
 
 bool Request::processMultiform(void) 
 { 
 	
 	std::map<std::string, std::string>::const_iterator it;
 
+	std::cout << "\n\nprocessMultiform : " << std::endl;
+
 	it = this->header.find("Content-Type");
 	if (it == this->header.end())
 		return (false);
+	
+	std::cout << "processMultiform : Content-Type : " << (*this)["Content-Type"] << std::endl;
 
-	if (it->second.find("multipart/form-data", 0))
+	std::cout << "multipart index : " <<  it->second.find("multipart/form-data") << std::endl;
+	if (it->second.find("multipart/form-data") != std::string::npos)
 	{
+		std::cout << "multipart/form-data FOUND !!" << std::endl;
 		this->is_multipart = true;
 		size_t	pos = it->second.find("boundary=");
 		if (pos == std::string::npos)
 			return (false);
 		pos += 9;
 		this->boundary = std::string("--") + it->second.substr(pos);
+		
 		return (true);
 	}
 
@@ -163,7 +171,6 @@ int Request::process_header(void) // const std::string& raw_header)
 	{
 		this->body = this->_raw_request.substr(line_start);
 		processMultiform();
-
 	}
 	return (0);
 }
@@ -351,16 +358,20 @@ std::vector<DataPart> Request::extract_multipart() const
 	size_t startPos = 0;
 	size_t endPos;
 
-	std::cout <<  "\n\nextract_multipart strs : " << std::endl;
+	std::cout <<  "\n\nExtract_multipart strs : " << std::endl;
+
+	std::cout << body << std::endl;
+	std::cout << "boundary.length() :"  << boundary.length() << std::endl;
+
 
 	while ((endPos = body.find(boundary, startPos)) != std::string::npos)
 	{
 		if (endPos != 0)
 		{
 			datapart_str = body.substr(startPos, endPos - startPos);
+			std::cout << "datapart_str : " << datapart_str << std::endl;
 			dataparts.push_back(DataPart(datapart_str));
-			std::cout << dataparts[dataparts.size() - 1] << std::endl;
-			std::cout << datapart_str << std::endl;
+		//	std::cout << dataparts[dataparts.size() - 1] << std::endl;
 		}
 		startPos = endPos + boundary.length();
 	}
