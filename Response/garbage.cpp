@@ -63,15 +63,15 @@ std::vector<std::string> extractContents(const std::string& body, const std::str
 int main() {
     std::string requestBody = "--boundary123456789\r\n"
                               "Content-Disposition: form-data; name=\"description\"\r\n\r\n"
-                              "This is a description for the uploaded files.\r\n"
+                         //     "This is a description for the uploaded files.\r\n"
                               "--boundary123456789\r\n"
                               "Content-Disposition: form-data; name=\"file1\"; filename=\"file1.txt\"\r\n"
                               "Content-Type: text/plain\r\n\r\n"
-                              "...contents of file1.txt...\r\n"
+                          //    "...contents of file1.txt...\r\n"
                               "--boundary123456789\r\n"
                               "Content-Disposition: form-data; name=\"file2\"; filename=\"image.jpg\"\r\n"
                               "Content-Type: image/jpeg\r\n\r\n"
-                              "...contents of image.jpg...\r\n"
+                          //    "...contents of image.jpg...\r\n"
                               "--boundary123456789--\r\n";
 
     std::string boundary = "--boundary123456789";

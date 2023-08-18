@@ -16,7 +16,7 @@
 # include <string>
 # include <iostream>
 # include <map>
-#include <vector>
+# include <vector>
 
 # include "Logger.hpp"
 //# include "webserv.hpp"
@@ -48,6 +48,8 @@ class Request
 		std::string							query;
 		std::string							protocol;
 		std::string							body;
+		bool								is_multipart;
+		std::string							boundary;
 
 		// Takes the raw request received from constructor, split the header and body
 		// and split the header as a map to put in the header attribute.
@@ -67,10 +69,11 @@ class Request
 		bool			is_method(enum e_method method) const;
 		bool			is_empty(void);
 		const std::string&	get_path() const;
-    const std::string&  get_body() const;
-    const std::string&	get_raw_request() const;
-	  bool getMultiformFlag() const;
-	  std::string getBoundary() const;
+		const std::string&  get_body() const;
+		const std::string&	get_raw_request() const;
+		bool 				getMultiformFlag(void) const;
+		bool 				processMultiform(void) ;
+		std::string getBoundary() const;
 		// Returns the header element at given key.
 //		const std::string*	operator[](const std::string& key) const;// access header tag values by indexing Request instance like a map. Returns NULL if not tag not in header, returns a string otherwise.
 		const std::string&	operator[](const std::string& key) const;// access header tag values by indexing Request instance like a map. Returns NULL if not tag not in header, returns a string otherwise.

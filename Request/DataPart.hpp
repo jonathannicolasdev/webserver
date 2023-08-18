@@ -3,6 +3,7 @@
 #define DATAPART_HPP
 
 #include <string>
+#include <ostream>
 
 #include "Logger.hpp"
 
@@ -25,5 +26,7 @@ public:
     std::string getContentType() const;
     std::string getContent() const;
 };
+
+std::ostream&   operator<<(std::ostream& os, const DataPart& data);
 
 #endif

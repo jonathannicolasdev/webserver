@@ -8,7 +8,7 @@ This is a description for the uploaded files.\r\n
 
 DataPart::DataPart(std::string datapart_str)
 {
-    std::string contentMarquer="\n\n";
+    std::string contentMarquer="\r\n";
 
     size_t contentStart = datapart_str.find(contentMarquer, 0);
 
@@ -50,4 +50,14 @@ std::string DataPart::getContentType() const
 std::string DataPart::getContent() const
 {
     return _content;
+}
+
+std::ostream&   operator<<(std::ostream& os, const DataPart& data)
+{
+    std::cout << "DataPart :" << std::endl;
+    std::cout << "name :        " << data.getName() << std::endl;
+    std::cout << "filename :    " << data.getFilename() << std::endl;
+    std::cout << "ContentType : " << data.getContentType() << std::endl;
+    std::cout << "Content :     " <<  data.getContent() << std::endl;
+    return (os);
 }

@@ -66,7 +66,7 @@ int Request::process_request_line(void)
 	else if (method == "PUT")
 		this->_method = POST_M;
 	else
-		return (Logger::log(LOG_WARNING, "Received request with invalid method"));
+		return (Logger::log(LOG_WARNING, std::string("Received request with invalid method") + method));
 
 	_method_str = method;
 
@@ -78,22 +78,58 @@ int Request::process_request_line(void)
 	}
 
 	// DEBUG
-	std::ostringstream ss, ss2, ss3, ss4;
-	std::cout << "Split request line info : " << std::endl;
-	ss << method.length();
-	std::cout << " - method : " << method << " (length : " << ss.str() << ")" << std::endl;
-	ss2 << this->path.length();
-	std::cout << " - path : " << this->path << " (length : " << ss2.str() << ")" << std::endl;
-	ss3 << this->query.length();
-	std::cout << " - query : " << this->query << " (length : " << ss3.str() << ")" << std::endl;
-	ss4 << this->protocol.length();
-	std::cout << " - proto : " << this->protocol << " (length : " << ss4.str() << ")" << std::endl;
-	std::cout << "rest of the request : " << std::endl;
-	std::cout << this->_raw_request << std::endl;
+	// std::ostringstream ss, ss2, ss3, ss4;
+	// std::cout << "Split request line info : " << std::endl;
+	// ss << method.length();
+	// std::cout << " - method : " << method << " (length : " << ss.str() << ")" << std::endl;
+	// ss2 << this->path.length();
+	// std::cout << " - path : " << this->path << " (length : " << ss2.str() << ")" << std::endl;
+	// ss3 << this->query.length();
+	// std::cout << " - query : " << this->query << " (length : " << ss3.str() << ")" << std::endl;
+	// ss4 << this->protocol.length();
+	// std::cout << " - proto : " << this->protocol << " (length : " << ss4.str() << ")" << std::endl;
+	// std::cout << "rest of the request : " << std::endl;
+	// std::cout << this->_raw_request << std::endl;
 	// DEBUG END
 
 	return (0);
 }
+
+bool Request::getMultiformFlag(void) const {return (this->is_multipart);}
+
+bool Request::processMultiform(void) 
+{ 
+	
+	std::map<std::string, std::string>::const_iterator it;
+
+	it = this->header.find("Content-Type");
+	if (it == this->header.end())
+		return (false);
+
+	if (it->second.find("multipart/form-data", 0))
+	{
+		this->is_multipart = true;
+		size_t	pos = it->second.find("boundary=");
+		if (pos == std::string::npos)
+			return (false);
+		pos += 9;
+		this->boundary = std::string("--") + it->second.substr(pos);
+		return (true);
+	}
+
+	// for (it = Request::header.begin(); it != Request::header.end(); ++it)
+	// {
+	// 	if (it->first == "Content-Type")
+	// 	{
+	// 		int pos = it->second.find("multipart/form-data", 0);
+	// 		if (pos != std::string::npos)
+	// 		{
+	// 			return true;
+	// 		}
+	// 	}
+	// }
+	return false;
+ }
 
 // splits header passed and puts key, value pairs in header map.
 int Request::process_header(void) // const std::string& raw_header)
@@ -114,7 +150,7 @@ int Request::process_header(void) // const std::string& raw_header)
 		value = this->_raw_request.substr(column_pos, line_end - column_pos);
 
 		// DEBUG
-		std::cout << "key : " << key << ", value : " << value << std::endl;
+//		std::cout << "key : " << key << ", value : " << value << std::endl;
 		// DEBUG END
 
 		this->header[key] = value;
@@ -124,7 +160,11 @@ int Request::process_header(void) // const std::string& raw_header)
 			line_start++;
 	}
 	if (this->_raw_request[line_start])
+	{
 		this->body = this->_raw_request.substr(line_start);
+		processMultiform();
+
+	}
 	return (0);
 }
 
@@ -134,6 +174,27 @@ int Request::process_body(void)
 	return (0);
 }
 
+/*
+const std::string&	Request::getBoundary() const
+{
+	//  -H "Content-Type: multipart/form-data; boundary=boundary123456789" \
+
+	std::map<std::string, std::string>::const_iterator it;
+
+	for (it = Request::header.begin(); it != Request::header.end(); ++it)
+	{
+		if (it->first == "Content-Type")
+		{
+			int pos = it->second.find("boundary=", 0);
+			if (pos != std::string::npos)
+			{
+				return it->second.substr(pos, it->second.length() - pos);
+			}
+		}
+	}
+	return "";
+}
+*/
 int Request::process_raw_request(void) // const std::string& raw_request)
 {
 	if (this->process_request_line() < 0 || this->process_header() < 0 || this->process_body() < 0)
@@ -167,45 +228,6 @@ bool Request::is_method(enum e_method method) const { return (this->_method == m
 
 const std::string &Request::get_raw_request(void) const { return (_raw_request); }
 
-bool Request::getMultiformFlag() const 
-{ 
-	
-	std::map<std::string, std::string>::iterator it;
-
-	for (it = Request::header.begin(); it != Request::header.end(); ++it)
-	{
-		if (it->first == "Content-Type")
-		{
-			int pos = it->second.find("multipart/form-data", 0);
-			if (pos != std::string::npos)
-			{
-				return true;
-			}
-		}
-	}
-	return false;
- }
-
-
-std::string Request::getBoundary() const
-{
-	//  -H "Content-Type: multipart/form-data; boundary=boundary123456789" \
-
-	std::map<std::string, std::string>::iterator it;
-
-	for (it = Request::header.begin(); it != Request::header.end(); ++it)
-	{
-		if (it->first == "Content-Type")
-		{
-			int pos = it->second.find("boundary=", 0);
-			if (pos != std::string::npos)
-			{
-				return it->second.substr(pos, it->second.length() - pos);
-			}
-		}
-	}
-	return "";
-}
 
 const std::string &Request::operator[](const std::string &key) const
 {
@@ -323,11 +345,13 @@ std::vector<std::string> extractContents(const std::string &body, const std::str
 std::vector<DataPart> Request::extract_multipart() const
 {
 	std::vector<DataPart> dataparts;
-	std::string body = get_body();
-	std::string boundary = "--" + getBoundary();
+	//const std::string& body = get_body();
+	//std::string boundary = "--" + getBoundary();
 	std::string datapart_str;
 	size_t startPos = 0;
 	size_t endPos;
+
+	std::cout <<  "\n\nextract_multipart strs : " << std::endl;
 
 	while ((endPos = body.find(boundary, startPos)) != std::string::npos)
 	{
@@ -335,6 +359,8 @@ std::vector<DataPart> Request::extract_multipart() const
 		{
 			datapart_str = body.substr(startPos, endPos - startPos);
 			dataparts.push_back(DataPart(datapart_str));
+			std::cout << dataparts[dataparts.size() - 1] << std::endl;
+			std::cout << datapart_str << std::endl;
 		}
 		startPos = endPos + boundary.length();
 	}

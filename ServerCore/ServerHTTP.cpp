@@ -511,15 +511,15 @@ ServerHTTP::receive_request(int clientfd, Request& request)
 	ssize_t				read_size;
 //	std::ostringstream	req_str;
 
-	std::cout << "Starting to read client socket until return <= 0" << std::endl;
+//	std::cout << "Starting to read client socket until return <= 0" << std::endl;
 	while ((read_size = read(clientfd, request_buff, MAX_READ_BUFF)) > 0)
 	{
-		std::cout << "reading chunk with read_size : " << read_size << std::endl;
+//		std::cout << "reading chunk with read_size : " << read_size << std::endl;
 		request_buff[read_size] = '\0';
 		request << request_buff;
 //		req_str += request_buff;
 	}
-	std::cout << "Finished reading client socket with read_size : " << read_size << std::endl;
+//	std::cout << "Finished reading client socket with read_size : " << read_size << std::endl;
 	if (read_size == 0)
 	{
 		Logger::log(LOG_DEBUG, "Client has disconnected. Closing client socket.");
@@ -530,10 +530,10 @@ ServerHTTP::receive_request(int clientfd, Request& request)
 //		Logger::log(LOG_WARNING, "Reading from client socket returned -1.");
 //		return (-1);
 //	}
-	std::cout << "Read " << request.length() << " chars from client." << std::endl;
-	std::cout << "** ------------------------ [RECEIVED REQUEST] -------------------------- **" << std::endl;
-	std::cout << request << std::endl;
-	std::cout << "** ---------------------- [RECEIVED REQUEST END] -------------------------- **" << std::endl;
+	// std::cout << "Read " << request.length() << " chars from client." << std::endl;
+	// std::cout << "** ------------------------ [RECEIVED REQUEST] -------------------------- **" << std::endl;
+	// std::cout << request << std::endl;
+	// std::cout << "** ---------------------- [RECEIVED REQUEST END] -------------------------- **" << std::endl;
 //	if (req_str.length() == 0)
 //		return (0);
 	return (0);
@@ -568,7 +568,7 @@ ServerHTTP::send_response(int clientfd, const Response& resp) const
 	const char*				msg = response.c_str();
 	int						max_retries = SRVHTTP_MAX_SEND_RETRIES;
 
-	std::cout << "Server Sending response size : " << to_send << std::endl;
+//	std::cout << "Server Sending response size : " << to_send << std::endl;
 	while (to_send > 0)
 	//while ((send_size = write(clientfd, response.c_str(), to_send)) > 0)
 	{
@@ -587,7 +587,7 @@ ServerHTTP::send_response(int clientfd, const Response& resp) const
 		if (_client_disconnect_signaled)
 			return (-1);
 		max_retries = SRVHTTP_MAX_SEND_RETRIES;
-		std::cout << sent_size << " successfully sent." << std::endl;
+//		std::cout << sent_size << " successfully sent." << std::endl;
 		to_send -= sent_size;
 		msg += sent_size;
 	}

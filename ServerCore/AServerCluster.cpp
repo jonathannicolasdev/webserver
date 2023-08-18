@@ -196,16 +196,16 @@ AServerCluster::do_maintenance(void)
 	int		timeout_clients[MAX_CONCUR_POLL];
 	time_t	curr_time = std::time(NULL);
 
-	std::cout << "do_maintnance called" << std::endl;
-	printf("curr_time : %ld, last_time : %ld, delta : %ld\n", curr_time,
-		this->_last_maintenance_time, curr_time - this->_last_maintenance_time);
+//	std::cout << "do_maintnance called" << std::endl;
+//	printf("curr_time : %ld, last_time : %ld, delta : %ld\n", curr_time,
+//		this->_last_maintenance_time, curr_time - this->_last_maintenance_time);
 	if ((curr_time - this->_last_maintenance_time) * 1000 < this->_timeout)
 		return ;
-	std::cout << "Cluster doing clusterwide maintnance" << std::endl;
+//	std::cout << "Cluster doing clusterwide maintnance" << std::endl;
 	for (it = this->_servers.begin(); it != this->_servers.end(); ++it)
 	{
 		nb_disconn = it->second->do_maintenance(timeout_clients, MAX_CONCUR_POLL);
-		std::cout << "Removing " << nb_disconn << " clients from poll." << std::endl;
+//		std::cout << "Removing " << nb_disconn << " clients from poll." << std::endl;
 		for (int i=0; i < nb_disconn; ++i)
 			this->unpoll_socket(timeout_clients[i]);
 	}
@@ -227,9 +227,9 @@ AServerCluster::__cluster_mainloop(void)
 	this->_status = CLU_RUNNING;
 	while (!this->_request_stop)
 	{
-		std::cout << "Cluster waiting for polled event" << std::endl;
+//		std::cout << "Cluster waiting for polled event" << std::endl;
 		nb_events = this->poll_wait(this->_timeout);
-		std::cout << "Cluster : " << nb_events << " events occured" << std::endl;
+//		std::cout << "Cluster : " << nb_events << " events occured" << std::endl;
 
 		// Called here but only does maintenance if > timeout time has past since
 		// last maintenance or start of cluster.
@@ -239,24 +239,24 @@ AServerCluster::__cluster_mainloop(void)
 			this->do_maintenance();
 			std::ostringstream	ss;
 			ss << this->nb_watched;
-			std::cout << "nb of listened sockets : " << ss << std::endl;
+//			std::cout << "nb of listened sockets : " << ss << std::endl;
 		}
 
 		for (i = 0; i < nb_events; ++i)
 		{
-			std::cout << "Cluster processing event " << i + 1 << " / " << nb_events << std::endl;
+//			std::cout << "Cluster processing event " << i + 1 << " / " << nb_events << std::endl;
 			eventfd = this->get_eventfd(i);
-			std::cout << "Cluster processing eventfd " << eventfd << std::endl;
+//			std::cout << "Cluster processing eventfd " << eventfd << std::endl;
 
 			srv = this->find_server(eventfd);// looks for the sockfd (eventfd) in the cluster to check weither this fd is a server socket and that it is the owner. Return Server pointer if so, NULL otherwise.
-			std::cout << "Cluster checking if eventfd is a server : " << srv << " (ptr means it is a server)" << std::endl;
+//			std::cout << "Cluster checking if eventfd is a server : " << srv << " (ptr means it is a server)" << std::endl;
 			if (srv)
 			{
 				sockfd = eventfd;
 				// The event was triggered by a socket and we must accept() a new connection from it.
 				nb_disconn = srv->connect(disconn_clients, MAX_CONCUR_POLL, &clientfd);
 				fcntl(clientfd, F_SETFL, O_NONBLOCK);
-				std::cout << "new connection : nb_disconn " << nb_disconn << ", clientfd : " << clientfd << std::endl;
+//				std::cout << "new connection : nb_disconn " << nb_disconn << ", clientfd : " << clientfd << std::endl;
 				if (nb_disconn < 0)
 				{
 					// Error happened while connecting but show must go on. Make sure client request
@@ -266,17 +266,17 @@ AServerCluster::__cluster_mainloop(void)
 				if (nb_disconn)
 					this->unpoll_socket_array(disconn_clients, nb_disconn);
 
-				std::cout << "Found new client request through server socket " << sockfd << ". Putting new clientfd " << clientfd << " in polling list and serving request." << std::endl;
+//				std::cout << "Found new client request through server socket " << sockfd << ". Putting new clientfd " << clientfd << " in polling list and serving request." << std::endl;
 				this->poll_new_socket(clientfd);
 //				srv->parse_request(clientfd, rq);
 			}
 			else if ((srv = this->find_owner(eventfd)))
 			{
 				_currently_serving = srv;
-				std::cout << "Cluster found eventfd " << eventfd << " is client socket." << std::endl;
+//				std::cout << "Cluster found eventfd " << eventfd << " is client socket." << std::endl;
 				// The event was triggered by clientfd and we must serve the requested content.
 				clientfd = eventfd;
-				std::cout << "Found server owner of clientfd " << clientfd << " and serving request." << std::endl;
+//				std::cout << "Found server owner of clientfd " << clientfd << " and serving request." << std::endl;
 				if (srv->serve_request(clientfd) < 0)
 				{
 					Logger::log(LOG_DEBUG, "Cluster parsing request / sending response failed or client disconnected. Closing clientfd.");
@@ -289,7 +289,7 @@ AServerCluster::__cluster_mainloop(void)
 				return (Logger::log(LOG_CRITICAL, "POLLING MECH RECEIVED EVENT FROM UNIDENTIFIED FD. THE TRUTH IS OUT THERE !!"));
 		}
 	}
-	std::cout << "__cluster_mainloop EXITED LOOP LIKE MAD MAN !!" << std::endl;
+//	std::cout << "__cluster_mainloop EXITED LOOP LIKE MAD MAN !!" << std::endl;
 	return (0);
 }
 

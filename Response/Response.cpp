@@ -6,7 +6,7 @@
 /*   By: iamongeo <iamongeo@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/26 18:42:23 by iamongeo          #+#    #+#             */
-/*   Updated: 2023/08/15 17:05:27 by iamongeo         ###   ########.fr       */
+/*   Updated: 2023/08/18 15:54:30 by iamongeo         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -196,7 +196,8 @@ bool Response::_process_post_request(const Request &req, const ServerConfig &srv
 	if (req.getMultiformFlag())
 	{
 
-		std::string body = req.get_body();
+		const std::string& body = req.get_body();
+		(void)body;
 		std::vector<DataPart> dataparts = req.extract_multipart();
 		for (size_t i = 0; i < dataparts.size(); i++)
 		{
@@ -305,13 +306,13 @@ int Response::prepare_response(const ServerHTTP &srv, const Request &req, const 
 	(void)cfg;
 	const LocationConfig *best_match;
 
-	std::cout << " ******************* PATH:" << req.get_path() << "\n";
-	std::cout << " ******************* SERVERCONFIG :";
-	std::cout << " ******************* cwd : " << ServerConfig::cwd << std::endl;
-	cfg.print();
+	// std::cout << " ******************* PATH:" << req.get_path() << "\n";
+	// std::cout << " ******************* SERVERCONFIG :";
+	// std::cout << " ******************* cwd : " << ServerConfig::cwd << std::endl;
+//	cfg.print();
 	std::cout << "Preparing Response." << std::endl;
 	// int locationIndex = cfg.getBestLocationMatch(req.get_path());
-	std::cout << "Request path : " << req.get_path() << std::endl;
+//	std::cout << "Request path : " << req.get_path() << std::endl;
 	best_match = cfg.getBestLocationMatch(req.get_path());
 	//	if (locationIndex==-1)
 	if (best_match == NULL)
@@ -322,6 +323,7 @@ int Response::prepare_response(const ServerHTTP &srv, const Request &req, const 
 	{
 		//		const LocationConfig* bestLocation = cfg.GetLocations().at(locationIndex);
 		// bestLocation.print();
+		std::cout << "Beast location match :" << std::endl;
 		best_match->print();
 
 		/// IAN EXTRA
