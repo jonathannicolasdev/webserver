@@ -118,7 +118,11 @@ bool Request::processMultiform(void)
 		this->is_multipart = true;
 		size_t	pos = it->second.find("boundary=");
 		if (pos == std::string::npos)
+		{
+
+			std::cout << "NO MULTIPART" << std::endl;
 			return (false);
+		}
 		pos += 9;
 		this->boundary = std::string("--") + it->second.substr(pos);
 		
@@ -146,7 +150,8 @@ int Request::process_header(void) // const std::string& raw_header)
 	std::string key, value;
 	bool stop = 0;
 
-	std::cout << "Request::process_header() : " << std::endl;
+	std::cout << std::endl << std::endl << "Request::process_header() : " << std::endl;
+	std::cout << _raw_request << std::endl;
 	line_start = 0;
 	while (!stop && this->_raw_request[line_start] && !isspace(this->_raw_request[line_start]))
 	{
@@ -172,6 +177,8 @@ int Request::process_header(void) // const std::string& raw_header)
 		this->body = this->_raw_request.substr(line_start);
 		processMultiform();
 	}
+	else
+		std::cout << "THERE IS NO BODY !!" << std::endl;
 	return (0);
 }
 

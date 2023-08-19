@@ -31,12 +31,12 @@ DataPart::DataPart(std::string datapart_str)
         size_t  name_pos = _header.find("name=\"") + 6;
         _name = _header.substr(name_pos, _header.find('\"', name_pos) - name_pos);
 
-        std::cout << "name : " << _name << std::endl;
+        std::cout << "name :      " << _name << std::endl;
 
         name_pos = _header.find("filename=\"") + 10;
         _filename = _header.substr(name_pos, _header.find('\"', name_pos) - name_pos);
 
-        std::cout << "filename : " << _filename << std::endl;
+        std::cout << "filename :    " << _filename << std::endl;
 
 
 

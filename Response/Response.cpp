@@ -6,7 +6,7 @@
 /*   By: iamongeo <iamongeo@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/26 18:42:23 by iamongeo          #+#    #+#             */
-/*   Updated: 2023/08/18 19:58:23 by iamongeo         ###   ########.fr       */
+/*   Updated: 2023/08/18 20:56:35 by iamongeo         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -199,24 +199,25 @@ bool Response::_process_post_request(const Request &req, const ServerConfig &srv
 	if (req.getMultiformFlag())
 	{
 		std::cout << "IS MULTIPART !" << std::endl;
-		const std::string& body = req.get_body();
-		(void)body;
+//		const std::string& body = req.get_body();
+//		(void)body;
 		std::vector<DataPart> dataparts = req.extract_multipart();
 		for (size_t i = 0; i < dataparts.size(); i++)
 		{
-			if (dataparts[i].getName()=="file")
+//			if (dataparts[i].getName()=="file")
+//			{
+			std::ofstream file(dataparts[i].getFilename().c_str(), std::ios::binary);
+			if (file.fail())
 			{
-				std::ofstream file(dataparts[i].getFilename().c_str(), std::ios::binary);
-				if (file.fail())
-				{
-					_error_code = 404;
-					// decide if you have to continue or stop
-				}
+				_error_code = 404;
+				// decide if you have to continue or stop
+			}
+			else
 				file.write(dataparts[i].getContent().c_str(), dataparts[i].getContent().length());
-			}
-			else { //case of name=description
+//			}
+//			else { //case of name=description
 
-			}
+//			}
 		}
 
 		//file.write(body.c_str(), body.length());
@@ -224,6 +225,8 @@ bool Response::_process_post_request(const Request &req, const ServerConfig &srv
 	else
 	{
 		std::cout << "IS NOT MULTIPART !" << std::endl;
+		std::cout << "body length : " << req.get_body().length() << std::endl;
+		std::cout << req << std::endl;
 		//file.write(req.get_body().c_str(), req.get_body().length());
 	}
 
