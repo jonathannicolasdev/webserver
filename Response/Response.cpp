@@ -6,7 +6,7 @@
 /*   By: iamongeo <iamongeo@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/26 18:42:23 by iamongeo          #+#    #+#             */
-/*   Updated: 2023/08/18 16:52:49 by iamongeo         ###   ########.fr       */
+/*   Updated: 2023/08/18 19:58:23 by iamongeo         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -198,14 +198,14 @@ bool Response::_process_post_request(const Request &req, const ServerConfig &srv
 */
 	if (req.getMultiformFlag())
 	{
-
+		std::cout << "IS MULTIPART !" << std::endl;
 		const std::string& body = req.get_body();
 		(void)body;
 		std::vector<DataPart> dataparts = req.extract_multipart();
 		for (size_t i = 0; i < dataparts.size(); i++)
 		{
 			if (dataparts[i].getName()=="file")
-			{/*
+			{
 				std::ofstream file(dataparts[i].getFilename().c_str(), std::ios::binary);
 				if (file.fail())
 				{
@@ -213,11 +213,10 @@ bool Response::_process_post_request(const Request &req, const ServerConfig &srv
 					// decide if you have to continue or stop
 				}
 				file.write(dataparts[i].getContent().c_str(), dataparts[i].getContent().length());
-			*/}
+			}
 			else { //case of name=description
 
 			}
-
 		}
 
 		//file.write(body.c_str(), body.length());

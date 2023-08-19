@@ -12,13 +12,13 @@
 
 #include "Request.hpp"
 
-Request::Request(const std::string &raw_request) : _method(NULL_M)
+Request::Request(const std::string &raw_request) : _method(NULL_M), is_multipart(false)
 {
 	std::cout << "Request Constructor" << std::endl;
 	this->_raw_request = raw_request;
 }
 
-Request::Request(void) : _method(NULL_M)
+Request::Request(void) : _method(NULL_M), is_multipart(false)
 {
 	std::cout << "Request default constructor" << std::endl;
 }
@@ -95,8 +95,8 @@ int Request::process_request_line(void)
 	return (0);
 }
 
-//bool Request::getMultiformFlag(void) const {return (this->is_multipart);}
-bool Request::getMultiformFlag(void) const {return (true);}
+bool Request::getMultiformFlag(void) const {return (this->is_multipart);}
+//bool Request::getMultiformFlag(void) const {return (true);}
 
 bool Request::processMultiform(void) 
 { 
@@ -332,6 +332,7 @@ std::string removeBoundary(std::string &body, std::string &boundary)
 	body.clear();
 	return (new_body);
 }
+
 std::vector<std::string> extractContents(const std::string &body, const std::string &boundary)
 {
 	std::vector<std::string> contents;
@@ -377,7 +378,7 @@ std::vector<DataPart> Request::extract_multipart() const
 
 //		std::cout << "newline index : " << datapart_str.find("\r\n") << std::endl;
 		std::cout << "datapart_str : " << datapart_str << std::endl;
-//		dataparts.push_back(DataPart(datapart_str));
+		dataparts.push_back(DataPart(datapart_str));
 		//	std::cout << dataparts[dataparts.size() - 1] << std::endl;
 	//	}
 		std::cout << "old startPos : " << startPos << std::endl;

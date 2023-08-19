@@ -10,6 +10,9 @@
 class DataPart
 {
 private:
+
+    bool        _error_bad_form;
+    std::string _header;
     std::string _ContentDisposition;
     std::string _name;
     std::string _filename;

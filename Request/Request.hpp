@@ -73,7 +73,7 @@ class Request
 		const std::string&	get_raw_request() const;
 		bool 				getMultiformFlag(void) const;
 		bool 				processMultiform(void) ;
-		std::string getBoundary() const;
+		std::string			getBoundary() const;
 		// Returns the header element at given key.
 //		const std::string*	operator[](const std::string& key) const;// access header tag values by indexing Request instance like a map. Returns NULL if not tag not in header, returns a string otherwise.
 		const std::string&	operator[](const std::string& key) const;// access header tag values by indexing Request instance like a map. Returns NULL if not tag not in header, returns a string otherwise.
