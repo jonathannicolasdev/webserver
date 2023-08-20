@@ -16,6 +16,7 @@ Request::Request(const std::string &raw_request) : _method(NULL_M), is_multipart
 {
 	std::cout << "Request Constructor" << std::endl;
 	this->_raw_request = raw_request;
+
 }
 
 Request::Request(void) : _method(NULL_M), is_multipart(false)
@@ -175,6 +176,7 @@ int Request::process_header(void) // const std::string& raw_header)
 	if (this->_raw_request[line_start])
 	{
 		this->body = this->_raw_request.substr(line_start);
+		std::cout << "ppppppppppppp " << this->_raw_request.length() << std::endl;
 		processMultiform();
 	}
 	else
@@ -271,73 +273,9 @@ Request &
 Request::operator<<(char *req_buff)
 {
 	this->_raw_request += req_buff;
+	std::cout << "vvvvvvvvvvvvvv " << this->_raw_request.length() << std::endl;
+
 	return (*this);
-}
-
-std::string removeBoundary(std::string &body, std::string &boundary)
-{
-	std::string buffer;
-	std::string new_body;
-	std::string filename;
-	bool is_boundary = false;
-	bool is_content = false;
-
-	if (body.find("--" + boundary) != std::string::npos && body.find("--" + boundary + "--") != std::string::npos)
-	{
-		for (size_t i = 0; i < body.size(); i++)
-		{
-			buffer.clear();
-			while (body[i] != '\n')
-			{
-				buffer += body[i];
-				i++;
-			}
-			if (!buffer.compare(("--" + boundary + "--\r")))
-			{
-				is_content = true;
-				is_boundary = false;
-			}
-			if (!buffer.compare(("--" + boundary + "\r")))
-			{
-				is_boundary = true;
-			}
-			if (is_boundary)
-			{
-				if (!buffer.compare(0, 31, "Content-Disposition: form-data;"))
-				{
-					size_t start = buffer.find("filename=\"");
-					if (start != std::string::npos)
-					{
-						size_t end = buffer.find("\"", start + 10);
-						if (end != std::string::npos)
-							filename = buffer.substr(start + 10, end);
-					}
-				}
-				else if (!buffer.compare(0, 1, "\r") && !filename.empty())
-				{
-					is_boundary = false;
-					is_content = true;
-				}
-			}
-			else if (is_content)
-			{
-				if (!buffer.compare(("--" + boundary + "\r")))
-				{
-					is_boundary = true;
-				}
-				else if (!buffer.compare(("--" + boundary + "--\r")))
-				{
-					new_body.erase(new_body.end() - 1);
-					break;
-				}
-				else
-					new_body += (buffer + "\n");
-			}
-		}
-	}
-
-	body.clear();
-	return (new_body);
 }
 
 std::vector<std::string> extractContents(const std::string &body, const std::string &boundary)
@@ -360,8 +298,6 @@ std::vector<std::string> extractContents(const std::string &body, const std::str
 std::vector<DataPart> Request::extract_multipart() const
 {
 	std::vector<DataPart> dataparts;
-	//const std::string& body = get_body();
-	//std::string boundary = "--" + getBoundary();
 	std::string datapart_str;
 	size_t startPos = 0;
 	size_t endPos;
@@ -374,9 +310,12 @@ std::vector<DataPart> Request::extract_multipart() const
 	startPos = boundary.length();
 	std::cout << "first startPos : " << startPos << std::endl;
 
+	std::cout << "ooooooooooooooooooo  starting extract:" <<std::endl;
 
 	while ((endPos = body.find(boundary, startPos)) != std::string::npos && (endPos != startPos))
 	{
+		std::cout << "ooooooooooooooooooo  part found" << std::endl;
+
 		startPos = body.find_first_not_of("\r\n", startPos);
 	//	if (endPos != 0)
 	//	{

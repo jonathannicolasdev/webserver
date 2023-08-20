@@ -179,61 +179,59 @@ bool Response::_process_post_request(const Request &req, const ServerConfig &srv
 
 	std::string response_body = "Received post data:\n" + post_data;
 	std::string header;
-	fileExists(_internal_path);
-/**
-	if (fileExists(_internal_path))
-	{
-		_error_code = 204;
-		return (0);
-	}
-			std::cout << "ggggggggggggg2" << std::endl;
-
-	std::ofstream file(_internal_path.c_str(), std::ios::binary);
-	if (file.fail())
-	{
-		_error_code = 404;
-		return (1);
-	}
-		std::cout << "ggggggggggggg3" << std::endl;
-*/
+	_error_code = 0;
 	if (req.getMultiformFlag())
 	{
 		std::cout << "IS MULTIPART !" << std::endl;
-//		const std::string& body = req.get_body();
-//		(void)body;
 		std::vector<DataPart> dataparts = req.extract_multipart();
 		for (size_t i = 0; i < dataparts.size(); i++)
 		{
-//			if (dataparts[i].getName()=="file")
-//			{
+			if (dataparts[i].getFilename() == "")
+				continue;
+			if (fileExists(dataparts[i].getFilename().c_str()))
+			{
+				_error_code = 204;
+				break;
+			}
 			std::ofstream file(dataparts[i].getFilename().c_str(), std::ios::binary);
 			if (file.fail())
 			{
 				_error_code = 404;
-				// decide if you have to continue or stop
+				break;
 			}
 			else
 				file.write(dataparts[i].getContent().c_str(), dataparts[i].getContent().length());
-//			}
-//			else { //case of name=description
-
-//			}
 		}
-
-		//file.write(body.c_str(), body.length());
 	}
 	else
 	{
-		std::cout << "IS NOT MULTIPART !" << std::endl;
-		std::cout << "body length : " << req.get_body().length() << std::endl;
-		std::cout << req << std::endl;
-		//file.write(req.get_body().c_str(), req.get_body().length());
+		std::cout << "ooooooooooooooooooo  no multipart" << std::endl;
+
+		if (fileExists(_internal_path))
+		{
+			_error_code = 204;
+		}
+		else
+		{
+			std::ofstream file(_internal_path.c_str(), std::ios::binary);
+			if (file.fail())
+			{
+				_error_code = 404;
+			}
+			else
+			{
+				std::cout << "IS NOT MULTIPART !" << std::endl;
+				std::cout << "body length : " << req.get_body().length() << std::endl;
+				std::cout << req << std::endl;
+				file.write(req.get_body().c_str(), req.get_body().length());
+			}
+		}
 	}
 
 	_build_get_http_header("", header, std::to_string(response_body.length()), "text/plain", false);
-//	std::cout << "response body : " << response_body << std::endl;
+	//	std::cout << "response body : " << response_body << std::endl;
 	_text = header + response_body;
-	_error_code = 0;
+
 
 	return (true);
 }
@@ -315,10 +313,10 @@ int Response::prepare_response(const ServerHTTP &srv, const Request &req, const 
 	// std::cout << " ******************* PATH:" << req.get_path() << "\n";
 	// std::cout << " ******************* SERVERCONFIG :";
 	// std::cout << " ******************* cwd : " << ServerConfig::cwd << std::endl;
-//	cfg.print();
+	//	cfg.print();
 	std::cout << "Preparing Response." << std::endl;
 	// int locationIndex = cfg.getBestLocationMatch(req.get_path());
-//	std::cout << "Request path : " << req.get_path() << std::endl;
+	//	std::cout << "Request path : " << req.get_path() << std::endl;
 	best_match = cfg.getBestLocationMatch(req.get_path());
 	//	if (locationIndex==-1)
 	if (best_match == NULL)
