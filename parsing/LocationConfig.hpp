@@ -30,7 +30,7 @@ public:
 	void				SetRoot(const std::string& root);
 	const std::vector<std::string>& GetSplitRoot() const;
 	
-	std::vector<std::string> GetAllowMethods() const;
+	const std::vector<std::string>& GetAllowMethods() const;
 	void				AddAllowMethods(const std::string& method);
 	bool				IsAllowedMethod(const std::string& method) const;
 
@@ -46,9 +46,11 @@ public:
 	void 				SetUpload(const std::string& upload);
 
 	void 						AddCgiPath(const std::string& cgiPath);
-	std::vector<std::string>	GetCgiPaths() const;
-	std::vector<std::string> 	GetCgiExts() const;
+	const std::vector<std::string>&	GetCgiPaths() const;
+	const std::vector<std::string>& GetCgiExts() const;
 	void 						AddCgiExt(const std::string& cgiExt);
+
+	const ServerConfig&	GetServerConfig() const;
 
 private:
 	ServerConfig&	srv_cfg;

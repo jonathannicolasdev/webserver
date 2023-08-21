@@ -43,11 +43,15 @@ class Request
 		std::string				_raw_header;
 //		std::string				_raw_body;
 
+		bool								header_is_parsed;
 		std::map<std::string, std::string>	header;// split and parsed request header.
+		size_t								header_offset;
 		std::string							path;
 		std::string							query;
 		std::string							protocol;
 		std::string							body;
+		size_t								content_length;
+		std::string							content_length_str;
 		bool								is_multipart;
 		std::string							boundary;
 
@@ -62,22 +66,29 @@ class Request
 		Request(const std::string& raw_request);
 		~Request(void);
 		
-		int				process_raw_request(void);//const std::string& raw_request);
+		int					process_raw_request(void);//const std::string& raw_request);
 
-		size_t			length(void) const;
+		size_t				length(void) const;
 		const std::string&	get_method(void) const;
-		bool			is_method(enum e_method method) const;
-		bool			is_empty(void);
+		bool				is_method(enum e_method method) const;
+		bool				is_empty(void);
+		bool				is_header_parsed(void) const;
+		size_t				get_header_length(void) const;
 		const std::string&	get_path() const;
+		const std::string&	get_query() const;
 		const std::string&  get_body() const;
 		const std::string&	get_raw_request() const;
+		size_t				get_content_length() const;
+		const std::string&	get_content_length_str() const;
+
 		bool 				getMultiformFlag(void) const;
 		bool 				processMultiform(void) ;
 		std::string			getBoundary() const;
 		// Returns the header element at given key.
 //		const std::string*	operator[](const std::string& key) const;// access header tag values by indexing Request instance like a map. Returns NULL if not tag not in header, returns a string otherwise.
 		const std::string&	operator[](const std::string& key) const;// access header tag values by indexing Request instance like a map. Returns NULL if not tag not in header, returns a string otherwise.
-		Request&			operator<<(char *req_buff);// push raw request from client inside Request instance.
+//		Request&			operator<<(char *req_buff);// push raw request from client inside Request instance.
+		Request&			append(const char *req_buff, size_t n);// push raw request from client inside Request instance.
 		
 		std::vector<DataPart> extract_multipart() const;
 

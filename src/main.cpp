@@ -82,11 +82,17 @@ int main(int argc, char **argv, char **envp)
 	(void)envp;
 
 	if (argc < 2)
-		config_path = "configs/config.txt";
+	{
+		std::cerr << "You need to provide a server configuration file to start the server." << std::endl;
+		return (EXIT_FAILURE);
+//		config_path = "configs/config.txt";
+	}
 	else
 		config_path = argv[1];
 
 	serverConfigs = configBuilder.parseConfigFile(config_path);
+	if (serverConfigs.size() == 0)
+		return (EXIT_FAILURE);// Error message should have been displayed in configBuilder.parseConfigFile()
 
 	srv_clu = ServerFactory::create_cluster_from_cfg(serverConfigs);
 //	return (1);

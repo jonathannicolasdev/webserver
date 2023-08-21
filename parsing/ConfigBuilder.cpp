@@ -284,6 +284,13 @@ string ConfigBuilder::readConfigFile(const std::string &filename)
     // std::ifstream configFile = std::ifstream(filename);
     // The modification made to use direct initialization for the configFile object
     // instead of copy initialization resolves the private copy constructor error.
+
+    if (access(filename.c_str(), F_OK | R_OK) < 0)
+    {
+        Logger::log(LOG_CRITICAL, std::string("The Server configuration file \"") + filename + "\" does not exist or cannot be read.");
+        return ("");
+    }
+//    std::cout << "Is config file (" << filename << ") in fact open : " << configFile.is_open() <<  std::endl;
     if (!configFile.is_open())
     {
         throw std::runtime_error("Error opening config file: " + filename);
@@ -330,7 +337,9 @@ std::vector<ServerConfig> ConfigBuilder::parseConfigFile(const std::string& file
 
     try
     {
-        string configContent = readConfigFile(filename);
+        std::string configContent = readConfigFile(filename);
+        if (configContent.length() == 0)
+            return (serverConfigs);
         configContent = ConfigBuilder::cleanComments(configContent);
         configContent = ConfigBuilder::cleanSpaces(configContent);
 

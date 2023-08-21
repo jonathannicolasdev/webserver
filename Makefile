@@ -4,11 +4,13 @@ SRVFACT_DIR		:= ServerFactory/
 SRVCORE_DIR		:= ServerCore/
 RQST_DIR		:= Request/
 RESP_DIR		:= Response/
+CGI_DIR			:= CGI/
 LOGGER_DIR		:= Logger/
 SRC_DIR			:= src/
 
 INCL_DIRS		:=	inc/ $(PARS_DIR) $(SRVFACT_DIR) $(SRVCORE_DIR) \
-					$(RQST_DIR) $(RESP_DIR) $(LOGGER_DIR) $(SRC_DIR) 
+					$(RQST_DIR) $(RESP_DIR) $(LOGGER_DIR) $(SRC_DIR)\
+					$(CGI_DIR)
 
 
 PARS_FILES		:=	ConfigBuilder.cpp	\
@@ -27,7 +29,7 @@ SRVCORE_FILES	:= IServer.cpp					\
 				   __EventListener.cpp			\
 				   AServerCluster.cpp			\
 				   ServerFactory.cpp	
-#			   AServerCluster.cpp	
+#			   AServerCluster.cpp
 #			   ClusterWeb.cpp
 
 SRVCORE			:= $(addprefix $(SRVCORE_DIR), $(SRVCORE_FILES))
@@ -37,6 +39,10 @@ RQST			:= $(addprefix $(RQST_DIR), $(RQST_FILES))
 
 RESP_FILES		:=	Response.cpp ErrorResponse.cpp
 RESP			:= $(addprefix $(RESP_DIR), $(RESP_FILES))
+
+CGI_FILES		:=	CGIAgent.cpp
+CGI				:= $(addprefix $(CGI_DIR), $(CGI_FILES))
+
 
 LOGGER_FILES	:=	Logger.cpp
 LOGGER			:= $(addprefix $(LOGGER_DIR), $(LOGGER_FILES))
@@ -71,6 +77,7 @@ OBJS		:=	$(PARS:.cpp=.o)		\
 				$(SRVCORE:.cpp=.o)	\
 				$(RQST:.cpp=.o)		\
 				$(RESP:.cpp=.o)		\
+				$(CGI:.cpp=.o)		\
 				$(LOGGER:.cpp=.o)	\
 				$(SRCS:.cpp=.o)
 #				$(SRVFACT:.cpp=.o)

@@ -101,7 +101,7 @@ void LocationConfig::SetRoot(const std::string& root)
 	this->root = root;
 	split_string(root, '/', this->split_root);
 }
-std::vector<std::string> LocationConfig::GetAllowMethods() const
+const std::vector<std::string>& LocationConfig::GetAllowMethods() const
 {
 	return allowMethods;
 }
@@ -137,7 +137,7 @@ void LocationConfig::SetAutoIndex(const std::string& autoIndex)
 	this->autoIndex = autoIndex;
 }
 
-std::vector<std::string> LocationConfig::GetCgiPaths() const
+const	std::vector<std::string>& LocationConfig::GetCgiPaths() const
 {
 	return cgiPaths;
 }
@@ -173,7 +173,7 @@ void LocationConfig::AddCgiPath(const std::string& cgiPath)
 {
 	this->cgiPaths.push_back(cgiPath);
 }
-std::vector<std::string> LocationConfig::GetCgiExts() const
+const std::vector<std::string>& LocationConfig::GetCgiExts() const
 {
 	return cgiExts;
 }
@@ -214,13 +214,13 @@ void LocationConfig::print() const
 	if (!LocationConfig::GetMaxBodySize().empty())
 		std::cout << "\t\tMaxBodySize: " << LocationConfig::GetMaxBodySize() << std::endl;
 
-   if (!LocationConfig::GetAllowDelete().empty())
+	if (!LocationConfig::GetAllowDelete().empty())
 		std::cout << "\t\tAllowDelete: " << LocationConfig::GetAllowDelete() << std::endl;
 
-   if (!LocationConfig::GetUpload().empty())
+	if (!LocationConfig::GetUpload().empty())
 		std::cout << "\t\tUpload: " << LocationConfig::GetUpload() << std::endl;
 
-	std::vector<std::string> cgiPaths = LocationConfig::GetCgiPaths();
+	const std::vector<std::string>& cgiPaths = LocationConfig::GetCgiPaths();
 	if (cgiPaths.size() > 0)
 	{
 		std::cout << "\t\tcgi_path: ";
@@ -230,7 +230,7 @@ void LocationConfig::print() const
 		}
 		std::cout << std::endl;
 	}
-	std::vector<std::string> cgiExts = LocationConfig::GetCgiExts();
+	const std::vector<std::string>& cgiExts = LocationConfig::GetCgiExts();
 	if (cgiExts.size() > 0)
 	{
 		std::cout << "\t\tcgi_ext: ";
@@ -240,4 +240,9 @@ void LocationConfig::print() const
 		}
 		std::cout << std::endl;
 	}
+}
+
+const ServerConfig&	LocationConfig::GetServerConfig() const
+{
+	return (this->srv_cfg);
 }

@@ -509,17 +509,47 @@ ServerHTTP::receive_request(int clientfd, Request& request)
 {
 	char				request_buff[MAX_READ_BUFF + 1];
 	ssize_t				read_size;
+	bool				client_is_late = false;
 //	std::ostringstream	req_str;
 
-//	std::cout << "Starting to read client socket until return <= 0" << std::endl;
-	while ((read_size = read(clientfd, request_buff, MAX_READ_BUFF)) > 0)
+	std::cout << "Starting to read client socket until return <= 0" << std::endl;
+// 	while ((read_size = read(clientfd, request_buff, MAX_READ_BUFF)) > 0)
+// 	{
+// 		std::cout << "reading chunk with read_size : " << read_size << std::endl;
+// 		request_buff[read_size] = '\0';
+// 		request << request_buff;
+// //		req_str += request_buff;
+// 	}
+	std::cout << "request content length at start : " << request.get_content_length() << std::endl;
+	while (1)
 	{
-//		std::cout << "reading chunk with read_size : " << read_size << std::endl;
-		request_buff[read_size] = '\0';
-		request << request_buff;
-//		req_str += request_buff;
+		if (request.is_header_parsed()
+			&& (request.length() - request.get_header_length()) == request.get_content_length())
+			break ;
+//		std::cout << "Reading one chunk " << std::endl;
+		read_size = read(clientfd, request_buff, MAX_READ_BUFF);
+//		std::cout << "read_size  : " << read_size << ", content length : " << request.get_content_length() << std::endl;
+//		std::cout << "_raw_request length : " << request.length() << std::endl;
+		if (read_size == 0)
+			break ;
+		else if (read_size < 0)
+		{
+			if (client_is_late && request.get_content_length() == 0)
+				break ;
+			client_is_late = true;
+			usleep(10000);
+			continue;
+		}
+		client_is_late = false;
+		std::cout << "reading chunk with read_size : " << read_size << std::endl;
+//		request_buff[read_size] = '\0';
+		//request << request_buff;
+		request.append(request_buff, read_size);
+		usleep(100);
 	}
-//	std::cout << "Finished reading client socket with read_size : " << read_size << std::endl;
+
+
+	std::cout << "Finished reading client socket with read_size : " << read_size << std::endl;
 	if (read_size == 0)
 	{
 		Logger::log(LOG_DEBUG, "Client has disconnected. Closing client socket.");
@@ -623,6 +653,8 @@ ServerHTTP::serve_request(int clientfd)
 	Response			resp;
 //	const std::string	*requested_host;
 
+	std::cout << std::endl << std::endl << "*------------------------{SERVER RECEIVED NEW REQUEST}-------------------------*" << std::endl;
+	
 	_currently_serving = clientfd;
 	if (	receive_request(clientfd, req) < 0
 		||	req.process_raw_request() < 0)
@@ -642,17 +674,22 @@ ServerHTTP::serve_request(int clientfd)
 	const ServerConfig&	cfg = get_config_for_host(req["Host"]);
 
 
-	if (	resp.prepare_response(*this, req, cfg) < 0
-		||	send_response(clientfd, resp) < 0)
+	if (resp.prepare_response(*this, req, cfg) < 0)
 	{
 		/// SEND ERROR PAGE
 		std::cerr << "Prepare response failed " << std::endl;
-//		ErrorResponse		err(*this, req, cfg);
-//		err.prepare_response(500);
+		int	error_code = resp.get_error_code();
+		ErrorResponse		err(*this, req, cfg);
+		if (error_code)
+			err.prepare_response(error_code);
+		else
+			err.prepare_response(500);
 //		send_response(clientfd, err);
-		_currently_serving = 0;
-		return (_serve_internal_error(clientfd, req, cfg));
+//		return (_serve_internal_error(clientfd, req, cfg));
+		send_response(clientfd, err);
 	}
+	else
+		send_response(clientfd, resp);
 	_currently_serving = 0;
 	return (0);
 }
@@ -680,15 +717,27 @@ ServerHTTP::get_config_for_host(const std::string& host) const
 	std::vector<ServerConfig>::const_iterator		cfgs_it;
 	size_t	pos;
 
+	std::cout << "Looking for location config :" << std::endl;
 	for (cfgs_it = _cfgs.begin(); cfgs_it != _cfgs.end(); ++cfgs_it)
 	{
-		pos = cfgs_it->GetServerName().find_last_of(':');
-		if (pos == std::string::npos && cfgs_it->GetServerName() == host)
+		std::cout << "Comparing location server_name " << cfgs_it->GetServerName() << " vs " << host << std::endl;
+		pos = host.find_last_of(':');
+//		if (pos != std::string::npos)
+//		{
+//			std::cout << "req host up to ':' char : " << host.substr(0, pos) << ", pos : " << pos << std::endl;
+//			std::cout << "req host cmp srv_name : " << host.compare(0, pos, cfgs_it->GetServerName()) << std::endl;
+//			std::cout << "req host name up to pos : '" << host.substr(0, pos) << "'" << std::endl;
+//			std::cout << "req srv_name name up to pos : '" << host.substr(0, pos) << "'" << std::endl;
+//		}
+		if (cfgs_it->GetServerName() == host)
 			return (*cfgs_it);
+//		if (pos == std::string::npos && cfgs_it->GetServerName() == host)
+//			return (*cfgs_it);
 		else if (pos != std::string::npos
-			&& cfgs_it->GetServerName().compare(0, pos, host) == 0)
+			&& host.compare(0, pos, cfgs_it->GetServerName()) == 0)
 			return (*cfgs_it);
 	}
+	std::cout << "Serving default location config :" << std::endl;
 	return (*_cfgs.begin());
 }
 
