@@ -232,7 +232,6 @@ bool Response::_process_post_request(const Request &req, const ServerConfig &srv
 	//	std::cout << "response body : " << response_body << std::endl;
 	_text = header + response_body;
 
-
 	return (true);
 }
 
@@ -244,18 +243,18 @@ bool Response::_process_delete_request(const Request &req, const ServerConfig &s
 	return (true);
 }
 
-bool Response::_redirect(const LocationConfig &loc_cfg)
+bool Response::_isredirect(const LocationConfig &loc_cfg)
 {
-    std::string location;
-    if (!loc_cfg.GetReturnPath().empty())
-    {
-        _error_code = 301;
-        location = loc_cfg.GetReturnPath();
-        if (location[0] != '/')
-            location.insert(location.begin(), '/');
-        return true; // Indicate that redirection is taking place
-    }
-    return false; // Indicate that redirection is not occurring
+	std::string location;
+	if (!loc_cfg.GetReturnPath().empty())
+	{
+		_error_code = 301;
+		location = loc_cfg.GetReturnPath();
+		if (location[0] != '/')
+			location.insert(location.begin(), '/');
+		return true; // Indicate that redirection is taking place
+	}
+	return false; // Indicate that redirection is not occurring
 }
 
 bool Response::_validate_request(const Request &req, const ServerConfig &srv_cfg, const LocationConfig &loc_cfg)
@@ -350,6 +349,18 @@ int Response::prepare_response(const ServerHTTP &srv, const Request &req, const 
 			std::cerr << "Failed to validate request !!" << std::endl;
 			return (-1);
 		}
+
+		if (_isredirect(*best_match))
+		{
+			std::string header;
+			std::string response_body="Redirect Error";
+			_build_get_http_header("", header, std::to_string(response_body.length()), "text/plain", false);
+			_text = header + response_body;
+			std::cerr << "Redirect " << std::endl;
+			return (0);
+			// return(-1);
+		}
+
 		std::cout << "cwd : " << ServerConfig::cwd << std::endl;
 		_parse_location_path(cfg, *best_match);
 		std::cout << "Parsed location path : " << _location_path << std::endl;
