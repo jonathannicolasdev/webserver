@@ -512,6 +512,31 @@ ServerHTTP::receive_request(int clientfd, Request& request)
 //	std::ostringstream	req_str;
 
 //	std::cout << "Starting to read client socket until return <= 0" << std::endl;
+
+/*
+bool                client_is_late = false;
+
+while (1)
+{
+	read_size = read(clientfd, request_buff, MAX_READ_BUFF);
+	if (read_size == 0)
+		break ;
+	else if (read_size < 0)
+	{
+		if (client_is_late)
+			break ;
+		client_is_late = true;
+		usleep(1000);
+		continue ;
+	}
+	client_is_late = false;
+	std::cout << "reading chunk with read_size : " << read_size << std::endl;
+	request_buff[read_size] = '\0';
+	request << request_buff;
+	usleep(100);
+}
+
+*/
 	while ((read_size = read(clientfd, request_buff, MAX_READ_BUFF)) > 0)
 	{
 //		std::cout << "reading chunk with read_size : " << read_size << std::endl;
@@ -519,6 +544,8 @@ ServerHTTP::receive_request(int clientfd, Request& request)
 		request << request_buff;
 //		req_str += request_buff;
 	}
+
+
 //	std::cout << "Finished reading client socket with read_size : " << read_size << std::endl;
 	if (read_size == 0)
 	{
