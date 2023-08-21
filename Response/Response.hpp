@@ -43,7 +43,7 @@ class Response
 		bool	_process_get_request(const Request& req, const ServerConfig& srv_cfg, const LocationConfig& loc_cfg);
 		bool	_process_post_request(const Request& req, const ServerConfig& srv_cfg, const LocationConfig& loc_cfg);
 		bool	_process_delete_request(const Request& req, const ServerConfig& srv_cfg, const LocationConfig& loc_cfg);
-
+		bool	_isredirect(const LocationConfig &loc_cfg);
 		bool	_validate_request(const Request& req, const ServerConfig& srv_cfg, const LocationConfig& loc_cfg);
 		std::string&	_parse_internal_path(const Request& req, const LocationConfig& loc_cfg);
 		std::string&	_parse_location_path(const ServerConfig& scfg, const LocationConfig& lcfg);

@@ -222,6 +222,8 @@ AServerCluster::__cluster_mainloop(void)
 	int		nb_disconn;
 	int		i;
 //	Request	rq;
+// Not sure what sockfd used here for need to void it for no error
+  (void)sockfd;
 
 
 	this->_status = CLU_RUNNING;

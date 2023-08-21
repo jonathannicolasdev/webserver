@@ -20,7 +20,7 @@ cgi .php php-cgi_ubuntu;
     root /data/;
     index index.html;
     limit_except GET;
-    return www.google.com
+    return    https://www.google.com;
   }
 
   location /my_errors {
