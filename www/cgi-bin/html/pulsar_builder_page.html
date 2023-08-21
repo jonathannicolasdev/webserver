@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Pulsar Builder</title>
+    <style>
+        .pulsar-table {
+            display: grid;
+            grid-template-columns: auto repeat(3, minmax(max-content, 1fr));
+            width: 200px;
+        }
+
+        .pulsar-cell {
+            border: 1px solid black;
+            margin-left: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .pulsar-cell select {
+            width: 100%; /*Make the dropdown menu fill the cell */
+        }
+
+    </style>
+</head>
+<body>
+    <h1>Pulsar Builder</h1>
+
+    <section>
+        <h2>Background color</h2>
+        <form action="/cgi/pulsar_builder.py" method="post">
+            <label>
+                <input type="radio" name="bg" value="blue">
+                Blue
+            </label>
+            <br>
+            <label>
+                <input type="radio" name="bg" value="black">
+                Black
+            </label>
+            <br>
+            <input type="submit" value="Apply">
+        </form>
+    </section>
+
+    <section>
+        <h2>Pulsar Options</h2>
+        <div class="pulsar-table">
+            <div class="pulsar-cell"></div>
+            <div class="pulsar-cell">Pulsar 1</div>
+            <div class="pulsar-cell">Pulsar 2</div>
+            <div class="pulsar-cell">Pulsar 3</div>
+
+            <div class="pulsar-cell">Color <!-- Color Dropdown -->
+            </div>
+
+            <div class="pulsar-cell"> <!-- Pulsar 1 Dropdown -->
+                <select name="pulsar1-color">
+                    <option value="white">White</option>
+                    <option value="red">Red</option>
+                    <option value="yellow">Yellow</option>
+                    <option value="green">Green</option>
+                    <option value="cyan">Cyan</option>
+                </select>
+            </div>
+
+            <div class="pulsar-cell"> <!-- Pulsar 2 Dropdown -->
+                <select name="pulsar2-color">
+                    <option value="white">White</option>
+                    <option value="red">Red</option>
+                    <option value="yellow">Yellow</option>
+                    <option value="green">Green</option>
+                    <option value="cyan">Cyan</option>
+                </select>
+            </div>
+
+            <div class="pulsar-cell"> <!-- Pulsar 3 Dropdown -->
+                <select name="pulsar3-color">
+                    <option value="white">White</option>
+                    <option value="red">Red</option>
+                    <option value="yellow">Yellow</option>
+                    <option value="green">Green</option>
+                    <option value="cyan">Cyan</option>
+                </select>
+            </div>
+            <div class="pulsar-cell">Size</div>
+        </div>
+    </section>
+</body>
+</html>

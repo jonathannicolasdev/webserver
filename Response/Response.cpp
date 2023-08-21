@@ -6,13 +6,16 @@
 /*   By: iamongeo <iamongeo@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/26 18:42:23 by iamongeo          #+#    #+#             */
-/*   Updated: 2023/08/20 20:00:18 by iamongeo         ###   ########.fr       */
+/*   Updated: 2023/08/21 16:44:30 by iamongeo         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Response.hpp"
 
-Response::Response(void) {}
+Response::Response(void): _error_code(0), _requested_endpoint(false)
+{
+}
+
 Response::~Response(void) {}
 
 void	_prepare_dummy_response(std::string& text_response)

@@ -47,7 +47,7 @@ class Request
 		std::string							path;
 		std::string							query;
 		std::string							protocol;
-		std::ostringstream					body;
+		std::string							body;
 		size_t								content_length;
 		std::string							content_length_str;
 
@@ -80,7 +80,8 @@ class Request
 		// Returns the header element at given key.
 //		const std::string*	operator[](const std::string& key) const;// access header tag values by indexing Request instance like a map. Returns NULL if not tag not in header, returns a string otherwise.
 		const std::string&	operator[](const std::string& key) const;// access header tag values by indexing Request instance like a map. Returns NULL if not tag not in header, returns a string otherwise.
-		Request&			operator<<(char *req_buff);// push raw request from client inside Request instance.
+//		Request&			operator<<(char *req_buff);// push raw request from client inside Request instance.
+		Request&			append(const char *req_buff, size_t n);// push raw request from client inside Request instance.
 };
 
 std::ostream&			operator<<(std::ostream&, const Request& req);

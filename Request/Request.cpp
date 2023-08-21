@@ -198,13 +198,14 @@ Request::length(void) const
 size_t
 Request::get_header_length(void) const {return (this->header_offset);}
 
-Request &
-Request::operator<<(char *req_buff)
+Request&
+//Request::operator<<(char *req_buff)
+Request::append(const char *req_buff, size_t n)
 {
 	size_t	init_len = _raw_request.length();
 	std::map<std::string, std::string>::iterator	it;
 
-	this->_raw_request += req_buff;
+	this->_raw_request.append(req_buff, n);// += req_buff;
 	if (!header_is_parsed
 		&& (header_offset = this->_raw_request.find("\r\n\r\n", init_len)) != std::string::npos)
 	{

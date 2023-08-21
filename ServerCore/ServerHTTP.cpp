@@ -526,10 +526,10 @@ ServerHTTP::receive_request(int clientfd, Request& request)
 		if (request.is_header_parsed()
 			&& (request.length() - request.get_header_length()) == request.get_content_length())
 			break ;
-		std::cout << "Reading one chunk " << std::endl;
+//		std::cout << "Reading one chunk " << std::endl;
 		read_size = read(clientfd, request_buff, MAX_READ_BUFF);
-		std::cout << "read_size  : " << read_size << ", content length : " << request.get_content_length() << std::endl;
-		std::cout << "_raw_request length : " << request.length() << std::endl;
+//		std::cout << "read_size  : " << read_size << ", content length : " << request.get_content_length() << std::endl;
+//		std::cout << "_raw_request length : " << request.length() << std::endl;
 		if (read_size == 0)
 			break ;
 		else if (read_size < 0)
@@ -542,8 +542,9 @@ ServerHTTP::receive_request(int clientfd, Request& request)
 		}
 		client_is_late = false;
 		std::cout << "reading chunk with read_size : " << read_size << std::endl;
-		request_buff[read_size] = '\0';
-		request << request_buff;
+//		request_buff[read_size] = '\0';
+		//request << request_buff;
+		request.append(request_buff, read_size);
 		usleep(100);
 	}
 
