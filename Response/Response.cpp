@@ -6,7 +6,7 @@
 /*   By: iamongeo <iamongeo@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/26 18:42:23 by iamongeo          #+#    #+#             */
-/*   Updated: 2023/08/16 21:44:45 by iamongeo         ###   ########.fr       */
+/*   Updated: 2023/08/20 20:00:18 by iamongeo         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -259,6 +259,12 @@ int	Response::_process_cgi_request(const Request& req, const ServerConfig& srv_c
 		rel_internal_path = loc_cfg.GetCgiPaths()[0];
 
 	CGIAgent	cgi(req, loc_cfg, _internal_path, _text);
+	if (cgi.get_error_code())
+	{
+		_error_code = cgi.get_error_code();
+		std::cerr << "Response :: _process_cgi_request returns -1 after cgi failure " << std::endl;
+		return (-1);
+	}
 
 //	(void)req;
 	(void)srv_cfg;

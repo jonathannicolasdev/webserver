@@ -196,15 +196,19 @@ bool	_merge_servers_with_same_network_interface_and_different_configs(std::vecto
 {
 	std::vector<AServerDispatchSwitch*>::iterator		srv1_it, srv2_it;
 //	IServer		*srv1, *srv2;
-
+	std::cout << "_merge_servers_with_same_network_interface_and_different_configs STARTS " << std::endl;
 	//for (int i=0; i < (*nb_srvs - 1); ++i)
 	for (srv1_it = built_servers.begin(); srv1_it != (built_servers.end() - 1); ++srv1_it)
 	{
+		std::cout << "lvl1" << std::endl;
 //		srv1 = built_servers[i];
 		for (srv2_it=(srv1_it + 1); srv2_it != built_servers.end(); ++srv2_it)
 		{
+			std::cout << "lvl2" << std::endl;
+			std::cout << "*srv1_it : " << *srv1_it << std::endl;
+			std::cout << "*srv2_it : " << *srv2_it << std::endl;
 //			srv2 = built_servers[j];
-			if (**srv1_it == **srv2_it)
+			if (*srv1_it && *srv2_it && **srv1_it == **srv2_it)
 			{
 				std::cout << std::endl << "*----MERGING SERVERS ON SAME NETWORK INTERFACE !!----*" << std::endl;
 				std::cout << "Server 1 : " << (*srv1_it)->get_server_name() << std::endl;

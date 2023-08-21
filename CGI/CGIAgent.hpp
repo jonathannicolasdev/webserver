@@ -39,14 +39,14 @@ struct CGIConfig
 class CGIAgent
 {
 	private:
-		const Request&			_req;
+//		const Request&			_req;
 		const ServerConfig&		_srv_cfg;
 		const LocationConfig&	_loc_cfg;
 
 
-		std::string				_script_internal_path;
-//		char**					_script_args;
-//		char**					_script_env;
+		std::string					_script_internal_path;
+//		char**						_script_args;
+//		char**						_script_env;
 		std::vector<const char *>	_argv;
 		std::vector<const char *>	_env;
 
@@ -54,8 +54,15 @@ class CGIAgent
 		std::vector<char*>			env_vect;
 		int							_error_code;
 
+		// std::string					_dir_path;
+		// std::string					_script_name;
+		// std::string					_header;
+		// std::string&				_text;
+
 		std::string					_dir_path;
 		std::string					_script_name;
+		std::string					_path_info;
+		std::string					_path_info_short;
 		std::string					_header;
 		std::string&				_text;
 

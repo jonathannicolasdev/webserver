@@ -509,16 +509,45 @@ ServerHTTP::receive_request(int clientfd, Request& request)
 {
 	char				request_buff[MAX_READ_BUFF + 1];
 	ssize_t				read_size;
+	bool				client_is_late = false;
 //	std::ostringstream	req_str;
 
 	std::cout << "Starting to read client socket until return <= 0" << std::endl;
-	while ((read_size = read(clientfd, request_buff, MAX_READ_BUFF)) > 0)
+// 	while ((read_size = read(clientfd, request_buff, MAX_READ_BUFF)) > 0)
+// 	{
+// 		std::cout << "reading chunk with read_size : " << read_size << std::endl;
+// 		request_buff[read_size] = '\0';
+// 		request << request_buff;
+// //		req_str += request_buff;
+// 	}
+	std::cout << "request content length at start : " << request.get_content_length() << std::endl;
+	while (1)
 	{
+		if (request.is_header_parsed()
+			&& (request.length() - request.get_header_length()) == request.get_content_length())
+			break ;
+		std::cout << "Reading one chunk " << std::endl;
+		read_size = read(clientfd, request_buff, MAX_READ_BUFF);
+		std::cout << "read_size  : " << read_size << ", content length : " << request.get_content_length() << std::endl;
+		std::cout << "_raw_request length : " << request.length() << std::endl;
+		if (read_size == 0)
+			break ;
+		else if (read_size < 0)
+		{
+			if (client_is_late && request.get_content_length() == 0)
+				break ;
+			client_is_late = true;
+			usleep(10000);
+			continue;
+		}
+		client_is_late = false;
 		std::cout << "reading chunk with read_size : " << read_size << std::endl;
 		request_buff[read_size] = '\0';
 		request << request_buff;
-//		req_str += request_buff;
+		usleep(100);
 	}
+
+
 	std::cout << "Finished reading client socket with read_size : " << read_size << std::endl;
 	if (read_size == 0)
 	{
@@ -624,6 +653,7 @@ ServerHTTP::serve_request(int clientfd)
 //	const std::string	*requested_host;
 
 	std::cout << std::endl << std::endl << "*------------------------{SERVER RECEIVED NEW REQUEST}-------------------------*" << std::endl;
+	
 	_currently_serving = clientfd;
 	if (	receive_request(clientfd, req) < 0
 		||	req.process_raw_request() < 0)

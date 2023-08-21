@@ -12,13 +12,15 @@
 
 #include "Request.hpp"
 
-Request::Request(const std::string &raw_request) : _method(NULL_M)
+Request::Request(const std::string &raw_request) : _method(NULL_M), 
+	header_is_parsed(false), header_offset(0), content_length(0)
 {
 	std::cout << "Request Constructor" << std::endl;
 	this->_raw_request = raw_request;
 }
 
-Request::Request(void) : _method(NULL_M)
+Request::Request(void) : _method(NULL_M), 
+	header_is_parsed(false), header_offset(0), content_length(0)
 {
 	std::cout << "Request default constructor" << std::endl;
 }
@@ -43,7 +45,7 @@ int Request::process_request_line(void)
 	line_end = this->_raw_request.find_first_of("\r\n");
 	this->_raw_request_line = this->_raw_request.substr(0, line_end);
 	//	this->_raw_request = this->_raw_request.substr(line_end + this->_raw_request_line);
-	this->_raw_request = this->_raw_request.substr(this->_raw_request.find_first_not_of("\r\n", line_end));
+//	this->_raw_request = this->_raw_request.substr(this->_raw_request.find_first_not_of("\r\n", line_end));
 
 	p1 = this->_raw_request_line.find(' ');
 	p2 = this->_raw_request_line.find_last_of(" ");
@@ -83,8 +85,8 @@ int Request::process_request_line(void)
 	std::cout << " - query : " << this->query << " (length : " << ss3.str() << ")" << std::endl;
 	ss4 << this->protocol.length();
 	std::cout << " - proto : " << this->protocol << " (length : " << ss4.str() << ")" << std::endl;
-	std::cout << "rest of the request : " << std::endl;
-	std::cout << this->_raw_request << std::endl;
+//	std::cout << "rest of the request : " << std::endl;
+//	std::cout << this->_raw_request << std::endl;
 	// DEBUG END
 
 	return (0);
@@ -96,9 +98,14 @@ int Request::process_header(void) // const std::string& raw_header)
 	size_t line_start, column_pos, line_end;
 	std::string key, value;
 	bool stop = false;
-	std:ostringstream	os;
+//	std::ostringstream	os;
 
-	std::cout << "Request::process_header() : " << std::endl;
+	std::cout << "Request::process_header() START ATTEMPT : " << std::endl;
+
+	if (this->header_is_parsed)
+		return (0);
+
+	std::cout << "Request::process_header() START : " << std::endl;
 	line_start = 0;
 	while (!stop && this->_raw_request[line_start] && !isspace(this->_raw_request[line_start]))
 	{
@@ -119,19 +126,27 @@ int Request::process_header(void) // const std::string& raw_header)
 		while (this->_raw_request[line_start] && isspace(this->_raw_request[line_start]))
 			line_start++;
 	}
-	if (this->_raw_request[line_start])
-	{
-		this->body = this->_raw_request.substr(line_start);
-		os << this->body.length();
-		content_length_str = os.str();
-		content_length = this->body.length();;
-	}
+//	if (this->_raw_request[line_start])
+//	{
+//		this->body = this->_raw_request.substr(line_start);
+//		os << this->body.length();
+//		this->content_length_str = os.str();
+//		this->content_length = this->body.length();;
+//	}
+	std::cout << "Request::process_header() EXIT " << std::endl;
+	header_is_parsed = true;
+	std::cout << "Request::process_header() header is parsed " << std::endl;
 	return (0);
 }
 
 int Request::process_body(void)
 {
 	// TODO ... or not
+	std::cout << "Request::process_body() START" << std::endl;
+	std::cout << "header_offset vs _raw_request length : " << header_offset << " vs " << _raw_request.length() << std::endl;
+	if (header_offset != _raw_request.length())
+		this->body = _raw_request.substr(header_offset);
+	std::cout << "Request::process_body() END" << std::endl;
 	return (0);
 }
 
@@ -153,7 +168,7 @@ const std::string&	Request::get_raw_request(void) const {return (_raw_request);}
 const std::string&	Request::get_query(void) const {return (query);}
 
 size_t				Request::get_content_length(void) const {return (this->content_length);}
-const std::string&	Request::get_content_length_str(void) const {this->content_length_str}
+const std::string&	Request::get_content_length_str(void) const {return (this->content_length_str);}
 
 
 const std::string&	Request::operator[](const std::string& key) const
@@ -180,12 +195,36 @@ Request::length(void) const
 	return (this->_raw_request.length());
 }
 
+size_t
+Request::get_header_length(void) const {return (this->header_offset);}
+
 Request &
 Request::operator<<(char *req_buff)
 {
+	size_t	init_len = _raw_request.length();
+	std::map<std::string, std::string>::iterator	it;
+
 	this->_raw_request += req_buff;
+	if (!header_is_parsed
+		&& (header_offset = this->_raw_request.find("\r\n\r\n", init_len)) != std::string::npos)
+	{
+		header_offset += 4;
+		process_header();
+		std::cout << "header_offset : " << header_offset << std::endl;
+		it = header.find("Content-Length");
+		std::cout << "it found ? : " << (it != header.end()) << std::endl;
+		if (it != header.end())
+		{
+			content_length_str = it->second;
+			content_length = std::stol(it->second);
+			std::cout << "content length : " << content_length_str << ", vs stol content length : " << content_length << std::endl;
+		}
+	}
 	return (*this);
 }
+
+bool
+Request::is_header_parsed(void) const {return (this->header_is_parsed);}
 
 std::ostream&			operator<<(std::ostream& os, const Request& req)
 {

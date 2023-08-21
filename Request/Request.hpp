@@ -41,12 +41,14 @@ class Request
 		std::string				_raw_header;
 //		std::string				_raw_body;
 
+		bool								header_is_parsed;
 		std::map<std::string, std::string>	header;// split and parsed request header.
+		size_t								header_offset;
 		std::string							path;
 		std::string							query;
 		std::string							protocol;
-		std::string							body;
-		size_t								content_length_;
+		std::ostringstream					body;
+		size_t								content_length;
 		std::string							content_length_str;
 
 		// Takes the raw request received from constructor, split the header and body
@@ -66,6 +68,8 @@ class Request
 		const std::string&	get_method(void) const;
 		bool				is_method(enum e_method method) const;
 		bool				is_empty(void);
+		bool				is_header_parsed(void) const;
+		size_t				get_header_length(void) const;
 		const std::string&	get_path() const;
 		const std::string&	get_query() const;
 		const std::string&	get_raw_request() const;

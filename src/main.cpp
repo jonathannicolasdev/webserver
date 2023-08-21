@@ -91,6 +91,8 @@ int main(int argc, char **argv, char **envp)
 		config_path = argv[1];
 
 	serverConfigs = configBuilder.parseConfigFile(config_path);
+	if (serverConfigs.size() == 0)
+		return (EXIT_FAILURE);// Error message should have been displayed in configBuilder.parseConfigFile()
 
 	srv_clu = ServerFactory::create_cluster_from_cfg(serverConfigs);
 //	return (1);

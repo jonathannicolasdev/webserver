@@ -8,6 +8,7 @@
 #include <vector>
 #include "ServerConfig.hpp"
 #include "LocationConfig.hpp"
+#include "Logger.hpp"
 
 class ServerConfig;
 
