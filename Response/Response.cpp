@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Response.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: iamongeo <iamongeo@student.42.fr>          +#+  +:+       +#+        */
+/*   By: marvin <marvin@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/26 18:42:23 by iamongeo          #+#    #+#             */
-/*   Updated: 2023/08/22 23:11:25 by iamongeo         ###   ########.fr       */
+/*   Updated: 2023/08/23 01:54:50 by marvin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -146,7 +146,7 @@ bool Response::_process_get_request(const Request &req, const ServerConfig &srv_
 		//...
 		return (false);
 	}
-	fs.open(_internal_path);
+	fs.open(_internal_path.c_str());
 	if (!fs.is_open())
 	{
 		/// 500 Internal Error ... Or something else.
@@ -191,7 +191,8 @@ static bool	_validate_body_size(const std::string& maxBodySize, size_t content_l
 //	if (!is_all_digits(maxBodySize))
 //		return (Logger::log(LOG_ERROR, "max_body_size should contain only digits."), -1);
 
-	max_body_size = std::stol(maxBodySize);
+	char	*end_ptr = NULL;
+	max_body_size = std::strtol(maxBodySize.c_str(), &end_ptr, 10);//maxBodySize);
 	return (content_length <= max_body_size);
 }
 
@@ -240,7 +241,7 @@ bool Response::_process_post_request(const Request &req, const ServerConfig &srv
 				_error_code = 409;
 				break;
 			}
-			std::ofstream file(filepath, std::ios::binary);
+			std::ofstream file(filepath.c_str(), std::ios::binary);
 			if (file.fail())
 			{
 				_error_code = 500;

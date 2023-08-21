@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   CGIAgent.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: iamongeo <iamongeo@student.42.fr>          +#+  +:+       +#+        */
+/*   By: marvin <marvin@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/16 19:30:10 by iamongeo          #+#    #+#             */
-/*   Updated: 2023/08/21 21:20:41 by iamongeo         ###   ########.fr       */
+/*   Updated: 2023/08/23 03:20:59 by marvin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -159,7 +159,6 @@ CGIAgent::CGIAgent(const Request& req, const LocationConfig& loc_srv,
 	_error_code(0), _text(response)
 {
 	std::vector<std::string>::iterator	it;
-	std::vector<std::string>	env_strs;
 
 	env_strs.push_back(std::string("PATH_INFO=") + abs_internal_path);
 	env_strs.push_back(std::string("SCRIPT_FILENAME=") + abs_internal_path);
@@ -168,6 +167,7 @@ CGIAgent::CGIAgent(const Request& req, const LocationConfig& loc_srv,
 	env_strs.push_back(std::string("CONTENT_TYPE=") + req["Content-Type"]);
 	env_strs.push_back(std::string("CONTENT_LENGTH=") + req.get_content_length_str());
 	
+	std::cout << "Server side env_strs[\"CONTENT_LENGTH\"] = " << *(env_strs.end() - 1) << std::endl;
 	if (_validate_path(abs_internal_path, _error_code, _dir_path, _script_name, _path_info_short))
 	{
 //		(void)_req;
@@ -185,7 +185,10 @@ CGIAgent::CGIAgent(const Request& req, const LocationConfig& loc_srv,
 		std::cout << "" << std::endl;
 
 		for (it=env_strs.begin(); it != env_strs.end(); ++it)
+		{
 			_env.push_back(it->c_str());
+			std::cout << "Pushed to _env : " << *(_env.end() - 1) << std::endl;
+		}
 		
 		
 	//	_script_args = &_argv[0];
@@ -270,6 +273,7 @@ CGIAgent::_parent_process(int pid, int *cgi_send_pipe, int *cgi_read_pipe, const
 		size_t	to_send = _req.get_content_length();
 		size_t	sent = 0, total_sent = 0;
 		std::cout << "CGI :: PARENT sending content body to child through pipe." << std::endl;
+		std::cout << "Sent content : " << _req.get_body() << std::endl;
 		while ((sent = write(cgi_send_pipe[1], _req.get_body().c_str() + total_sent, to_send)) > 0)
 		{
 			to_send -= sent;

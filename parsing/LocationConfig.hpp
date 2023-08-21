@@ -3,6 +3,7 @@
 
 #include <iostream>
 #include <vector>
+#include <set>
 #include <algorithm>
 
 #include "ServerConfig.hpp"
@@ -30,7 +31,8 @@ public:
 	void				SetRoot(const std::string& root);
 	const std::vector<std::string>& GetSplitRoot() const;
 	
-	const std::vector<std::string>& GetAllowMethods() const;
+	//const std::vector<std::string>& GetAllowMethods() const;
+	const std::set<std::string>& GetAllowMethods() const;
 	void				AddAllowMethods(const std::string& method);
 	bool				IsAllowedMethod(const std::string& method) const;
 
@@ -40,7 +42,7 @@ public:
 	void 				SetAutoIndex(const std::string& autoIndex);
 	std::string 		GetMaxBodySize() const;
 	//size_t		 		GetMaxBodySize() const;
-	void			SetMaxBodySize(const std::string& maxBodySize);
+	void				SetMaxBodySize(const std::string& maxBodySize);
 	//int 				SetMaxBodySize(const std::string& maxBodySize);
 	std::string 		GetAllowDelete() const;
 	void 				SetAllowDelete(const std::string& allowDelete);
@@ -57,7 +59,7 @@ public:
 private:
 	ServerConfig&				srv_cfg;
 	std::string					path;
-	std::vector<std::string>	allowMethods;
+	std::set<std::string>		allowMethods;
 	std::string					autoIndex;
 	std::string					indexFile;
 	std::string					returnPath;

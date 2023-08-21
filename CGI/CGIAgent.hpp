@@ -14,6 +14,7 @@
 # define CGIAGENT_HPP
 
 # include <unistd.h>
+# include <sys/wait.h>
 # include <stdlib.h>
 # include <signal.h>
 # include <iostream>
@@ -50,7 +51,7 @@ class CGIAgent
 		std::vector<const char *>	_argv;
 		std::vector<const char *>	_env;
 
-		std::vector<std::string>	env_str;
+		std::vector<std::string>	env_strs;
 		std::vector<char*>			env_vect;
 		int							_error_code;
 

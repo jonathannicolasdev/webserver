@@ -17,6 +17,7 @@
 # include <iostream>
 # include <map>
 # include <vector>
+# include <cstdlib>
 
 # include "Logger.hpp"
 # include "webserv_utils.hpp"

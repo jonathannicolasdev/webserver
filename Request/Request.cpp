@@ -414,7 +414,9 @@ Request::append(const char *req_buff, size_t n)
 		if (it != header.end())
 		{
 			content_length_str = it->second;
-			content_length = std::stol(it->second);
+			char	*end_ptr = NULL;
+			content_length = std::strtol(it->second.c_str(), &end_ptr, 10);
+			//content_length = std::stol(it->second);
 			std::cout << "content length : " << content_length_str << ", vs stol content length : " << content_length << std::endl;
 		}
 	}

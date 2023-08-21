@@ -19,7 +19,8 @@ LocationConfig::LocationConfig(ServerConfig& cfg): srv_cfg(cfg),
 	maxBodySize(cfg.GetMaxBodySize())
 {
 	// Allowed by default
-	allowMethods.push_back("GET");
+//	allowMethods.push_back("GET");
+	allowMethods.insert("GET");
 //	allowMethods.push_back("HEAD");
 //	allowMethods.push_back("POST");
 }
@@ -102,14 +103,16 @@ void LocationConfig::SetRoot(const std::string& root)
 	this->root = root;
 	split_string(root, '/', this->split_root);
 }
-const std::vector<std::string>& LocationConfig::GetAllowMethods() const
+//const std::vector<std::string>& LocationConfig::GetAllowMethods() const
+const std::set<std::string>& LocationConfig::GetAllowMethods() const
 {
 	return allowMethods;
 }
 
 void	LocationConfig::AddAllowMethods(const std::string& method)
 {
-	allowMethods.push_back(method);
+	//allowMethods.push_back(method);
+	allowMethods.insert(method);
 }
 
 bool	LocationConfig::IsAllowedMethod(const std::string& method) const
@@ -204,13 +207,17 @@ void LocationConfig::print() const
 	std::cout << "\tLocation: " << LocationConfig::GetPath() << std::endl;
 
 	std::cout << "here we go !" << std::endl;
-	std::vector<std::string> allowMethods = LocationConfig::GetAllowMethods();
+//	std::vector<std::string> allowMethods = LocationConfig::GetAllowMethods();
 	if (allowMethods.size() > 0)
 	{
+		std::set<std::string>::iterator	it;
+
 		std::cout << "\t\tmethods: ";
-		for (size_t i = 0; i < allowMethods.size(); i++)
+		//for (size_t i = 0; i < allowMethods.size(); i++)
+		for (it=allowMethods.begin(); it != allowMethods.end(); ++it)
 		{
-			std::cout << " " << allowMethods[i];
+			//std::cout << " " << allowMethods[i];
+			std::cout << " " << *it;
 		}
 		std::cout << std::endl;
 	}

@@ -1,0 +1,69 @@
+server {
+  listen 8080;
+  listen 65535;
+
+  root /www/;
+  
+	server_name localhost;
+	index index.html;
+
+  location / {
+    allow_methods GET;
+    index index.html;
+  }
+
+  location /autoindex {
+    autoindex on;
+  }
+
+  location /data {
+    root /data/;
+    index index.html;
+    limit_except GET;
+    return    https://www.google.com;
+  }
+
+  location /my_errors {
+    root /errors;
+  }
+
+  location /admin {
+    auth admin:admin;
+    root /admin/;
+    index index.html;
+  }
+  location /autoindex/admin {
+    auth admin:admin;
+    root /admin/;
+    index index.html;
+  }
+  location /imgs {
+    root /assets/;
+  }
+  location /cgi {
+    allow_methods GET POST;
+    root /cgi-bin/;
+    cgi .py python3
+  }
+
+  # Max body size of 100mb to start
+  location /uploads {
+    autoindex on;
+    allow_methods GET DELETE POST;
+    max_body_size 100000000
+    root /client_uploads/
+  }
+  
+  error_page 404 /my_errors/404.html;
+}
+
+server {
+  
+  listen 8080
+  root /www2;
+	server_name pulsar;
+
+  location / {
+    index index.html;
+  }
+}
