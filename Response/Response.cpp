@@ -6,7 +6,7 @@
 /*   By: iamongeo <iamongeo@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/26 18:42:23 by iamongeo          #+#    #+#             */
-/*   Updated: 2023/08/21 18:30:51 by iamongeo         ###   ########.fr       */
+/*   Updated: 2023/08/21 18:54:19 by iamongeo         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -422,8 +422,8 @@ int Response::prepare_response(const ServerHTTP &srv, const Request &req, const 
 		{
 			if (!_process_delete_request(req, cfg, *best_match))
 				return (-1);
+		//	_process_delete_request(req, cfg, *best_match);
 		}
-			_process_delete_request(req, cfg, *best_match);
 		else
 			std::cerr << "METHOD NOT RECOGNIZED !" << std::endl;
 	}

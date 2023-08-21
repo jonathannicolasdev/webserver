@@ -12,24 +12,17 @@
 
 #include "Request.hpp"
 
-<<<<<<< HEAD
-Request::Request(const std::string &raw_request) : _method(NULL_M), is_multipart(false)
-=======
-Request::Request(const std::string &raw_request) : _method(NULL_M), 
-	header_is_parsed(false), header_offset(0), content_length(0)
->>>>>>> CGI_init
+Request::Request(const std::string &raw_request): _method(NULL_M), 
+	header_is_parsed(false), header_offset(0), content_length(0), is_multipart(false)
 {
 	std::cout << "Request Constructor" << std::endl;
 	this->_raw_request = raw_request;
 
 }
 
-<<<<<<< HEAD
-Request::Request(void) : _method(NULL_M), is_multipart(false)
-=======
-Request::Request(void) : _method(NULL_M), 
-	header_is_parsed(false), header_offset(0), content_length(0)
->>>>>>> CGI_init
+
+Request::Request(void): _method(NULL_M),
+	header_is_parsed(false), header_offset(0), content_length(0), is_multipart(false)
 {
 	std::cout << "Request default constructor" << std::endl;
 }
@@ -89,7 +82,6 @@ int Request::process_request_line(void)
 	}
 
 	// DEBUG
-<<<<<<< HEAD
 	// std::ostringstream ss, ss2, ss3, ss4;
 	// std::cout << "Split request line info : " << std::endl;
 	// ss << method.length();
@@ -102,20 +94,6 @@ int Request::process_request_line(void)
 	// std::cout << " - proto : " << this->protocol << " (length : " << ss4.str() << ")" << std::endl;
 	// std::cout << "rest of the request : " << std::endl;
 	// std::cout << this->_raw_request << std::endl;
-=======
-	std::ostringstream ss, ss2, ss3, ss4;
-	std::cout << "Split request line info : " << std::endl;
-	ss << method.length();
-	std::cout << " - method : " << method << " (length : " << ss.str() << ")" << std::endl;
-	ss2 << this->path.length();
-	std::cout << " - path : " << this->path << " (length : " << ss2.str() << ")" << std::endl;
-	ss3 << this->query.length();
-	std::cout << " - query : " << this->query << " (length : " << ss3.str() << ")" << std::endl;
-	ss4 << this->protocol.length();
-	std::cout << " - proto : " << this->protocol << " (length : " << ss4.str() << ")" << std::endl;
-//	std::cout << "rest of the request : " << std::endl;
-//	std::cout << this->_raw_request << std::endl;
->>>>>>> CGI_init
 	// DEBUG END
 
 	return (0);
@@ -126,7 +104,6 @@ bool Request::getMultiformFlag(void) const {return (this->is_multipart);}
 
 bool Request::processMultiform(void) 
 { 
-	
 	std::map<std::string, std::string>::const_iterator it;
 
 	std::cout << "\n\nprocessMultiform : " << std::endl;
@@ -145,7 +122,6 @@ bool Request::processMultiform(void)
 		size_t	pos = it->second.find("boundary=");
 		if (pos == std::string::npos)
 		{
-
 			std::cout << "NO MULTIPART" << std::endl;
 			return (false);
 		}
@@ -177,17 +153,10 @@ int Request::process_header(void) // const std::string& raw_header)
 	bool stop = false;
 //	std::ostringstream	os;
 
-<<<<<<< HEAD
-	std::cout << std::endl << std::endl << "Request::process_header() : " << std::endl;
-	std::cout << _raw_request << std::endl;
-=======
-	std::cout << "Request::process_header() START ATTEMPT : " << std::endl;
-
+//	std::cout << "Request::process_header() START ATTEMPT : " << std::endl;
 	if (this->header_is_parsed)
 		return (0);
-
-	std::cout << "Request::process_header() START : " << std::endl;
->>>>>>> CGI_init
+//	std::cout << "Request::process_header() START : " << std::endl;
 	line_start = 0;
 	while (!stop && this->_raw_request[line_start] && !isspace(this->_raw_request[line_start]))
 	{
@@ -208,16 +177,6 @@ int Request::process_header(void) // const std::string& raw_header)
 		while (this->_raw_request[line_start] && isspace(this->_raw_request[line_start]))
 			line_start++;
 	}
-<<<<<<< HEAD
-	if (this->_raw_request[line_start])
-	{
-		this->body = this->_raw_request.substr(line_start);
-		std::cout << "ppppppppppppp " << this->_raw_request.length() << std::endl;
-		processMultiform();
-	}
-	else
-		std::cout << "THERE IS NO BODY !!" << std::endl;
-=======
 //	if (this->_raw_request[line_start])
 //	{
 //		this->body = this->_raw_request.substr(line_start);
@@ -228,7 +187,6 @@ int Request::process_header(void) // const std::string& raw_header)
 	std::cout << "Request::process_header() EXIT " << std::endl;
 	header_is_parsed = true;
 	std::cout << "Request::process_header() header is parsed " << std::endl;
->>>>>>> CGI_init
 	return (0);
 }
 
@@ -239,6 +197,11 @@ int Request::process_body(void)
 	std::cout << "header_offset vs _raw_request length : " << header_offset << " vs " << _raw_request.length() << std::endl;
 	if (header_offset != _raw_request.length())
 		this->body = _raw_request.substr(header_offset);
+	if (this->body.length() == 0)
+		std::cout << "THERE IS NO BODY !!" << std::endl;
+	else
+		processMultiform();
+
 	std::cout << "Request::process_body() END" << std::endl;
 	return (0);
 }
@@ -271,26 +234,16 @@ int Request::process_raw_request(void) // const std::string& raw_request)
 	return (0);
 }
 
-<<<<<<< HEAD
 const std::string &
-=======
-
-
-const std::string&
->>>>>>> CGI_init
 Request::get_method(void) const { return (this->_method_str); }
 
 bool Request::is_method(enum e_method method) const { return (this->_method == method); }
 
-<<<<<<< HEAD
-const std::string &Request::get_raw_request(void) const { return (_raw_request); }
-=======
 const std::string&	Request::get_raw_request(void) const {return (_raw_request);}
 const std::string&	Request::get_query(void) const {return (query);}
 
 size_t				Request::get_content_length(void) const {return (this->content_length);}
 const std::string&	Request::get_content_length_str(void) const {return (this->content_length_str);}
->>>>>>> CGI_init
 
 
 const std::string &Request::operator[](const std::string &key) const
@@ -320,16 +273,14 @@ Request::length(void) const
 size_t
 Request::get_header_length(void) const {return (this->header_offset);}
 
-Request&
-//Request::operator<<(char *req_buff)
-Request::append(const char *req_buff, size_t n)
+/*
 {
-<<<<<<< HEAD
 	this->_raw_request += req_buff;
 	std::cout << "vvvvvvvvvvvvvv " << this->_raw_request.length() << std::endl;
 
 	return (*this);
 }
+*/
 
 std::vector<std::string> extractContents(const std::string &body, const std::string &boundary)
 {
@@ -391,8 +342,11 @@ std::vector<DataPart> Request::extract_multipart() const
 	return dataparts;
 }
 
-std::ostream &operator<<(std::ostream &os, const Request &req)
-=======
+//std::ostream &operator<<(std::ostream &os, const Request &req)
+Request&
+//Request::operator<<(char *req_buff)
+Request::append(const char *req_buff, size_t n)
+{
 	size_t	init_len = _raw_request.length();
 	std::map<std::string, std::string>::iterator	it;
 
@@ -419,7 +373,6 @@ bool
 Request::is_header_parsed(void) const {return (this->header_is_parsed);}
 
 std::ostream&			operator<<(std::ostream& os, const Request& req)
->>>>>>> CGI_init
 {
 	os << req.get_raw_request();
 	return (os);
