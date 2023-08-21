@@ -244,6 +244,20 @@ bool Response::_process_delete_request(const Request &req, const ServerConfig &s
 	return (true);
 }
 
+bool Response::_redirect(const LocationConfig &loc_cfg)
+{
+    std::string location;
+    if (!loc_cfg.GetReturnPath().empty())
+    {
+        _error_code = 301;
+        location = loc_cfg.GetReturnPath();
+        if (location[0] != '/')
+            location.insert(location.begin(), '/');
+        return true; // Indicate that redirection is taking place
+    }
+    return false; // Indicate that redirection is not occurring
+}
+
 bool Response::_validate_request(const Request &req, const ServerConfig &srv_cfg, const LocationConfig &loc_cfg)
 {
 	(void)srv_cfg;
