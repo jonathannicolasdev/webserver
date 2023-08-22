@@ -6,7 +6,7 @@
 /*   By: iamongeo <iamongeo@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/26 18:42:23 by iamongeo          #+#    #+#             */
-/*   Updated: 2023/08/21 18:54:19 by iamongeo         ###   ########.fr       */
+/*   Updated: 2023/08/21 22:22:58 by iamongeo         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -345,7 +345,7 @@ int	Response::_process_cgi_request(const Request& req, const ServerConfig& srv_c
 	if (cgi.get_error_code())
 	{
 		_error_code = cgi.get_error_code();
-		std::cerr << "Response :: _process_cgi_request returns -1 after cgi failure " << std::endl;
+		std::cerr << "Response :: _process_cgi_request returns -1 after cgi constructor failure " << std::endl;
 		return (-1);
 	}
 
@@ -354,7 +354,12 @@ int	Response::_process_cgi_request(const Request& req, const ServerConfig& srv_c
 	//(void)cgi;
 	std::cout << "CGI REQUEST WAS PROCESSED" << std::endl;
 	
-	cgi.run();// Because we give cgi the response._text reference in its constructor, the response is writen right in the response's _text and is ready to get.
+	if (cgi.run() < 0)// Because we give cgi the response._text reference in its constructor, the response is writen right in the response's _text and is ready to get.
+	{
+		_error_code = cgi.get_error_code();
+		std::cerr << "Response :: _process_cgi_request returns -1 after cg.run() failure " << std::endl;
+		return (-1);
+	}
 	return (0);
 }
 
@@ -366,8 +371,8 @@ int	Response::_process_cgi_request(const Request& req, const ServerConfig& srv_c
 int Response::prepare_response(const ServerHTTP &srv, const Request &req, const ServerConfig &cfg)
 {
 	(void)srv;
-	(void)req;
-	(void)cfg;
+//	(void)req;
+//	(void)cfg;
 	const LocationConfig *best_match;
 
 	_error_code = 0;

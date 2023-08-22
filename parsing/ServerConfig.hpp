@@ -34,7 +34,8 @@ public:
 	const std::map<int, std::string>& GetError_pages() const;
 	void        AddError_page(int errorCode, std::string error_page);
 	std::string GetListenPort() const;
-	void        SetListenPort(std::string listenPort);
+	void        SetListenPort(const std::string& listenPort);
+	void		AddListenPort(const std::string& listenPort);
 	void        SetServerName(std::string serverName);
 	std::string GetServerName() const;
 	std::string GetMaxBodySize() const;

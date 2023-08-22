@@ -6,20 +6,52 @@
 /*   By: iamongeo <iamongeo@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/16 19:30:10 by iamongeo          #+#    #+#             */
-/*   Updated: 2023/08/21 17:19:15 by iamongeo         ###   ########.fr       */
+/*   Updated: 2023/08/21 21:20:41 by iamongeo         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "CGIAgent.hpp"
 
-int	close_pipe(int *pp, bool err)
+int	close_pipes(int *pp1, int *pp2, bool err)
 {
-	if (pp[0])
-		close(pp[0]);
-	else
-		close(pp[1]);
+	if (pp1)
+	{
+		if (pp1[0] > 2)
+		{
+			close(pp1[0]);
+			pp1[0] = -1;
+		}
+		else
+		{
+			close(pp1[1]);
+			pp1[1] = -1;
+		}
+	}
+	if (pp2)
+	{
+		if (pp2[0] > 2)
+		{
+			close(pp2[0]);
+			pp2[0] = -1;
+		}
+		else
+		{
+			close(pp2[1]);
+			pp2[1] = -1;
+		}
+	}
 	if (err)
 		return (-1);
+	return (0);
+}
+
+int	close_pipe(int *pp)
+{
+	if (pp && *pp > 2)
+	{
+		close(*pp);
+		*pp = -1;
+	}
 	return (0);
 }
 
@@ -122,7 +154,7 @@ bool	_validate_path(const std::string& intern_path, int& error_code,
 
 CGIAgent::CGIAgent(const Request& req, const LocationConfig& loc_srv, 
 	const std::string& abs_internal_path, std::string& response):
-	//_req(req),
+	_req(req),
 	_srv_cfg(loc_srv.GetServerConfig()), _loc_cfg(loc_srv), 
 	_error_code(0), _text(response)
 {
@@ -169,115 +201,165 @@ CGIAgent::CGIAgent(const Request& req, const LocationConfig& loc_srv,
 	std::cout << "CGI constructor exit " << std::endl;
 }
 
-CGIAgent::~CGIAgent(void)
+CGIAgent::~CGIAgent(void) {}
+
+int
+CGIAgent::_child_process(int *cgi_send_pipe, int *cgi_read_pipe)
 {
+	std::string			pwd_str;
+
+	std::cout << "HERE IS CHILD PROCESS" << std::endl;
+	if (chdir(_dir_path.c_str()) < 0)
+	{
+		Logger::log(LOG_ERROR, "Child process failed to change directory to script location.");
+		std::cerr << "script location : " << _dir_path << std::endl;
+		exit(EXIT_FAILURE);
+	}
+	std::cout << "Child pwd after chdir : " << pwd(pwd_str) << std::endl;
+
+	close_pipe(&cgi_send_pipe[1]);
+	close_pipe(&cgi_read_pipe[0]);
+	
+	if (_req.get_content_length())
+	{
+		dup2(cgi_send_pipe[0], 0);// LOUCHE
+		std::cout << "Child pipe read redirected to stdin." << std::endl;
+	}
+	else
+	{
+		close_pipe(&cgi_send_pipe[0]);
+		std::cout << "Child pipe read closed." << std::endl;
+	}
+	dup2(cgi_read_pipe[1], 1);
+	std::cerr << "_argv[0] : " << _argv[0] << std::endl;
+//		std::cerr << "_env[0] : " << _env[0] << std::endl;
+	std::cerr << "Child pipe duped" << std::endl;
+
+	//std::cout << "CGI CALLING EXECVE" << std::endl;
+	if (execve(_argv[0], (char * const *)&_argv[0], (char * const *)&_env[0]) < 0)
+	{
+		std::cerr << "CGI EXECVE FAILED !! " << std::endl;
+		std::cerr << "_script_internal_path was : " << _script_internal_path << std::endl;
+		perror("execve failed ");
+//			return (close_pipe(pp, true));
+	}
+	std::cerr << "Child pipe duped" << std::endl;
+	Logger::log(LOG_ERROR, "execve() call for cgi execition failed.");
+	close_pipes(cgi_send_pipe, cgi_read_pipe, true);
+	exit(EXIT_FAILURE);
 }
 
-int     CGIAgent::run(void)
+int
+CGIAgent::_parent_process(int pid, int *cgi_send_pipe, int *cgi_read_pipe, const std::string& content_type)
 {
-	int pid;
-	int pp[2] = {0, 0};
+//	int pid;
 	int	status;
 	int	waitpid_ret;
 	std::ostringstream	content_length;
 	std::string			body;
 	std::string			pwd_str;
 
+	std::cout << "HERE IS PARENT PROCESS" << std::endl;
+	/// PARENT PROCESS MONITORING CGI
+
+	close_pipe(&cgi_send_pipe[0]);
+	close_pipe(&cgi_read_pipe[1]);
+
+	if (_req.get_content_length())
+	{
+		size_t	to_send = _req.get_content_length();
+		size_t	sent = 0, total_sent = 0;
+		std::cout << "CGI :: PARENT sending content body to child through pipe." << std::endl;
+		while ((sent = write(cgi_send_pipe[1], _req.get_body().c_str() + total_sent, to_send)) > 0)
+		{
+			to_send -= sent;
+			total_sent += sent;
+		}
+	}
+	close_pipe(&cgi_send_pipe[1]);
+
+	time_t	start_time = std::time(NULL), cur_time = start_time;
+
+	while ((waitpid_ret = waitpid(pid, &status, WNOHANG)) == 0)
+	{
+		usleep(10000);
+		cur_time = std::time(NULL);
+		if ((cur_time - start_time) >= MAX_CGI_TIMEWAIT)
+		{
+			//std::cerr << "CGI TOOK TOO LONG. EXIT WITH INTERNAL ERROR." << std::endl;
+			Logger::log(LOG_WARNING, "Gateway took too long to respond.");
+			_error_code = 504;
+			kill(pid, SIGKILL);
+			return (close_pipes(cgi_send_pipe, cgi_read_pipe, true));
+		}
+	}
+	if (waitpid_ret == -1)
+	{
+		perror("Waitpid FAILED");
+		_error_code = 500;
+		kill(pid, SIGKILL);
+		return (close_pipes(cgi_send_pipe, cgi_read_pipe, true));
+	}
+	else if (WEXITSTATUS(status) != EXIT_SUCCESS)
+	{
+		std::cout << "CGI:: FAILED and child process returned with status : " << WEXITSTATUS(status) << std::endl;
+		_error_code = 500;
+		return (close_pipes(cgi_send_pipe, cgi_read_pipe, true));
+	}
+	else if (waitpid_ret == pid)
+	{
+		std::cout << "waitpid worked as expected. Requested CGI and parend process returned successfully." << std::endl;
+	}
+	extract_content_from_pipe(cgi_read_pipe[0], body);
+	//os << pp[0];
+	//std::cout << "Returned from CGI pipe : " << os.str() << std::endl;
+	std::cout << "Returned from CGI pipe : " << std::endl << body << std::endl;
+	close_pipe(&cgi_read_pipe[0]);
+//		body = os.str();
+	content_length << body.length();
+
+	/// BUILDING CGI HEADER
+	_build_cgi_http_header("", _text, content_length.str(), content_type, false);
+	_text += body;
+	close_pipes(cgi_send_pipe, cgi_read_pipe, true);
+	return (0);
+}
+
+int     CGIAgent::run(void)
+{
+	int	pid;
+	int cgi_send_pipe[2] = {0, 0};
+	int cgi_read_pipe[2] = {0, 0};
+//	int pp[2] = {0, 0};
+
+
 	if (_error_code)
 	{
 		Logger::log(LOG_ERROR, "CGI cannot be run if an error_code was triggered.");
 		return (-1);
 	}
-	if (pipe(pp) < 0)
+	if (pipe(cgi_send_pipe) < 0 || pipe(cgi_read_pipe) < 0)
 	{
 		_error_code = 500;
-		return (close_pipe(pp, true));
+		return (close_pipes(cgi_send_pipe, cgi_read_pipe, true));
 	}
 	std::cout << "CGI FORKING PROCESS" << std::endl;
 	if ((pid = fork()) < 0)
 	{
 		_error_code = 500;
-		return (close_pipe(pp, true));
+		return (close_pipes(cgi_send_pipe, cgi_read_pipe, true));
 	}
 	else if (pid == 0)
 	{
 		/// CHILD PROCESS EXECUTING CGI
-
-		std::cout << "HERE IS CHILD PROCESS" << std::endl;
-		if (chdir(_dir_path.c_str()) < 0)
-		{
-			Logger::log(LOG_ERROR, "Child process failed to change directory to script location.");
-			std::cerr << "script location : " << _dir_path << std::endl;
-			exit(EXIT_FAILURE);
-		}
-		std::cout << "Child pwd after chdir : " << pwd(pwd_str) << std::endl;
-		close(pp[0]);
-		std::cout << "Child pipe read closed." << std::endl;
-		pp[0] = 0;
-		dup2(pp[1], 1);
-		std::cerr << "_argv[0] : " << _argv[0] << std::endl;
-//		std::cerr << "_env[0] : " << _env[0] << std::endl;
-		std::cerr << "Child pipe duped" << std::endl;
-
-		//std::cout << "CGI CALLING EXECVE" << std::endl;
-		if (execve(_argv[0], (char * const *)&_argv[0], (char * const *)&_env[0]) < 0)
-		{
-			std::cerr << "CGI EXECVE FAILED !! " << std::endl;
-			std::cerr << "_script_internal_path was : " << _script_internal_path << std::endl;
-			perror("execve failed ");
-//			return (close_pipe(pp, true));
-		}
-		std::cerr << "Child pipe duped" << std::endl;
-		Logger::log(LOG_ERROR, "execve() call for cgi execition failed.");
-		close_pipe(pp, true);
-		exit(EXIT_FAILURE);
+		_child_process(cgi_send_pipe, cgi_read_pipe);
 	}
 	else
 	{
-		std::cout << "HERE IS PARENT PROCESS" << std::endl;
-		/// PARENT PROCESS MONITORING CGI
-		close(pp[1]);
-
-
-		time_t	start_time = std::time(NULL), cur_time = start_time;
-
-		while ((waitpid_ret = waitpid(pid, &status, WNOHANG)) == 0)
-		{
-			usleep(10000);
-			cur_time = std::time(NULL);
-			if ((cur_time - start_time) >= MAX_CGI_TIMEWAIT)
-			{
-				//std::cerr << "CGI TOOK TOO LONG. EXIT WITH INTERNAL ERROR." << std::endl;
-				Logger::log(LOG_WARNING, "Gateway took too long to respond.");
-				_error_code = 504;
-				kill(pid, SIGKILL);
-				return (close_pipe(pp, true));
-			}
-		}
-		if (waitpid_ret == -1)
-		{
-			perror("Waitpid FAILED");
-			_error_code = 500;
-			kill(pid, SIGKILL);
-			return (close_pipe(pp, true));
-		}
-		else if (waitpid_ret == pid)
-		{
-			std::cout << "waitpid worked as expected. Requested CGI and parend process returned successfully." << std::endl;
-		}
-		extract_content_from_pipe(pp[0], body);
-		//os << pp[0];
-		//std::cout << "Returned from CGI pipe : " << os.str() << std::endl;
-		std::cout << "Returned from CGI pipe : " << std::endl << body << std::endl;
-		close(pp[0]);
-//		body = os.str();
-		content_length << body.length();
-
-		/// BUILDING CGI HEADER
-		_build_cgi_http_header("", _text, content_length.str(), "text/html", false);
-		_text += body;
+		/// PARENT PROCESS EXECUTING CGI
+		_parent_process(pid, cgi_send_pipe, cgi_read_pipe, "text/html");
 	}
-	return (close_pipe(pp, false));
+	return (close_pipes(cgi_send_pipe, cgi_read_pipe, false));
 }
 
 int	CGIAgent::get_error_code(void) const {return (_error_code);}

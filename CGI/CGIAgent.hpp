@@ -39,7 +39,7 @@ struct CGIConfig
 class CGIAgent
 {
 	private:
-//		const Request&			_req;
+		const Request&			_req;
 		const ServerConfig&		_srv_cfg;
 		const LocationConfig&	_loc_cfg;
 
@@ -65,6 +65,11 @@ class CGIAgent
 		std::string					_path_info_short;
 		std::string					_header;
 		std::string&				_text;
+
+
+		int	_child_process(int *cgi_send_pipe, int *cgi_read_pipe);
+		int	_parent_process(int *cgi_send_pipe, int *cgi_read_pipe);
+		int	_parent_process(int pid, int *cgi_send_pipe, int *cgi_read_pipe, const std::string& content_type);
 
 	public:
 //		CGIAgent(void);

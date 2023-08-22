@@ -42,14 +42,53 @@ IServer *ServerFactory::create_server(enum e_srv_type_srv srv_type, uint16_t por
 bool	_parse_config_ports(const std::string& listen_ports,
 	std::vector<std::string>& listen_addrs, std::vector<int>& ports)
 {
-	size_t			pos1 = 0, pos2 = 0, pos_mid = 0;
+	size_t			pos_mid = 0;
 	std::ostringstream	os;
-	std::string		sub, addr;
+	std::string		sub, addr, port;
 //	in_addr_t		net_addr;
 	int				num_port;
+	std::vector<std::string>			split_listens;
+	std::vector<std::string>::iterator	it;
 
 //	*nb_parsed = 0;
+	split_string(listen_ports, ',', split_listens);
+	for (it=split_listens.begin(); it != split_listens.end(); ++it)
+	{
+		sub = *it;
+		if ((pos_mid = sub.find(':')) == sub.npos)
+			sub = "0.0.0.0:" + sub;
+		pos_mid = sub.find(':');
+		addr = sub.substr(0, pos_mid);
+		port = sub.substr(pos_mid + 1);
 
+		if (addr.empty() || port.empty())
+			return (Logger::log(LOG_CRITICAL, std::string("Invalid listen port or listen address found in config. Address : ") + addr + ", port : " + port), false);
+
+		if (inet_addr(addr.c_str()) == INADDR_NONE)
+			return (Logger::log(LOG_ERROR, std::string("Configuration file listen address ") + addr + " is not a valid network ip address."), false);
+		
+		num_port = atoi(port.c_str());
+		if (num_port < 1 || 65535 < num_port || !is_all_digits(port))
+		{
+			os << num_port;
+			Logger::log(LOG_ERROR, std::string("Configuration file listen port ") + os.str() + " is not a valid port number.");
+			return (false);
+		}
+		listen_addrs.push_back(addr);
+		ports.push_back(num_port);
+		std::cout << "listen addr: " << *(listen_addrs.end() - 1) << std::endl;
+		std::cout << "listen port: " << *(ports.end() - 1) << std::endl;
+	}
+	if (ports.empty())
+	{
+		addr = "0.0.0.0";
+		listen_addrs.push_back("0.0.0.0");
+		ports.push_back(80);
+//		(*nb_parsed)++;
+	}
+	return (true);
+
+/*
 	while (pos1 != listen_ports.npos
 //		&& *nb_parsed < MAX_LISTEN_PORTS
 		&& (pos1 = listen_ports.find_first_not_of(" ,\t\n", pos1)) != listen_ports.npos)
@@ -106,6 +145,7 @@ bool	_parse_config_ports(const std::string& listen_ports,
 //		(*nb_parsed)++;
 	}
 	return (true);
+*/
 }
 
 bool	_check_if_existing_server_with_same_interface_and_config(IServer *new_srv, const std::vector<AServerDispatchSwitch*>& built_servers)//const IServer **built_servers, const int nb_srvs)

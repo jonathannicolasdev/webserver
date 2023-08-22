@@ -670,7 +670,8 @@ ServerHTTP::serve_request(int clientfd)
 
 	/// DEBUG DELETE ME
 //	return (_serve_internal_error(clientfd, req, this->_cfgs[0]));
-
+//	std::cout << "Request : " << std::endl;
+//	std::cout << req << std::endl;
 	const ServerConfig&	cfg = get_config_for_host(req["Host"]);
 
 
@@ -681,7 +682,10 @@ ServerHTTP::serve_request(int clientfd)
 		int	error_code = resp.get_error_code();
 		ErrorResponse		err(*this, req, cfg);
 		if (error_code)
+		{
+			std::cout << "PREPARING ERROR RESPONSE PAGE AFTER prepare_response() FAILED !" << std::endl;
 			err.prepare_response(error_code);
+		}
 		else
 			err.prepare_response(500);
 //		send_response(clientfd, err);
@@ -689,7 +693,10 @@ ServerHTTP::serve_request(int clientfd)
 		send_response(clientfd, err);
 	}
 	else
+	{
+		std::cout << "Seems like prepare_response() was executed SUCCESSFULLY" << std::endl;
 		send_response(clientfd, resp);
+	}
 	_currently_serving = 0;
 	return (0);
 }
@@ -717,7 +724,7 @@ ServerHTTP::get_config_for_host(const std::string& host) const
 	std::vector<ServerConfig>::const_iterator		cfgs_it;
 	size_t	pos;
 
-	std::cout << "Looking for location config :" << std::endl;
+	std::cout << "Looking for location config in the " << _cfgs.size() << " configs managed by this server." << std::endl;
 	for (cfgs_it = _cfgs.begin(); cfgs_it != _cfgs.end(); ++cfgs_it)
 	{
 		std::cout << "Comparing location server_name " << cfgs_it->GetServerName() << " vs " << host << std::endl;

@@ -238,7 +238,14 @@ ServerConfig ConfigBuilder::parseServer(string content)
 
         if (directiveServerKey == "listen")
         {
-            serverConfig.SetListenPort(words[1]);
+            /// Allow multiple lines of listen port in config file by appending 
+            /// new listen ports to the ServerConfig's listenPort string.
+            /// All listen ports in the listenPort string should be seperated by
+            /// either a comma, a space or both.
+            std::vector<std::string>::iterator  it;
+            for (it=(words.begin() + 1); it != words.end(); ++it)
+                serverConfig.AddListenPort(*it);
+            //serverConfig.SetListenPort(words[1]);
             // std::cout << serverConfig.GetListenPort() << ": port\n";
         }
         if (directiveServerKey == "root")

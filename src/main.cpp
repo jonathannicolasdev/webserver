@@ -94,7 +94,8 @@ int main(int argc, char **argv, char **envp)
 	if (serverConfigs.size() == 0)
 		return (EXIT_FAILURE);// Error message should have been displayed in configBuilder.parseConfigFile()
 
-	srv_clu = ServerFactory::create_cluster_from_cfg(serverConfigs);
+	if (!(srv_clu = ServerFactory::create_cluster_from_cfg(serverConfigs)))
+		return (EXIT_FAILURE);
 //	return (1);
 
 //	std::vector <AServerDispatchSwitch *>	init_servers;
