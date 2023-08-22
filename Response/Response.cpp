@@ -400,13 +400,17 @@ int Response::prepare_response(const ServerHTTP &srv, const Request &req, const 
 
 		if (_isredirect(*best_match))
 		{
+			/*
 			std::string header;
 			std::string response_body="Redirect Error";
 			_build_get_http_header("", header, std::to_string(response_body.length()), "text/plain", false);
 			_text = header + response_body;
 			std::cerr << "Redirect " << std::endl;
 			return (0);
-			// return(-1);
+			*/
+			
+			std::cout << "A REDIRECT WAS DONE !!" << std::endl;
+			return(-1);
 		}
 
 		std::cout << "cwd : " << ServerConfig::cwd << std::endl;

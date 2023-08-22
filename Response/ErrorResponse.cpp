@@ -154,7 +154,7 @@ bool	ErrorResponse::__prepare_error(const std::string& dir_path, int error_code)
 /// Add more as needed or just call __prepare_error directly.
 bool	ErrorResponse::_prepare_default_404_error(void) {return (__prepare_error("default_errors/", 404));}
 bool	ErrorResponse::_prepare_default_500_error(void) {return (__prepare_error("default_errors/", 500));}
-
+bool	ErrorResponse::_prepare_default_301_error(void) {return (__prepare_error("default_errors/", 301));}
 
 /// REQUIRED METHODS BY SERVER ///////////////
 int ErrorResponse::prepare_response(int error_code)
