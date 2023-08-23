@@ -49,7 +49,7 @@ server {
   # Max body size of 100mb to start
   location /uploads {
     autoindex on;
-    allow_methods GET DELETE;
+    allow_methods GET DELETE POST;
     max_body_size 100000000
     root /client_uploads/
   }

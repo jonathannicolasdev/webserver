@@ -53,36 +53,6 @@ static FileType pathType(const std::string& path)
 	}
 }
 
-void _prepare_dummy_response(std::string &text_response)
-{
-	std::string header;
-	std::string body;
-	std::ostringstream content_length;
-	std::string response;
-
-	header = "HTTP/1.1 200 OK\r\n";
-	header += "Content-type: text/html\r\n";
-
-	body += "<!DOCTYPE html>\r\n";
-	body += "<html>\r\n";
-	body += "	<head>\r\n";
-	body += "		<title>Webserv Index</title>\r\n";
-	body += "	</head>\r\n";
-	body += "	<body>\r\n";
-	body += "		<h1>Hello World page1</h1>\r\n";
-	body += "		<img src=\"asdf.jpg\" width=100 height=100>\r\n";
-	body += "		<a href=\"page2.html\">My beautiful link</a>\r\n";
-	body += "	</body>\r\n";
-	body += "</html>\r\n";
-
-	header += "Content-length: ";
-	content_length << body.length();
-	header += content_length.str();
-	header += "\r\n\r\n";
-	text_response = header + body;
-}
-*/
-
 const std::string _discover_content_type(const std::string &path)
 {
 	if (string_endswith(path, ".html"))
@@ -100,6 +70,7 @@ const std::string _discover_content_type(const std::string &path)
 	//...
 	return ("");
 }
+
 
 void _build_get_http_header(const std::string &filepath, std::string &header,
 							const std::string &content_length, const std::string &content_type, bool is_attachment)
