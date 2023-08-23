@@ -17,12 +17,12 @@ AServerReactive::AServerReactive(uint16_t _port, bool _close_rqst, bool _is_runn
 	IServer(_port, _close_rqst, _is_running, true, _is_dispatch_switch, _status),
 	_subscribed_events(0)
 {
-	std::cout << "AServerReactive passthrough constructor" << std:: endl;
+//	std::cout << "AServerReactive passthrough constructor" << std:: endl;
 }
 
 AServerReactive::~AServerReactive(void)
 {
-	std::cout << "AServerReactive passthrough destructor" << std:: endl;
+//	std::cout << "AServerReactive passthrough destructor" << std:: endl;
 }
 
 // event will be valid and will be one single event bit since event is enum e_react_event type.

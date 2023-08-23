@@ -33,7 +33,8 @@ int
 __EventListener::close_poll(void)
 {
 	if (this->_pollfd < 3)
-		return (Logger::log(LOG_WARNING, "Trying to close poll but none currently active."));
+		return (0);
+		//return (Logger::log(LOG_WARNING, "Trying to close poll but none currently active."));
 	close(this->_pollfd);
 	this->nb_watched = 0;
 	this->_pollfd = 0;
@@ -45,7 +46,8 @@ __EventListener::poll_new_socket(int sockfd)
 {
 	std::cout << "polling new socket with sockfd : " << sockfd << std::endl;
 	if (this->_pollfd < 3)
-		return (Logger::log(LOG_WARNING, "Trying to poll new socket but no polling mechanism is initialized."));
+		return (0);
+		//return (Logger::log(LOG_WARNING, "Trying to poll new socket but no polling mechanism is initialized."));
 	if (sockfd < 3 || sockfd >= MAX_CONCUR_POLL)
 		return (Logger::log(LOG_WARNING, "Trying to poll out of bounds fd"));
 	
@@ -78,8 +80,9 @@ __EventListener::unpoll_socket(int sockfd)
 		return (Logger::log(LOG_WARNING, "Trying to remove out of bounds fd from poll"));
 #ifdef __APPLE__
 	EV_SET(&this->_new_event, sockfd, EVFILT_READ | EVFILT_WRITE, EV_DELETE, 0, 0, 0);
+	//EV_SET(&this->_new_event, sockfd, 0, EV_DELETE, 0, 0, 0);
 	if (kevent(this->_pollfd, &this->_new_event, 1, NULL, 0, NULL) < 0)
-		return (Logger::log(LOG_WARNING, "Failed to unpoll socket"));
+		return (Logger::log(LOG_WARNING, std::string("Failed to unpoll socket : ") + std::strerror(errno)));
 #elif __linux__
 	//if (this->_events[sockfd].data.fd < 3)
 	//	return (0);
@@ -170,7 +173,8 @@ __EventListener::poll_wait(int timeout)
 	std::cout << "poll_wait() waiting for kevent() with timeout of " << timeout << "ms" << std::endl;
 	if ((nb_events = kevent(this->_pollfd, NULL, 0,//this->_events, MAX_CONCUR_POLL,
 		this->_changes, MAX_CONCUR_POLL, ts_p)) < 0)
-		return (Logger::log(LOG_ERROR, std::string("kevent() call failed with error : ") + strerror(errno)));
+		if (errno != EINTR)
+			return (Logger::log(LOG_ERROR, std::string("kevent() call failed with error : ") + strerror(errno)));
 
 #elif __linux__
 	std::cout << "poll_wait() waiting for epoll_wait()" << std::endl;

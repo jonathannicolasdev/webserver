@@ -6,7 +6,7 @@
 /*   By: iamongeo <iamongeo@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/26 18:42:23 by iamongeo          #+#    #+#             */
-/*   Updated: 2023/08/21 22:22:58 by iamongeo         ###   ########.fr       */
+/*   Updated: 2023/08/22 23:11:25 by iamongeo         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,10 +20,11 @@ Response::~Response(void) {}
 
 static bool fileExists(const std::string &f)
 {
-	std::ifstream file(f.c_str());
-	return (file.good());
+//	std::ifstream file(f.c_str());
+//	return (file.good());
+	return (access(f.c_str(), F_OK) == 0);
 }
-
+/*
 void _prepare_dummy_response(std::string &text_response)
 {
 	std::string header;
@@ -52,6 +53,7 @@ void _prepare_dummy_response(std::string &text_response)
 	header += "\r\n\r\n";
 	text_response = header + body;
 }
+*/
 
 const std::string _discover_content_type(const std::string &path)
 {
@@ -178,6 +180,22 @@ bool Response::_process_get_request(const Request &req, const ServerConfig &srv_
 	return (true);
 }
 
+static bool	_validate_body_size(const std::string& maxBodySize, size_t content_length)
+{
+	size_t	max_body_size;
+//	std::vector<std::string>	trimed_str;
+
+//	split_string(maxBodySize, ' ', trimed_str);
+//	if (trimed_str.size() == 0)
+//		return (Logger::log(LOG_ERROR, "max_body_size has no value."), -1);
+
+//	if (!is_all_digits(maxBodySize))
+//		return (Logger::log(LOG_ERROR, "max_body_size should contain only digits."), -1);
+
+	max_body_size = std::stol(maxBodySize);
+	return (content_length <= max_body_size);
+}
+
 bool Response::_process_post_request(const Request &req, const ServerConfig &srv_cfg, const LocationConfig &loc_cfg)
 {
 	(void)req;
@@ -185,10 +203,22 @@ bool Response::_process_post_request(const Request &req, const ServerConfig &srv
 	(void)loc_cfg;
 	const std::string &post_data = req.get_body();
 
+	if (!loc_cfg.IsAllowedMethod(req.get_method()))
+	{
+		_error_code = 405;// Method Not Allowed
+		return (false);		
+	}
+	if (!_validate_body_size(loc_cfg.GetMaxBodySize(), req.get_content_length()))
+	{
+		_error_code = 413;// Payload too large
+		return (false);
+	}
+
 	std::cout << "HANDELING POST REQUEST !" << std::endl;
 
 	std::string response_body = "Received post data:\n" + post_data;
 	std::string header;
+	std::string	filepath = _internal_path;
 	_error_code = 0;
 	if (req.getMultiformFlag())
 	{
@@ -198,51 +228,64 @@ bool Response::_process_post_request(const Request &req, const ServerConfig &srv
 		{
 			if (dataparts[i].getFilename() == "")
 				continue;
-			if (fileExists(dataparts[i].getFilename().c_str()))
+
+			filepath = _internal_path;
+			if (string_endswith(_internal_path, "/"))
+				filepath += dataparts[i].getFilename();
+			else
+				filepath += std::string("/") + dataparts[i].getFilename();
+
+			
+			if (fileExists(filepath))
 			{
-				_error_code = 204;
+				_error_code = 409;
 				break;
 			}
-			std::ofstream file(dataparts[i].getFilename().c_str(), std::ios::binary);
+			std::ofstream file(filepath, std::ios::binary);
 			if (file.fail())
 			{
-				_error_code = 404;
+				_error_code = 500;
 				break;
 			}
 			else
 				file.write(dataparts[i].getContent().c_str(), dataparts[i].getContent().length());
 		}
 	}
-	else
-	{
-		std::cout << "ooooooooooooooooooo  no multipart" << std::endl;
+	// else
+	// {
+	// 	std::cout << "ooooooooooooooooooo  no multipart" << std::endl;
 
-		if (fileExists(_internal_path))
-		{
-			_error_code = 204;
-		}
-		else
-		{
-			std::ofstream file(_internal_path.c_str(), std::ios::binary);
-			if (file.fail())
-			{
-				_error_code = 404;
-			}
-			else
-			{
-				std::cout << "IS NOT MULTIPART !" << std::endl;
-				std::cout << "body length : " << req.get_body().length() << std::endl;
-				std::cout << req << std::endl;
-				file.write(req.get_body().c_str(), req.get_body().length());
-			}
-		}
-	}
-
-	_build_get_http_header("", header, std::to_string(response_body.length()), "text/plain", false);
+	// 	// filepath = _internal_path;
+	// 	// if (string_endswith(_internal_path, "/"))
+	// 	// 	filepath += dataparts[i].getFilename();
+	// 	// else
+	// 	// 	filepath += std::string("/") + dataparts[i].getFilename();
+	// 	if (fileExists(_internal_path))
+	// 	{
+	// 		_error_code = 409;
+	// 	}
+	// 	else
+	// 	{
+	// 		std::ofstream file(_internal_path.c_str(), std::ios::binary);
+	// 		if (file.fail())
+	// 		{
+	// 			_error_code = 500;
+	// 		}
+	// 		else
+	// 		{
+	// 			std::cout << "IS NOT MULTIPART !" << std::endl;
+	// 			std::cout << "body length : " << req.get_body().length() << std::endl;
+	// 			//std::cout << req << std::endl;
+	// 			file.write(req.get_body().c_str(), req.get_body().length());
+	// 		}
+	// 	}
+	// }
+	_error_code = 201;
+	//_build_get_http_header("", header, std::to_string(response_body.length()), "text/plain", false);
 	//	std::cout << "response body : " << response_body << std::endl;
-	_text = header + response_body;
+	//_text = header + response_body;
 
-	return (true);
+	return (false);
 }
 
 bool Response::_process_delete_request(const Request &req, const ServerConfig &srv_cfg, const LocationConfig &loc_cfg)

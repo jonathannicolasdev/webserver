@@ -19,9 +19,10 @@
 # include <vector>
 
 # include "Logger.hpp"
-//# include "webserv.hpp"
+# include "webserv_utils.hpp"
 #include "DataPart.hpp"
 
+/*
 enum e_method
 {
 	NULL_M,
@@ -30,12 +31,12 @@ enum e_method
 	DELETE_M,
 	PUT_M
 };
-
+*/
 // Relatively passive container for request data
 class Request
 {
 	private:
-		enum e_method			_method;
+//		enum e_method			_method;
 		std::string				_method_str;
 
 		std::string				_raw_request;
@@ -57,7 +58,7 @@ class Request
 
 		// Takes the raw request received from constructor, split the header and body
 		// and split the header as a map to put in the header attribute.
-		int				process_request_line(void);
+//		int				process_request_line(void);
 		int				process_header(void);
 		int				process_body(void);//const std::string& raw_header);
 
@@ -70,7 +71,7 @@ class Request
 
 		size_t				length(void) const;
 		const std::string&	get_method(void) const;
-		bool				is_method(enum e_method method) const;
+//		bool				is_method(enum e_method method) const;
 		bool				is_empty(void);
 		bool				is_header_parsed(void) const;
 		size_t				get_header_length(void) const;
@@ -83,7 +84,7 @@ class Request
 
 		bool 				getMultiformFlag(void) const;
 		bool 				processMultiform(void) ;
-		std::string			getBoundary() const;
+		const std::string&	getBoundary() const;
 		// Returns the header element at given key.
 //		const std::string*	operator[](const std::string& key) const;// access header tag values by indexing Request instance like a map. Returns NULL if not tag not in header, returns a string otherwise.
 		const std::string&	operator[](const std::string& key) const;// access header tag values by indexing Request instance like a map. Returns NULL if not tag not in header, returns a string otherwise.

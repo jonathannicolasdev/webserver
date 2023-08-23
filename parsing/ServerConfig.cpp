@@ -14,7 +14,7 @@ std::string _getcwd_str(void)
 
 const std::string	ServerConfig::cwd = _getcwd_str();//std::filesystem::current_path();
 
-ServerConfig::ServerConfig()
+ServerConfig::ServerConfig()//: maxBodySize(0)
 {
 }
 
@@ -107,14 +107,29 @@ std::string ServerConfig::GetServerName() const
 	return serverName;
 }
 
-std::string ServerConfig::GetMaxBodySize() const
+std::string	ServerConfig::GetMaxBodySize() const
+//size_t	ServerConfig::GetMaxBodySize() const
 {
 	return maxBodySize;
 }
 
-void ServerConfig::SetMaxBodySize(const std::string& max_body_size)
+void	ServerConfig::SetMaxBodySize(const std::string& maxBodySize)
+//int	ServerConfig::SetMaxBodySize(const std::string& maxBodySize)
 {
-	this->maxBodySize = max_body_size;
+	// size_t	temp;
+	// std::vector<std::string>	trimed_str;
+
+	// split_string(maxBodySize, ' ', trimed_str);
+	// if (trimed_str.size() == 0)
+	// 	return (Logger::log(LOG_ERROR, "max_body_size has no value."), -1);
+
+	// if (!is_all_digits(trimed_str[0]))
+	// 	return (Logger::log(LOG_ERROR, "max_body_size should contain only digits."), -1);
+
+	// temp = std::stol(trimed_str[0]);
+	// this->maxBodySize = temp;
+	// return (0);
+	this->maxBodySize = maxBodySize;
 }
 
 

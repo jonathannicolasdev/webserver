@@ -1,12 +1,11 @@
 #include "ConfigBuilder.hpp"
-#include "LocationConfig.hpp"
-#include <iostream>
-#include <fstream>
-#include <string>
-#include <cstdlib>
-#include <vector>
-#include <algorithm>
-#include <cctype> // For isspace function
+//#include <iostream>
+//#include <fstream>
+//#include <string>
+//#include <cstdlib>
+//#include <vector>
+//#include <algorithm>
+//#include <cctype> // For isspace function
 
 std::string removeDuplicateSpaces(const std::string &input)
 {
@@ -151,6 +150,11 @@ LocationConfig ConfigBuilder::parseLocation(ServerConfig& srv_cfg, const std::st
         if (directiveLocationKey == "max_body_size")
         {
             locationConfig.SetMaxBodySize(words[1]);
+            // if (locationConfig.SetMaxBodySize(words[1]) < 0)
+            // {
+            //     Logger::log(LOG_ERROR, "A location block has invalid max_body_size argument in config.");
+            //     locationConfig.SetMaxBodySize(DEFAULT_MAX_BODY_SIZE);
+            // }
         }
         if (directiveLocationKey == "allow_delete")
         {
@@ -276,6 +280,9 @@ ServerConfig ConfigBuilder::parseServer(string content)
         if (directiveServerKey == "max_body_size")
         {
             serverConfig.SetMaxBodySize(words[1]);
+            // if (serverConfig.SetMaxBodySize(words[1]) < 0)
+            //     serverConfig.SetMaxBodySize("10000000");
+            
             // std::cout << serverConfig.GetServerName() << ": serverName\n";
         }
         

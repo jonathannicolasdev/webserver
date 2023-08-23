@@ -8,10 +8,9 @@ server {
 	index index.html;
 
   location / {
-    allow_methods POST;
+    allow_methods GET;
     index index.html;
   }
-cgi .php php-cgi_ubuntu;
 
   location /autoindex {
     autoindex on;
@@ -27,10 +26,6 @@ cgi .php php-cgi_ubuntu;
   location /my_errors {
     root /errors;
   }
-
-  #localhost:80/imgs/webp/jambon.jpg
-  #localhost:80/assets/webp/jambon.jpg
-
 
   location /admin {
     auth admin:admin;
@@ -49,6 +44,14 @@ cgi .php php-cgi_ubuntu;
     allow_methods GET POST;
     root /cgi-bin/;
     cgi .py python3
+  }
+
+  # Max body size of 100mb to start
+  location /uploads {
+    autoindex on;
+    allow_methods GET DELETE;
+    max_body_size 100000000
+    root /client_uploads/
   }
   
   error_page 404 /my_errors/404.html;

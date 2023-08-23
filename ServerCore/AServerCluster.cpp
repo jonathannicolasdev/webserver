@@ -45,7 +45,6 @@ AServerCluster::AServerCluster(void): __EventListener(), _id(generate_id()),
 	_status(CLU_UNBOUND), _request_stop(false), _timeout(-1), _currently_serving(NULL)
 {
 	std::cout << "AServerCluster constructor" << std::endl;
-//	std::memset(this->_events, 0, sizeof(this->_events));
 	std::memset(&this->_new_event, 0, sizeof(this->_new_event));
 	std::memset(this->_changes, 0, sizeof(this->_changes));
 	this->_pollfd = 0;
@@ -61,7 +60,6 @@ bool	AServerCluster::contains(AServerDispatchSwitch *srv) const
 {
 	std::map<int, AServerDispatchSwitch *>::const_iterator	it;
 
-//	return (this->_servers.find(srv) != this->_servers.end());
 	for (it = this->_servers.begin(); it != this->_servers.end(); ++it)
 		if (it->second == srv)
 			return (true);
@@ -71,11 +69,9 @@ bool	AServerCluster::contains(AServerDispatchSwitch *srv) const
 AServerDispatchSwitch*
 AServerCluster::find_owner(int client_fd) const
 {
-	//std::vector<AServerDispatchSwitch *>::iterator	it;
 	std::map<int, AServerDispatchSwitch *>::const_iterator	it;
 
 	for (it = this->_servers.begin(); it != this->_servers.end(); ++it)
-		//if ((*it)->is_serving(client_fd))
 		if (it->second->is_serving(client_fd))
 			return (it->second);
 	return (NULL);
@@ -91,9 +87,6 @@ AServerCluster::find_server(int socket_fd) const
 		return (NULL);
 	else
 		return (it->second);
-//	for (it = this->_servers.begin(); it != this->_servers.end(); ++it)
-//		if ((*it)->is_serving(client_fd))
-//			return (it);
 }
 
 int
@@ -131,20 +124,14 @@ AServerCluster::add_server(AServerDispatchSwitch *srv)
 {
 	std::ostringstream	id_str;
 	int					timeout;
-//	int					sockfd;
 
 	if (!this->validate_server(srv))
 		return (-1);
-	id_str << this->_id;
 	Logger::log(LOG_DEBUG, std::string("Adding new server to cluster id ") + id_str.str() + " Server info : ");
+	id_str << this->_id;
 	std::cout << *srv << std::endl;
-//	this->_servers.push_back(srv);
-//	sockfd = srv->get_sockfd();
-//	std::cout << "Cluster adding sockfd " << sockfd << std::endl;
-//	this->_servers[sockfd] = srv;
 	this->_server_set.insert(srv);
 	timeout = srv->get_timeout();
-	std::cout << "New added server timeout " << timeout << " vs current cluster timeout " << this->_timeout << std::endl;
 	if (this->_timeout == -1)
 		this->_timeout = timeout;
 	else if (timeout >= 0 && timeout < this->_timeout)
@@ -156,7 +143,6 @@ AServerCluster::add_server(AServerDispatchSwitch *srv)
 int
 AServerCluster::bind(void)
 {
-	//std::vector<AServerDispatchSwitch*>::iterator	it;
 	std::set<AServerDispatchSwitch*>::const_iterator	it;
 	t_srv_state		*srv_state;
 
@@ -168,20 +154,16 @@ AServerCluster::bind(void)
 	
 	if (this->init_poll() < 0)
 		return (this->stop(), -1);
-//	for (it = this->_servers.begin(); it != this->_servers.end(); ++it)
 	for (it = this->_server_set.begin(); it != this->_server_set.end(); ++it)
 	{
-		//if ((*it)->bind_server() < 0)
 		if ((*it)->bind_server() < 0)
 		{
-			//srv_state = (*it)->get_srv_state();
 			srv_state = (*it)->get_srv_state();
 
 			log_bind_error(srv_state->server_name, srv_state->port);
 			this->stop();
 			return (-1);
 		}
-		std::cout << "Cluster::bind sockfd after bind : " << (*it)->get_sockfd() << std::endl;
 		this->_servers[(*it)->get_sockfd()] = *it;
 	}
 	this->_status = CLU_IDLE;
@@ -196,16 +178,11 @@ AServerCluster::do_maintenance(void)
 	int		timeout_clients[MAX_CONCUR_POLL];
 	time_t	curr_time = std::time(NULL);
 
-//	std::cout << "do_maintnance called" << std::endl;
-//	printf("curr_time : %ld, last_time : %ld, delta : %ld\n", curr_time,
-//		this->_last_maintenance_time, curr_time - this->_last_maintenance_time);
 	if ((curr_time - this->_last_maintenance_time) * 1000 < this->_timeout)
 		return ;
-//	std::cout << "Cluster doing clusterwide maintnance" << std::endl;
 	for (it = this->_servers.begin(); it != this->_servers.end(); ++it)
 	{
 		nb_disconn = it->second->do_maintenance(timeout_clients, MAX_CONCUR_POLL);
-//		std::cout << "Removing " << nb_disconn << " clients from poll." << std::endl;
 		for (int i=0; i < nb_disconn; ++i)
 			this->unpoll_socket(timeout_clients[i]);
 	}
@@ -223,25 +200,21 @@ AServerCluster::__cluster_mainloop(void)
 	int		i;
 //	Request	rq;
 // Not sure what sockfd used here for need to void it for no error
-  (void)sockfd;
+	(void)sockfd;
 
 
 	this->_status = CLU_RUNNING;
 	while (!this->_request_stop)
 	{
-//		std::cout << "Cluster waiting for polled event" << std::endl;
 		nb_events = this->poll_wait(this->_timeout);
-//		std::cout << "Cluster : " << nb_events << " events occured" << std::endl;
 
 		// Called here but only does maintenance if > timeout time has past since
 		// last maintenance or start of cluster.
-		if (nb_events == 0)
+		if (nb_events <= 0)
 		{
 			// do basic maintenance of cluster and its servers.
 			this->do_maintenance();
-			std::ostringstream	ss;
-			ss << this->nb_watched;
-//			std::cout << "nb of listened sockets : " << ss << std::endl;
+			continue ;
 		}
 
 		for (i = 0; i < nb_events; ++i)
@@ -261,7 +234,7 @@ AServerCluster::__cluster_mainloop(void)
 //				std::cout << "new connection : nb_disconn " << nb_disconn << ", clientfd : " << clientfd << std::endl;
 				if (nb_disconn < 0)
 				{
-					// Error happened while connecting but show must go on. Make sure client request
+					// Error happened while connecting, but show must go on. Make sure client request
 					// is flushed correctly before continuing.
 					continue ;
 				}
@@ -281,7 +254,6 @@ AServerCluster::__cluster_mainloop(void)
 //				std::cout << "Found server owner of clientfd " << clientfd << " and serving request." << std::endl;
 				if (srv->serve_request(clientfd) < 0)
 				{
-					Logger::log(LOG_DEBUG, "Cluster parsing request / sending response failed or client disconnected. Closing clientfd.");
 					this->unpoll_socket(clientfd);
 					srv->disconnect(clientfd, true);
 				}
@@ -298,7 +270,6 @@ AServerCluster::__cluster_mainloop(void)
 int
 AServerCluster::start(void)
 {
-//	std::vector<AServerDispatchSwitch*>::iterator	it;
 	std::map<int, AServerDispatchSwitch*>::iterator	it;
 	t_srv_state							*srv_state;
 	int									sockfd;
@@ -308,11 +279,9 @@ AServerCluster::start(void)
 	
 	for (it = this->_servers.begin(); it != this->_servers.end(); ++it)
 	{
-		//if ((sockfd = (*it)->start()) < 0)
 		std::cout << "Cluster::start starting server with sockfd : " << it->first << std::endl;
 		if ((sockfd = it->second->start()) < 0)
 		{
-			//srv_state = (*it)->get_srv_state();
 			srv_state = it->second->get_srv_state();
 			log_start_error(srv_state->server_name, srv_state->port);
 			this->stop();
@@ -324,7 +293,6 @@ AServerCluster::start(void)
 	this->_start_time = std::time(NULL);
 	this->_last_maintenance_time = this->_start_time;
 	return (this->__cluster_mainloop());
-	//return (0);
 }
 
 void
@@ -341,15 +309,13 @@ AServerCluster::track_bad_client(void)
 void
 AServerCluster::stop(void)
 {
-	//std::vector<AServerDispatchSwitch*>::iterator	it;
 	std::map<int, AServerDispatchSwitch*>::iterator	it;
 
-	
+	this->_request_stop = true;	
 	for (it = this->_servers.begin(); it != this->_servers.end(); ++it)
 	{
-		it->second->stop();
-		//(*it)->stop();
 		this->unpoll_socket(it->first);
+		it->second->stop();
 	}
 	this->_status = CLU_UNBOUND;
 }
@@ -357,7 +323,6 @@ AServerCluster::stop(void)
 int
 AServerCluster::terminate(bool force)
 {
-//	AServerDispatchSwitch*	srv;
 	std::map<int, AServerDispatchSwitch*>::iterator	it;
 
 	if (!force && (this->_status == CLU_RUNNING))
@@ -366,22 +331,7 @@ AServerCluster::terminate(bool force)
 	this->stop();
 	this->_servers.clear();
 	this->close_poll();
-	/*
-	while (!this->_servers.empty())
-	{
-		//srv = this->_servers.front();
-		it = this->_servers.begin();
-		it->second->stop();
-		this->servers.erase(it);
-//		try:
-//		srv->stop();
-//		catch (e)
-//			Logger::log(LOG_ERROR, std::string("server on port ") + srv->get_port() + " on Cluster " + this->_id + " failed to stop properly.");
 
-//		delete srv;
-//		this->servers.erase(0);
-	}
-	*/
 	this->_status = CLU_UNBOUND;
 	return (0);
 }
@@ -389,7 +339,6 @@ AServerCluster::terminate(bool force)
 int
 AServerCluster::reboot(void)
 {
-//	std::vector<AServerDispatchSwitch*>::iterator	it;
 	this->stop();
 	if (this->bind() < 0
 		|| this->start() < 0)

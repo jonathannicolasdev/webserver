@@ -31,5 +31,6 @@ std::string get_working_path(void);
 bool	    string_endswith(const std::string& fullstr, const std::string& ending);
 void    	join_strings(const std::vector<std::string>& sv, char delim, std::string& ret_str);
 void	    split_string(const std::string& s, char delim, std::vector<std::string>& ret_vect);
+void	    split_string(const std::string& s, const std::string& delim, std::vector<std::string>& ret_vect);
 
 #endif

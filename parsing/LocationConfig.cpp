@@ -15,7 +15,8 @@ LocationConfig::LocationConfig()
 //	allowMethods.push_back("POST");
 }
 */
-LocationConfig::LocationConfig(ServerConfig& cfg): srv_cfg(cfg)
+LocationConfig::LocationConfig(ServerConfig& cfg): srv_cfg(cfg),
+	maxBodySize(cfg.GetMaxBodySize())
 {
 	// Allowed by default
 	allowMethods.push_back("GET");
@@ -141,13 +142,28 @@ const	std::vector<std::string>& LocationConfig::GetCgiPaths() const
 {
 	return cgiPaths;
 }
+//size_t	LocationConfig::GetMaxBodySize() const
 std::string LocationConfig::GetMaxBodySize() const
 {
 	return maxBodySize;
 }
 
-void LocationConfig::SetMaxBodySize(const std::string& maxBodySize)
+void	LocationConfig::SetMaxBodySize(const std::string& maxBodySize)
+//int	LocationConfig::SetMaxBodySize(const std::string& maxBodySize)
 {
+	// size_t	temp;
+	// std::vector<std::string>	trimed_str;
+
+	// split_string(maxBodySize, ' ', trimed_str);
+	// if (trimed_str.size() == 0)
+	// 	return (Logger::log(LOG_ERROR, "max_body_size has no value."), -1);
+
+	// if (!is_all_digits(trimed_str[0]))
+	// 	return (Logger::log(LOG_ERROR, "max_body_size should contain only digits."), -1);
+
+	// temp = std::stol(trimed_str[0]);
+	// this->maxBodySize = temp;
+	// return (0);
 	this->maxBodySize = maxBodySize;
 }
 std::string LocationConfig::GetAllowDelete() const
@@ -211,6 +227,7 @@ void LocationConfig::print() const
 	if (!LocationConfig::GetAutoIndex().empty())
 		std::cout << "\t\tautoindex: " << LocationConfig::GetAutoIndex() << std::endl;
 
+	//if (!LocationConfig::GetMaxBodySize())
 	if (!LocationConfig::GetMaxBodySize().empty())
 		std::cout << "\t\tMaxBodySize: " << LocationConfig::GetMaxBodySize() << std::endl;
 

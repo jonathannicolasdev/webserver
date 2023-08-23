@@ -196,14 +196,14 @@ bool	ServerFactory::create_servers_from_cfg(const ServerConfig& scfg, std::vecto
 	std::vector<int>::iterator			port_it;// = listen_ports.begin();
 
 //	*nb_srvs = 0;
-	std::cout << "Pretend Create server from factory" << std::endl;
+//	std::cout << "Pretend Create server from factory" << std::endl;
 	listen_str = scfg.GetListenPort();
-	std::cout << "listen str : " << listen_str << std::endl;
+//	std::cout << "listen str : " << listen_str << std::endl;
 
 	if (!_parse_config_ports(listen_str, listen_addr, listen_ports))//, &nb_ports))
 		return (false);
 	// DO SOMETHING 
-	std::cout << "Finished parsing ports" << std::endl;
+//	std::cout << "Finished parsing ports" << std::endl;
 //	new_server = ServerHTTP(scfg.GetServerName(), );
 //	for (int i=0; i < nb_ports; ++i, ++(*nb_srvs))
  	addr_it = listen_addr.begin();
@@ -236,17 +236,17 @@ bool	_merge_servers_with_same_network_interface_and_different_configs(std::vecto
 {
 	std::vector<AServerDispatchSwitch*>::iterator		srv1_it, srv2_it;
 //	IServer		*srv1, *srv2;
-	std::cout << "_merge_servers_with_same_network_interface_and_different_configs STARTS " << std::endl;
+//	std::cout << "_merge_servers_with_same_network_interface_and_different_configs STARTS " << std::endl;
 	//for (int i=0; i < (*nb_srvs - 1); ++i)
 	for (srv1_it = built_servers.begin(); srv1_it != (built_servers.end() - 1); ++srv1_it)
 	{
-		std::cout << "lvl1" << std::endl;
+//		std::cout << "lvl1" << std::endl;
 //		srv1 = built_servers[i];
 		for (srv2_it=(srv1_it + 1); srv2_it != built_servers.end(); ++srv2_it)
 		{
-			std::cout << "lvl2" << std::endl;
-			std::cout << "*srv1_it : " << *srv1_it << std::endl;
-			std::cout << "*srv2_it : " << *srv2_it << std::endl;
+//			std::cout << "lvl2" << std::endl;
+//			std::cout << "*srv1_it : " << *srv1_it << std::endl;
+//			std::cout << "*srv2_it : " << *srv2_it << std::endl;
 //			srv2 = built_servers[j];
 			if (*srv1_it && *srv2_it && **srv1_it == **srv2_it)
 			{

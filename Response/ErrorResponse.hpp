@@ -30,8 +30,10 @@ class ErrorResponse: public Response
 		const Request&			_req;
 		const ServerConfig&		_cfg;
 
+		bool	_prepare_default_201_error(void);
 		bool    _prepare_default_404_error(void);
 		bool    _prepare_default_500_error(void);
+		bool	_prepare_default_413_error(void);
 		void    _prepare_default_hardcoded_500_error(void);
 		bool	__prepare_error(const std::string& dir_path, int error_code);
 

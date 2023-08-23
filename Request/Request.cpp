@@ -12,7 +12,7 @@
 
 #include "Request.hpp"
 
-Request::Request(const std::string &raw_request): _method(NULL_M), 
+Request::Request(const std::string &raw_request): //_method(NULL_M), 
 	header_is_parsed(false), header_offset(0), content_length(0), is_multipart(false)
 {
 	std::cout << "Request Constructor" << std::endl;
@@ -21,7 +21,7 @@ Request::Request(const std::string &raw_request): _method(NULL_M),
 }
 
 
-Request::Request(void): _method(NULL_M),
+Request::Request(void): //_method(NULL_M),
 	header_is_parsed(false), header_offset(0), content_length(0), is_multipart(false)
 {
 	std::cout << "Request default constructor" << std::endl;
@@ -41,7 +41,7 @@ const std::string &Request::get_body() const
 {
 	return body;
 }
-
+/*
 int Request::process_request_line(void)
 {
 	size_t line_end, p1, p2;
@@ -98,6 +98,7 @@ int Request::process_request_line(void)
 
 	return (0);
 }
+*/
 
 bool Request::getMultiformFlag(void) const {return (this->is_multipart);}
 //bool Request::getMultiformFlag(void) const {return (true);}
@@ -148,14 +149,55 @@ bool Request::processMultiform(void)
 // splits header passed and puts key, value pairs in header map.
 int Request::process_header(void) // const std::string& raw_header)
 {
-	size_t line_start, column_pos, line_end;
-	std::string key, value;
-	bool stop = false;
+//	size_t line_start, column_pos, line_end;
+//	std::string key, value;
+//	bool stop = false;
 //	std::ostringstream	os;
 
 //	std::cout << "Request::process_header() START ATTEMPT : " << std::endl;
 	if (this->header_is_parsed)
 		return (0);
+
+
+	size_t	pos, pos_end;
+	std::vector<std::string>			split_header;
+	std::vector<std::string>			split_line;
+	std::vector<std::string>::iterator	it;
+	std::string		key, value;
+
+	pos_end = this->_raw_request.find("\r\n\r\n");
+	if (pos_end == std::string::npos)
+		return (Logger::log(LOG_WARNING, "Received request, but no header delimiter found"), -1);
+	this->_raw_header = this->_raw_request.substr(0, pos_end);
+	split_string(this->_raw_header, "\r\n", split_header);
+	if (split_header.size() == 0)
+		return (Logger::log(LOG_WARNING, std::string("Received request, with invalid header : ") + this->_raw_header), -1);
+	split_string(split_header[0], ' ', split_line);
+	if (split_line.size() < 3)
+		return (Logger::log(LOG_WARNING, std::string("Received request, but request line is invalid : ") + split_header[0]), -1);
+
+	///	Processing request line. (first in split_header)
+	this->_method_str = split_line[0];//*(it++);
+	this->path = split_line[1];//*(it++);
+	this->protocol = split_line[2];//*(it++);
+	if ((pos = this->path.find('?')) != std::string::npos)
+		this->query = this->path.substr(pos);
+
+	for (it = (split_header.begin() + 1); it != split_header.end(); ++it)
+	{
+		//split_line.clear();
+		//split_string(*it, ':');
+		pos = (*it).find(':');
+		if (pos == std::string::npos)
+		{
+			Logger::log(LOG_WARNING, std::string("Request skipping invalid header tag : ") + *it);
+			continue ;
+		}
+		key = (*it).substr(0, pos);
+		value = (*it).substr(pos + 2);
+		this->header[key] = value;
+	}
+/*	
 //	std::cout << "Request::process_header() START : " << std::endl;
 	line_start = 0;
 	while (!stop && this->_raw_request[line_start] && !isspace(this->_raw_request[line_start]))
@@ -184,6 +226,7 @@ int Request::process_header(void) // const std::string& raw_header)
 //		this->content_length_str = os.str();
 //		this->content_length = this->body.length();;
 //	}
+*/
 	std::cout << "Request::process_header() EXIT " << std::endl;
 	header_is_parsed = true;
 	std::cout << "Request::process_header() header is parsed " << std::endl;
@@ -229,15 +272,24 @@ const std::string&	Request::getBoundary() const
 */
 int Request::process_raw_request(void) // const std::string& raw_request)
 {
-	if (this->process_request_line() < 0 || this->process_header() < 0 || this->process_body() < 0)
+	//if (this->process_request_line() < 0 || this->process_header() < 0 || this->process_body() < 0)
+	if (this->process_header() < 0 || this->process_body() < 0)
 		return (-1);
+	
+	// std::cout << std::endl << "Request::process_raw_request : " << std::endl;
+	// std::map<std::string, std::string>::iterator	it;
+	// for (it = header.begin(); it != header.end(); ++it)
+	// {
+	// 	std::cout << "\"" << it->first << "\": " << it->second << std::endl;
+	// }
+	
 	return (0);
 }
 
 const std::string &
 Request::get_method(void) const { return (this->_method_str); }
 
-bool Request::is_method(enum e_method method) const { return (this->_method == method); }
+//bool Request::is_method(enum e_method method) const { return (this->_method == method); }
 
 const std::string&	Request::get_raw_request(void) const {return (_raw_request);}
 const std::string&	Request::get_query(void) const {return (query);}
@@ -308,8 +360,8 @@ std::vector<DataPart> Request::extract_multipart() const
 
 	std::cout <<  "\n\nExtract_multipart strs : " << std::endl;
 
-	std::cout << body << std::endl;
-	std::cout << "boundary.length() :"  << boundary.length() << std::endl;
+//	std::cout << body << std::endl;
+	std::cout << "boundary.length() :" << boundary.length() << std::endl;
 
 	startPos = boundary.length();
 	std::cout << "first startPos : " << startPos << std::endl;
@@ -323,19 +375,19 @@ std::vector<DataPart> Request::extract_multipart() const
 		startPos = body.find_first_not_of("\r\n", startPos);
 	//	if (endPos != 0)
 	//	{
-		std::cout << "startPos : " << startPos << ", endPos : " << endPos << std::endl;
+//		std::cout << "startPos : " << startPos << ", endPos : " << endPos << std::endl;
 		datapart_str = body.substr(startPos, endPos - startPos);
 
 //		std::cout << "newline index : " << datapart_str.find("\r\n") << std::endl;
-		std::cout << "datapart_str : " << datapart_str << std::endl;
+//		std::cout << "datapart_str : " << datapart_str << std::endl;
 		dataparts.push_back(DataPart(datapart_str));
 		//	std::cout << dataparts[dataparts.size() - 1] << std::endl;
 	//	}
-		std::cout << "old startPos : " << startPos << std::endl;
+//		std::cout << "old startPos : " << startPos << std::endl;
 		startPos = endPos + boundary.length();
 //		startPos += datapart_str.length();
 //		startPos = body.find_first_not_of("\r\n", startPos);
-		std::cout << "new startPos : " << startPos << std::endl;
+//		std::cout << "new startPos : " << startPos << std::endl;
 		//startPos = endPos + boundary.length();
 	}
 

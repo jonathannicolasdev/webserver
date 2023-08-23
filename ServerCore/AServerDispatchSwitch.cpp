@@ -61,12 +61,9 @@ AServerDispatchSwitch::connect(int *disconn_clients, int max_disconn, int *ret_c
 
 
 	clientaddrlen = sizeof(clientaddr);
-//	clientfd = accept(this->_sockfd, (struct sockaddr *)&clientaddr, &clientaddrlen);
 	if ((clientfd = accept(this->_sockfd, (struct sockaddr *)&clientaddr, &clientaddrlen)) < 0)
 		return (Logger::log(LOG_ERROR, std::string("Server failed to accept new connection with error : ") + strerror(errno)));
 
-	std::cout << "AServerDispatchSwitch::connect() accepted clientfd : " << clientfd << std::endl;
-//	std::cout << "address of new connected client : " << inet_ntoa(clientaddr.sin_addr) << std::endl;
 	if (max_disconn >= 0 && (int)this->_active_connections.size() >= max_disconn)
 	{
 		nb_disconn = this->do_maintenance(disconn_clients, max_disconn);
@@ -78,8 +75,6 @@ AServerDispatchSwitch::connect(int *disconn_clients, int max_disconn, int *ret_c
 	}
 	this->_init_new_client_connection(clientfd);
 	this->react(EVNT_RECEIVED_CONNECTION, clientfd);
-//	this->react(EVNT_RECEIVED_REQUEST, clientfd);
-	//this->serve_request(clientfd);
 	*ret_clientfd = clientfd;
 	return (nb_disconn);
 }
@@ -163,7 +158,6 @@ int
 AServerDispatchSwitch::do_maintenance(int *disconn_clients, int max_disconn)
 {
 	std::map<int, t_clt_conn>::iterator it;
-//	t_clt_conn							&clientconn;
 	int									clientfd;
 	int									nb_disconn;
 	time_t								curr_time;
@@ -274,17 +268,6 @@ AServerDispatchSwitch::get_addr(void) const {return (this->_server_addr.sin_addr
 int
 AServerDispatchSwitch::get_timeout(void) const {return (this->_conn_timeout);}
 
-//int
-//AServerDispatchSwitch::get_socket(void) const {return (this->_sockfd);}
-/*
-int
-AServerDispatchSwitch::_init_macos_event_listener(void)
-{
-	if ((this->_pollfd = kqueue()) < 0)
-		return (Logger::log(LOG_ERROR, "Failed to open kqueue fd."));
-	return (0);
-}
-*/
 int
 AServerDispatchSwitch::_validate_ready_start(void)
 {
@@ -302,13 +285,7 @@ AServerDispatchSwitch::_validate_ready_start(void)
 int
 AServerDispatchSwitch::start(void)
 {
-	//int					connfd;
-//	struct sockaddr_in	conn_addr;
-//	socklen_t			addr_len;
 	std::ostringstream	err_msg;
-
-//	if (this->_validate_ready_start())
-//		return (-1);
 
 	//listen
 	if (listen(this->_sockfd, MAX_PENDING_CONN) < 0)
@@ -323,17 +300,13 @@ AServerDispatchSwitch::start(void)
 	
 	this->react(EVNT_SRV_OPEN, 0);// clientfd arg ignored;
 	return (this->_sockfd);
-//	return (0);
 }
 
 bool
 AServerDispatchSwitch::operator==(const IServer& other) const
 {
-//	return ((this->_server_addr.sin_addr.s_addr == other._server_addr.sin_addr.s_addr)
-//		&& (this->_port == other._port));
 	return ((this->_server_addr.sin_addr.s_addr == other.get_addr())
 		&& (this->_port == other.get_port()));
-	//return (std::memcmp(this->_server_addr, other._server_addr, sizeof(this->_server_addr)) == 0);
 }
 
 
@@ -350,89 +323,3 @@ std::ostream&	operator<<(std::ostream& ostream, AServerDispatchSwitch& srv)
 	std::cout << "<------------------------------------->" << std::endl;
 	return (ostream);
 }
-
-/*
-// If self_managed is true, this server starts a while (1) loop and
-// waits for client connections.
-// Otherwise returns the server's sockfd fd to be managed externally.
-int
-AServerDispatchSwitch::_____________start(bool self_managed)
-{
-	int					connfd;
-	struct sockaddr_in	conn_addr;
-	socklen_t			addr_len;
-	std::ostringstream	err_msg;
-
-	if (this->_sockfd < 3)
-		return (Logger::log(LOG_WARNING, "Server has no socket yet. Call the bind_server() method first to create an AF_INET socket and bind its address and port."));
-
-	//listen
-	if (listen(this->_sockfd, MAX_PENDING_CONN) < 0)
-	{
-		err_msg << "Failed to start listening to port " <<  this->_port;
-		err_msg << " on address " << inet_ntoa(this->_server_addr.sin_addr);
-		err_msg << " with error : " << std::strerror(errno);
-		return (Logger::log(LOG_ERROR, err_msg.str()));
-	}
-	this->_status = SRV_LISTENING;
-
-//	if (!self_managed)
-//		return (this->_sockfd);
-	
-	this->_is_running = true;
-	while (!this->_close_request)
-	{
-		std::memset(&conn_addr, 0, sizeof(conn_addr));
-		addr_len = sizeof(conn_addr);
-		std::cout << "\n\n\nAccepting new connections" << std::endl;
-		
-		if ((connfd = accept(this->_sockfd, (struct sockaddr*)&conn_addr, &addr_len)) < 0)
-		{
-			Logger::log(LOG_ERROR, std::string("accept called failed with error : ")
-				+ std::strerror(errno));
-			break ;
-		}
-		else
-			std::cout << "accepted client connection with ip addr : " << inet_ntoa(conn_addr.sin_addr)
-				<< " with fd : " << connfd << std::endl;
-		
-		char					request_buffer[4097];
-		ssize_t					nc;
-		std::stringstream		raw_request;
-		std::string				response;
-		std::cout << "reading from client socket while recv > 0" << std::endl;
-		//nc = recv(connfd, request_buffer, 4096, MSG_DONTWAIT);
-		nc = read(connfd, request_buffer, 4096);
-		std::cout << "nc : " << nc << std::endl;
-		if (nc == 0)
-			std::cout << "READ RECEIVED ZERO CHARS" << std::endl;
-		if (nc > 0)
-		{
-			if (request_buffer[0] == '\0')
-				std::cout << "READ RECEIVED NULL CHARS" << std::endl;
-
-	//		while ((nc = recv(connfd, request_buffer, 4096, MSG_DONTWAIT)) > 0)
-	//		std::cout << "start while " << std::endl;
-	//		while (nc > 0)
-	//		{
-			request_buffer[nc] = '\0';
-
-			std::cout << "\n\n" << request_buffer << std::endl;
-			raw_request << request_buffer;
-	//		}
-			std::cout << "get dummy response" << std::endl;
-			get_dummy_response(*this, raw_request, response);
-
-	//		std::cout << "flushing client connection down the drain" << std::endl;
-	//		this->_active_connections[connfd].clt_fd = connfd;
-	//		this->_active_connections[connfd].conn_status = CLT_ACCEPTED;
-	//		this->_active_connections[connfd].clt_addr = conn_addr;
-	//		this->_active_connections[connfd].init_conn_time = std::time(NULL);
-			send(connfd, response.c_str(), response.length(), 0);
-		}
-//		std::cout << "shuting down client connection and fd" << std::endl;
-		close(connfd);
-	}
-	return (0);
-}
-*/
