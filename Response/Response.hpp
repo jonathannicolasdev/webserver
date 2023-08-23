@@ -57,7 +57,6 @@ class Response
 		//int prepare_response(const Request& req);
 		int prepare_response(const ServerHTTP& srv, const Request& req, const ServerConfig& cfg);
 		const std::string&	get_response(void) const;
-
 		bool	empty(void) const;
 		int		get_error_code(void) const;		
 };

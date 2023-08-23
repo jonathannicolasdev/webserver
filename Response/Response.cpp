@@ -11,12 +11,19 @@
 /* ************************************************************************** */
 
 #include "Response.hpp"
+#include <sys/stat.h>
 
 Response::Response(void): _error_code(0), _requested_endpoint(false)
 {
 }
-
 Response::~Response(void) {}
+
+enum FileType {
+	FILE_TYPE_DIRECTORY,
+	FILE_TYPE_FILE,
+	FILE_TYPE_UNKNOWN
+};
+
 
 static bool fileExists(const std::string &f)
 {
@@ -24,7 +31,28 @@ static bool fileExists(const std::string &f)
 //	return (file.good());
 	return (access(f.c_str(), F_OK) == 0);
 }
-/*
+
+static FileType pathType(const std::string& path)
+{
+	struct stat s;
+
+	if (stat(path.c_str(), &s) != 0)
+	{
+		return FILE_TYPE_UNKNOWN;
+	}
+	if (S_ISDIR(s.st_mode))
+	{
+		return FILE_TYPE_DIRECTORY;
+	} else if (S_ISREG(s.st_mode))
+	{
+		return FILE_TYPE_FILE;
+	}
+	else 
+	{
+		return FILE_TYPE_UNKNOWN;
+	}
+}
+
 void _prepare_dummy_response(std::string &text_response)
 {
 	std::string header;
@@ -293,7 +321,17 @@ bool Response::_process_delete_request(const Request &req, const ServerConfig &s
 	(void)req;
 	(void)srv_cfg;
 	(void)loc_cfg;
-	return (true);
+	if (pathType(_internal_path) == 1)
+	{
+		if (remove(_internal_path.c_str()) == 0)
+			_error_code = 204;
+		else
+			_error_code = 403;
+		std::cout << "A DELETE WAS DONE !! TIME TO REMOOOOOVE" << std::endl;
+	}
+	else
+		_error_code = 404;
+	return (false);
 }
 
 bool Response::_isredirect(const LocationConfig &loc_cfg)
@@ -448,13 +486,17 @@ int Response::prepare_response(const ServerHTTP &srv, const Request &req, const 
 
 		if (_isredirect(*best_match))
 		{
+			/*
 			std::string header;
 			std::string response_body="Redirect Error";
 			_build_get_http_header("", header, std::to_string(response_body.length()), "text/plain", false);
 			_text = header + response_body;
 			std::cerr << "Redirect " << std::endl;
 			return (0);
-			// return(-1);
+			*/
+			
+			std::cout << "A REDIRECT WAS DONE !!" << std::endl;
+			return(-1);
 		}
 
 		std::cout << "cwd : " << ServerConfig::cwd << std::endl;
