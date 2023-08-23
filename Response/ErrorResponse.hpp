@@ -33,6 +33,7 @@ class ErrorResponse: public Response
 		bool    _prepare_default_404_error(void);
 		bool    _prepare_default_500_error(void);
 		bool	_prepare_default_301_error(void);
+		bool	_prepare_default_204_error(void);
 		void    _prepare_default_hardcoded_500_error(void);
 		bool	__prepare_error(const std::string& dir_path, int error_code);
 

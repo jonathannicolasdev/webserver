@@ -11,17 +11,45 @@
 /* ************************************************************************** */
 
 #include "Response.hpp"
+#include <sys/stat.h>
 
 Response::Response(void): _error_code(0), _requested_endpoint(false)
 {
 }
-
 Response::~Response(void) {}
+
+enum FileType {
+	FILE_TYPE_DIRECTORY,
+	FILE_TYPE_FILE,
+	FILE_TYPE_UNKNOWN
+};
+
 
 static bool fileExists(const std::string &f)
 {
 	std::ifstream file(f.c_str());
 	return (file.good());
+}
+
+static FileType pathType(const std::string& path)
+{
+	struct stat s;
+
+	if (stat(path.c_str(), &s) != 0)
+	{
+		return FILE_TYPE_UNKNOWN;
+	}
+	if (S_ISDIR(s.st_mode))
+	{
+		return FILE_TYPE_DIRECTORY;
+	} else if (S_ISREG(s.st_mode))
+	{
+		return FILE_TYPE_FILE;
+	}
+	else 
+	{
+		return FILE_TYPE_UNKNOWN;
+	}
 }
 
 void _prepare_dummy_response(std::string &text_response)
@@ -250,7 +278,17 @@ bool Response::_process_delete_request(const Request &req, const ServerConfig &s
 	(void)req;
 	(void)srv_cfg;
 	(void)loc_cfg;
-	return (true);
+	if (pathType(_internal_path) == 1)
+	{
+		if (remove(_internal_path.c_str()) == 0)
+			_error_code = 204;
+		else
+			_error_code = 403;
+		std::cout << "A DELETE WAS DONE !! TIME TO REMOOOOOVE" << std::endl;
+	}
+	else
+		_error_code = 404;
+	return (false);
 }
 
 bool Response::_isredirect(const LocationConfig &loc_cfg)
