@@ -115,13 +115,15 @@ function uploadFiles() {
         if (xhr.status === 201) {
             displayMessage("Upload Successful", "success");
             console.log("Files uploaded successfully!");
-            
+            console.log("filesToUpload.length : ", filesToUpload.length);
             while (filesToUpload.length) {
+                console.log("popping files");
                 filesToUpload.pop();
             }
             while (gFileList.firstChild) {
                 gFileList.removeChild(gFileList.firstChild);
             }
+            fetchClientUploadList(); // Call the function after successful upload
         } else {
             displayMessage("Error uploading files", "error");
             console.error("Error uploading files");
@@ -129,7 +131,6 @@ function uploadFiles() {
     };
 
     xhr.send(formData);
-    fetchClientUploadList();
 }
 
 function displayMessage(messageText, messageType) {
@@ -147,6 +148,7 @@ function displayMessage(messageText, messageType) {
 
 // Function to fetch the list of client-uploaded files
 function fetchClientUploadList() {
+    console.log("Fetching uploads list")
     fetch("/uploads/.client_upload_list.py")
         .then(response => {
             if (!response.ok) {
