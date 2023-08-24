@@ -169,6 +169,8 @@ int Request::process_header(void) // const std::string& raw_header)
 	if (pos_end == std::string::npos)
 		return (Logger::log(LOG_WARNING, "Received request, but no header delimiter found"), -1);
 	this->_raw_header = this->_raw_request.substr(0, pos_end);
+	std::cout << "Request HEADER : " << std::endl;
+	std::cout << this->_raw_header << std::endl;
 	split_string(this->_raw_header, "\r\n", split_header);
 	if (split_header.size() == 0)
 		return (Logger::log(LOG_WARNING, std::string("Received request, with invalid header : ") + this->_raw_header), -1);

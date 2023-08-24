@@ -6,7 +6,7 @@
 /*   By: iamongeo <iamongeo@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/26 18:40:57 by iamongeo          #+#    #+#             */
-/*   Updated: 2023/08/16 20:07:16 by iamongeo         ###   ########.fr       */
+/*   Updated: 2023/08/23 20:19:40 by iamongeo         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,6 +16,8 @@
 
 # include <unistd.h>
 # include <fcntl.h>
+# include <dirent.h>
+# include <string>
 # include <fstream>
 # include <sstream>
 
@@ -39,6 +41,7 @@ class Response
 		std::string		_location_path;// absolute path of location match 
 		std::string		_internal_path;// absolute path inside server of requested path converted to server path with best matching LocationConfig. (eg.: req_path = "/admin/toto.html", location "/admin/" => "/var/www/admin", internal_path = "/var/www/admin/toto.html") 
 		bool			_requested_endpoint;// The path requested is the exact match of the location config
+		bool			_requested_autoindex;// The path requested endpoint and autoindex is on
 
 		bool	_process_get_request(const Request& req, const ServerConfig& srv_cfg, const LocationConfig& loc_cfg);
 		bool	_process_post_request(const Request& req, const ServerConfig& srv_cfg, const LocationConfig& loc_cfg);
@@ -49,6 +52,7 @@ class Response
 		std::string&	_parse_location_path(const ServerConfig& scfg, const LocationConfig& lcfg);
 		bool			_check_if_cgi_exec(const Request& req, const LocationConfig& cfg);
 		int				_process_cgi_request(const Request& req, const ServerConfig& srv_cfg, const LocationConfig& loc_cfg);
+		int				_prepare_autoindex(const Request& req, const std::string& dirpath);
 
 	public:
 		Response(void);    

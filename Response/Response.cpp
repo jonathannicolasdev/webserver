@@ -3,17 +3,18 @@
 /*                                                        :::      ::::::::   */
 /*   Response.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: marvin <marvin@student.42.fr>              +#+  +:+       +#+        */
+/*   By: iamongeo <iamongeo@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/26 18:42:23 by iamongeo          #+#    #+#             */
-/*   Updated: 2023/08/23 01:54:50 by marvin           ###   ########.fr       */
+/*   Updated: 2023/08/23 21:14:00 by iamongeo         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Response.hpp"
 #include <sys/stat.h>
 
-Response::Response(void): _error_code(0), _requested_endpoint(false)
+Response::Response(void): _error_code(0), _requested_endpoint(false),
+	_requested_autoindex(false)
 {
 }
 Response::~Response(void) {}
@@ -112,6 +113,7 @@ bool Response::_process_get_request(const Request &req, const ServerConfig &srv_
 	std::ifstream fs;
 	std::ostringstream os, content_length;
 	std::string header, body, content_type;
+	struct stat stat_s;
 
 	(void)req;
 	(void)srv_cfg;
@@ -128,7 +130,13 @@ bool Response::_process_get_request(const Request &req, const ServerConfig &srv_
 
 	std::cout << "GET REQUEST internal path : " << _internal_path << std::endl;
 
-	if (access(_internal_path.c_str(), F_OK) < 0)
+	if (stat(_internal_path.c_str(), &stat_s) < 0
+		|| !(stat_s.st_mode & S_IFREG))
+	{
+		_error_code = 404;
+		return (false);
+	}
+	else if (access(_internal_path.c_str(), F_OK) < 0)
 	{
 		/// 404 File not found
 		std::cerr << "ERROR 404 Not Found" << std::endl;
@@ -156,6 +164,7 @@ bool Response::_process_get_request(const Request &req, const ServerConfig &srv_
 		_error_code = 500;
 		return (false);
 	}
+	std::cout << "File open correctly for get request." << std::endl;
 	os << fs.rdbuf();
 	fs.close();
 	body = os.str();
@@ -229,13 +238,14 @@ bool Response::_process_post_request(const Request &req, const ServerConfig &srv
 			if (dataparts[i].getFilename() == "")
 				continue;
 
+			
 			filepath = _internal_path;
 			if (string_endswith(_internal_path, "/"))
 				filepath += dataparts[i].getFilename();
 			else
 				filepath += std::string("/") + dataparts[i].getFilename();
 
-			
+			string_replace_space_by__(filepath);
 			if (fileExists(filepath))
 			{
 				_error_code = 409;
@@ -345,11 +355,23 @@ std::string &Response::_parse_internal_path(const Request &req, const LocationCo
 	_internal_path = _location_path;
 	split_string(spec_requested, '/', spec_path_split);
 	join_strings(spec_path_split, '/', _internal_path);
-	if (loc_path == req_path)
+	if (loc_path == req_path
+		|| (req_path.compare(0, req_path.length(), loc_path) == 0))
+	//		&& req_path.find('/') == loc_path.length()))
 	{
 		_requested_endpoint = true;
+		std::cout << "loc_path == req_path : " << loc_path << " vs " << req_path << " || compare : " << req_path.compare(0, loc_path.length(), loc_path) << std::endl;
+		if (_requested_endpoint && (loc_cfg.GetAutoIndex() == "on"))
+		{
+			std::cout << "IS AUTOINDEX" << std::endl;
+			_requested_autoindex = true;
+		}
+		else 
+			std::cout << "IS NOT AUTOINDEX" << std::endl;
 		std::cout << "IS REQUESTED ENDPOINT !!" << std::endl;
 	}
+	else
+		std::cout << "loc_path != req_path : " << loc_path << " vs " << req_path << ". compare : " << req_path.compare(0, req_path.length(), loc_path) << std::endl;
 	std::cout << "Full internal path : " << _internal_path << std::endl;
 	return (_internal_path);
 }
@@ -419,6 +441,69 @@ int	Response::_process_cgi_request(const Request& req, const ServerConfig& srv_c
 /// END OF CGI RELATED METHODS
 
 
+static int	_build_autoindex_body(const Request& req, const std::string& dirpath, std::string& body)
+{
+	DIR				*odir;//opendir(const char *name);
+	struct dirent	*ent;
+	std::string		ent_str, site_path;
+	
+
+	std::cout << "_build_autoindex_body start" << std::endl;
+	
+	odir = opendir(dirpath.c_str());
+	if (!odir)
+		return (Logger::log(LOG_WARNING, std::string("Couldn't open and autoindex directory at ") + dirpath), -1);
+	body += std::string(\
+	"<!DOCTYPE html>\r\n") +\
+	"<html>\r\n" +\
+	"<head>\r\n" +\
+	"	<title>Webserv Index</title>\r\n" +\
+	"</head>\r\n" +\
+	"<body>\r\n" +\
+	"	<h1>Directory Listing</h1>\r\n";
+
+	site_path = req.get_path();
+	if (!string_endswith(site_path, "/"))
+		site_path += '/';
+	while ((ent = readdir(odir)))
+	{
+		if (ent->d_name[0] == '.')
+			continue ;
+		ent_str = ent->d_name;
+		if (ent->d_type == DT_DIR)
+			ent_str += '/';
+		std::cout << "read dirent : " << (site_path + ent_str) << std::endl;
+		body += "	<a href=" + (site_path + ent_str) + ">" + ent_str + "</a><br>\r\n";
+	}
+
+	
+	body += std::string(\
+	"</body>\r\n") +\
+	"</html>\r\n";
+	closedir(odir);
+	return (0);
+}
+
+int	Response::_prepare_autoindex(const Request& req, const std::string& dirpath)
+{
+	std::string		header, cur_timestamp, body;
+
+	std::cout << "REQUESTED AND PREPARING AUTOINDEX " << std::endl;
+
+	if (_build_autoindex_body(req, dirpath, body) < 0)
+		return (-1);
+	gen_timestamp(cur_timestamp);
+	header = "HTTP/1.1 200 OK\r\n";
+	header += "Date: " + cur_timestamp + "\r\n";
+
+	header += "Content-type: text/html\r\n";
+	header += "Content-length: " + std::to_string(body.length()) + "\r\n";
+
+	header += "\r\n";
+	_text = header + body;
+	return (0);
+}
+
 
 /// REQUIRED METHODS BY SERVER ///////////////
 int Response::prepare_response(const ServerHTTP &srv, const Request &req, const ServerConfig &cfg)
@@ -484,7 +569,7 @@ int Response::prepare_response(const ServerHTTP &srv, const Request &req, const 
 		
 		_parse_internal_path(req, *best_match);
 
-
+			
 
 		if (_check_if_cgi_exec(req, *best_match))
 			return (_process_cgi_request(req, cfg, *best_match));
@@ -494,7 +579,15 @@ int Response::prepare_response(const ServerHTTP &srv, const Request &req, const 
 
 		if (req.get_method() == "GET")
 		{
-			if (!_process_get_request(req, cfg, *best_match))
+			if (_requested_autoindex)
+			{
+				if (_prepare_autoindex(req, _internal_path) < 0)
+				{
+					_error_code = 500;
+					return (-1);
+				}
+			}
+			else if (!_process_get_request(req, cfg, *best_match))
 			{
 				std::cout << "WOWOW GOT GET METHOD BUT process_get_request FAILED !" << std::endl;
 				return (-1);

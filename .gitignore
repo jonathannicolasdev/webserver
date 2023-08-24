@@ -2,4 +2,7 @@
 **/*.o
 **/*.a
 **/DS.Store
-
+legacy/
+test/
+.vscode/
+**/*.log

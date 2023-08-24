@@ -8,6 +8,7 @@ server {
 	index index.html;
 
   location / {
+    autoindex on
     allow_methods GET;
     index index.html;
   }

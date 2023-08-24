@@ -93,6 +93,12 @@ void	split_string(const std::string& s, const std::string& delim, std::vector<st
 		ret_vect.push_back(s.substr(p1, p2 - p1));
 }
 
+// Replace all instances of a char in a string by some other char
+void	string_replace_space_by__(std::string& repl_string)
+{
+	std::replace( repl_string.begin(), repl_string.end(), ' ', '_');
+}
+
 
 bool	is_all_digits(const std::string& s)
 {

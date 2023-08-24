@@ -172,7 +172,7 @@ ServerHTTP::send_response(int clientfd, const Response& resp) const
 			usleep(10000);
 			continue ;
 		}
-		if (_client_disconnect_signaled)
+		if (sent_size == 0 || _client_disconnect_signaled)
 			return (-1);
 		max_retries = SRVHTTP_MAX_SEND_RETRIES;
 //		std::cout << sent_size << " successfully sent." << std::endl;

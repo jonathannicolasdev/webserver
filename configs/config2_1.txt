@@ -50,7 +50,7 @@ server {
   location /uploads {
     autoindex on;
     allow_methods GET DELETE POST;
-    max_body_size 100000000
+    max_body_size 55000
     root /client_uploads/
   }
   
