@@ -235,9 +235,12 @@ ServerConfig ConfigBuilder::parseServer(string content)
     std::getline(iss, line); // purge first ligne server {
     while (std::getline(iss, line))
     {
+        std::cout << "HERE" << std::endl;
         if (line[0] == '}')
             break;
+        std::cout << "HERE2" << std::endl;
         std::vector<std::string> words = split(line, ' ');
+        std::cout << "HERE3" << std::endl;
         std::string directiveServerKey = words[0];
 
         if (directiveServerKey == "listen")
@@ -357,13 +360,15 @@ std::vector<ServerConfig> ConfigBuilder::parseConfigFile(const std::string& file
         configContent = ConfigBuilder::cleanComments(configContent);
         configContent = ConfigBuilder::cleanSpaces(configContent);
 
+
         std::vector<std::string> serverBlocks = extractServerBlock(configContent);
 
         for (size_t i = 0; i < serverBlocks.size(); i++)
         {
-            // std::cout << "SERVER: " << serverBlocks[i] << "\n";
+            //std::cout << "SERVER: " << serverBlocks[i] << "\n";
             serverConfigs.push_back(parseServer(serverBlocks[i]));
         }
+        std::cout << "parseConfigFile : DONE " << std::endl; 
     }
     catch (const std::exception &e)
     {

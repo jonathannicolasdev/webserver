@@ -1,6 +1,10 @@
 server {
   listen 8080;
-  listen 65535;
+  listen 1111;
+#  listen 1111;
+# listen 0.0.0.0:1111;
+# listen 127.0.0.1:1111;
+
 
   root /www/;
   
@@ -27,26 +31,14 @@ server {
     root /errors;
   }
 
-  location /admin {
-    auth admin:admin;
-    root /admin/;
-    index index.html;
-  }
-  location /autoindex/admin {
-    auth admin:admin;
-    root /admin/;
-    index index.html;
-  }
   location /imgs {
     root /assets/;
   }
   location /cgi {
     allow_methods GET POST;
     root /cgi-bin/;
-    cgi .py python3
   }
 
-  # Max body size of 100mb to start
   location /uploads {
     autoindex on;
     allow_methods GET DELETE POST;
@@ -54,7 +46,7 @@ server {
     root /client_uploads/
   }
   
-  error_page 404 /my_errors/404.html;
+  error_page 404 /default_errors/404.html;
 }
 
 server {
