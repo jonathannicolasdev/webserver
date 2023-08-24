@@ -6,7 +6,7 @@
 /*   By: iamongeo <iamongeo@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/26 18:42:23 by iamongeo          #+#    #+#             */
-/*   Updated: 2023/08/22 23:11:25 by iamongeo         ###   ########.fr       */
+/*   Updated: 2023/08/23 23:33:54 by iamongeo         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -324,13 +324,14 @@ bool Response::_isredirect(const LocationConfig &loc_cfg)
 	{
 		_error_code = 301;
 		location = loc_cfg.GetReturnPath();
-		if (location[0] != '/')
-			location.insert(location.begin(), '/');
+//		if (location[0] != '/')
+//			location.insert(location.begin(), '/');
 			
 		std::cout << "**********************************" << std::endl;
+		_build_redirect_http_header(location, header);
 		std::cout << location << std::endl;
-		//_build_redirect_http_header(location, header);
-	    //_text = header;
+		std::cout << header << std::endl;
+	    _text = header;
 		return true; // Indicate that redirection is taking place
 	}
 	std::cout << " IS NOT REDIRECT " << std::endl;
