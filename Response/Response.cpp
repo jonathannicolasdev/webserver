@@ -71,6 +71,15 @@ const std::string _discover_content_type(const std::string &path)
 	return ("");
 }
 
+void _build_redirect_http_header(const std::string& redirectLocation, std::string& header) {
+
+    // Include the Location header within the HTML content
+    header = "HTTP/1.1 301 Moved Permanently\r\n";
+    header += "Content-Type: text/html\r\n";
+    header += "Location: " + redirectLocation + "\r\n";
+    header += "\r\n";
+}
+
 
 void _build_get_http_header(const std::string &filepath, std::string &header,
 							const std::string &content_length, const std::string &content_type, bool is_attachment)
@@ -308,14 +317,23 @@ bool Response::_process_delete_request(const Request &req, const ServerConfig &s
 bool Response::_isredirect(const LocationConfig &loc_cfg)
 {
 	std::string location;
+	std::string header;
+	std::cout << " CHECK IF REDIRECT " << std::endl;
+	std::cout << " RETURN PATH " + loc_cfg.GetReturnPath() << std::endl;
 	if (!loc_cfg.GetReturnPath().empty())
 	{
 		_error_code = 301;
 		location = loc_cfg.GetReturnPath();
 		if (location[0] != '/')
 			location.insert(location.begin(), '/');
+			
+		std::cout << "**********************************" << std::endl;
+		std::cout << location << std::endl;
+		//_build_redirect_http_header(location, header);
+	    //_text = header;
 		return true; // Indicate that redirection is taking place
 	}
+	std::cout << " IS NOT REDIRECT " << std::endl;
 	return false; // Indicate that redirection is not occurring
 }
 
@@ -465,9 +483,14 @@ int Response::prepare_response(const ServerHTTP &srv, const Request &req, const 
 			std::cerr << "Redirect " << std::endl;
 			return (0);
 			*/
-			
+
+			std::cout << "A REDIRECT WAS DONE !!" << std::endl;
+			//std::cout << this->get_response() << std::endl;
+			return (0);
+			/*
 			std::cout << "A REDIRECT WAS DONE !!" << std::endl;
 			return(-1);
+			*/
 		}
 
 		std::cout << "cwd : " << ServerConfig::cwd << std::endl;
