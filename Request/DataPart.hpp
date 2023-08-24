@@ -20,7 +20,7 @@ private:
     std::string _content;
 
 public:
-    DataPart(std::string datapart_str);
+    DataPart(const std::string& datapart_str);
     ~DataPart(void);
 
     std::string getContentDisposition() const;

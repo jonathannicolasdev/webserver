@@ -169,7 +169,7 @@ ServerHTTP::send_response(int clientfd, const Response& resp) const
 				return (-1);;
 			}
 			--max_retries;
-			usleep(10000);
+			usleep(100000);
 			continue ;
 		}
 		if (sent_size == 0 || _client_disconnect_signaled)
@@ -251,12 +251,14 @@ ServerHTTP::serve_request(int clientfd)
 			err.prepare_response(500);
 //		send_response(clientfd, err);
 //		return (_serve_internal_error(clientfd, req, cfg));
-		send_response(clientfd, err);
+		if (send_response(clientfd, err) < 0)
+			this->disconnect(clientfd, true);
 	}
 	else
 	{
 //		std::cout << "Seems like prepare_response() was executed SUCCESSFULLY" << std::endl;
-		send_response(clientfd, resp);
+		if (send_response(clientfd, resp) < 0)
+			this->disconnect(clientfd, true);
 	}
 	_currently_serving = 0;
 	return (0);

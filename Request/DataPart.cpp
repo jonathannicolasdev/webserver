@@ -2,7 +2,7 @@
 #include "DataPart.hpp"
 
 
-DataPart::DataPart(std::string datapart_str)
+DataPart::DataPart(const std::string& datapart_str)
 {
 	std::string contentMarquer = "\r\n\r\n";
 
@@ -13,8 +13,8 @@ DataPart::DataPart(std::string datapart_str)
 		_error_bad_form = true;
 		_header = datapart_str.substr(0, contentStart);
 		_content = datapart_str.substr(contentStart + 4);
-//		std::cout << "header : " << _header << std::endl;
-//		std::cout << "content : " << _content << std::endl;
+		std::cout << "header : " << _header << std::endl;
+		std::cout << "content : " << _content << std::endl;
 		size_t name_pos = _header.find("name=\"") + 6;
 		_name = _header.substr(name_pos, _header.find('\"', name_pos) - name_pos);
 //		std::cout << "name :      " << _name << std::endl;

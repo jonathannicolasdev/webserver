@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>File Manager</title>
+	<style>
+		body {
+			margin: 0;
+			padding: 0;
+			font-family: Arial, sans-serif;
+		}
+		.container {
+			width: 100%;
+			max-width: 1200px;
+			margin: 0 auto;
+			padding: 20px;
+		}
+		.box {
+			width: 80%;
+			margin: 0 auto;
+			padding: 20px;
+			border: 2px dashed #aaa;
+			border-radius: 10px;
+			text-align: center;
+		}
+		#fileList {
+			margin-top: 20px;
+		}
+		#uploadButton {
+			margin-top: 20px;
+			background-color: #007bff;
+			color: #fff;
+			border: none;
+			border-radius: 5px;
+			padding: 10px 20px;
+			cursor: pointer;
+		}
+	</style>
+</head>
+<body>
+	<div class="container">
+		<h1>File Manager</h1>
+		<div class="box" id="dropBox" ondrop="handleDrop(event)" ondragover="handleDragOver(event)">
+			Drag and drop files here
+		</div>
+		<ul id="fileList"></ul>
+		<button id="uploadButton" onclick="uploadFiles()">Upload Files</button>
+	</div>
+	<script>
+		function handleDragOver(event) {
+			event.preventDefault();
+			event.dataTransfer.dropEffect = "copy";
+		}
+
+		function handleDrop(event) {
+			event.preventDefault();
+			const fileList = document.getElementById("fileList");
+			for (const file of event.dataTransfer.files) {
+				const listItem = document.createElement("li");
+				listItem.textContent = file.name;
+				fileList.appendChild(listItem);
+			}
+		}
+
+		function uploadFiles() {
+			const fileInput = document.getElementById("fileInput");
+			const fileList = fileInput.files;
+
+			const formData = new FormData();
+
+			for (const file of fileList) {
+				const fileName = file.textContent;
+				console.log(fileName);
+
+				const fileBlob = new Blob([], { type: "application/octet-stream" });
+				fileBlob.name = fileName;
+				formData.append("files[]", fileBlob, fileName);
+			}
+
+			const xhr = new XMLHttpRequest();
+			xhr.open("POST", "/uploads", true);
+
+			xhr.onload = function() {
+				if (xhr.status === 200) {
+					console.log("Files uploaded successfully!");
+				} else {
+					console.error("Error uploading files");
+				}
+			};
+			xhr.send(formData);
+		}
+	</script>
+</body>
+</html>

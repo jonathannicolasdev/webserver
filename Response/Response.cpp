@@ -6,7 +6,7 @@
 /*   By: iamongeo <iamongeo@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/26 18:42:23 by iamongeo          #+#    #+#             */
-/*   Updated: 2023/08/23 21:14:00 by iamongeo         ###   ########.fr       */
+/*   Updated: 2023/08/23 22:20:55 by iamongeo         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -248,9 +248,12 @@ bool Response::_process_post_request(const Request &req, const ServerConfig &srv
 			string_replace_space_by__(filepath);
 			if (fileExists(filepath))
 			{
+				std::cerr << "ERROR : File already exists" << std::endl;
 				_error_code = 409;
 				break;
 			}
+			std::cout << "Creating New Uploaded file : " << filepath << std::endl;
+
 			std::ofstream file(filepath.c_str(), std::ios::binary);
 			if (file.fail())
 			{
@@ -258,7 +261,9 @@ bool Response::_process_post_request(const Request &req, const ServerConfig &srv
 				break;
 			}
 			else
+			{
 				file.write(dataparts[i].getContent().c_str(), dataparts[i].getContent().length());
+			}
 		}
 	}
 	// else
