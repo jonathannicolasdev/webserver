@@ -37,7 +37,7 @@ public:
 	void		AddError_page(int errorCode, std::string error_page);
 	std::string GetListenPort() const;
 	void		SetListenPort(const std::string& listenPort);
-	void		AddListenPort(const std::string& listenPort);
+	bool		AddListenPort(const std::string& listenPort);
 	void		SetServerName(std::string serverName);
 	std::string GetServerName() const;
 	//size_t		GetMaxBodySize() const;
