@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Response.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: iamongeo <iamongeo@student.42.fr>          +#+  +:+       +#+        */
+/*   By: marvin <marvin@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/26 18:42:23 by iamongeo          #+#    #+#             */
-/*   Updated: 2023/08/24 00:20:18 by iamongeo         ###   ########.fr       */
+/*   Updated: 2023/08/24 02:45:13 by marvin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -549,6 +549,7 @@ static int	_build_autoindex_body(const Request& req, const std::string& dirpath,
 int	Response::_prepare_autoindex(const Request& req, const std::string& dirpath)
 {
 	std::string		header, cur_timestamp, body;
+	std::ostringstream	os;
 
 	std::cout << "REQUESTED AND PREPARING AUTOINDEX " << std::endl;
 
@@ -558,8 +559,9 @@ int	Response::_prepare_autoindex(const Request& req, const std::string& dirpath)
 	header = "HTTP/1.1 200 OK\r\n";
 	header += "Date: " + cur_timestamp + "\r\n";
 
+	os << body.length();
 	header += "Content-type: text/html\r\n";
-	header += "Content-length: " + std::to_string(body.length()) + "\r\n";
+	header += "Content-length: " + os.str() + "\r\n";
 
 	header += "\r\n";
 	_text = header + body;

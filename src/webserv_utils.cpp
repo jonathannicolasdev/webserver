@@ -96,7 +96,11 @@ void	split_string(const std::string& s, const std::string& delim, std::vector<st
 // Replace all instances of a char in a string by some other char
 void	string_replace_space_by__(std::string& repl_string)
 {
-	std::replace( repl_string.begin(), repl_string.end(), ' ', '_');
+	size_t	pos = 0;
+
+	while ((pos = repl_string.find(' ', pos + 1)) != std::string::npos)
+		repl_string[pos] = '_';
+	//std::replace( repl_string.begin(), repl_string.end(), ' ', '_');
 }
 
 

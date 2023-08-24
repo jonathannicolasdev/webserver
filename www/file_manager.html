@@ -10,23 +10,58 @@
 			padding: 0;
 			font-family: Arial, sans-serif;
 		}
+
+		.file-sys {
+			border: 2px dashed #ddd;
+			border-radius: 10px;
+			padding: 10px;
+			width: 100%; /* Same width as drop box */
+			height: 200px;
+			overflow-y: auto; /* Enable vertical scrollbar when needed */
+			margin-bottom: 10px;
+		}
+		
+		.file-list {
+			border: 2px dashed #ddd;
+			border-radius: 10px;
+			padding: 10px;
+			width: 100%; /* Same width as drop box */
+			height: 100px;
+			overflow-y: auto; /* Enable vertical scrollbar when needed */
+			margin-bottom: 10px;
+			background-color: #05386f;
+		}
 		.container {
 			width: 100%;
 			max-width: 1200px;
 			margin: 0 auto;
 			padding: 20px;
 		}
+		.inner_container {
+			position: relative;
+		}
+
 		.box {
-			width: 80%;
+			border: 2px dashed #ddd;
+			border-radius: 10px;
+			width: 50%;
 			margin: 0 auto;
 			padding: 20px;
-			border: 2px dashed #aaa;
-			border-radius: 10px;
 			text-align: center;
 		}
+		/* Adjusted styles for the file lists */
+		#clientFileList,
 		#fileList {
-			margin-top: 20px;
+			margin-right: auto;
+			margin-left: auto;
+			max-width: 80%; /* Adjust the value as needed */
 		}
+		#clientFileList {
+			height: 200px;
+		}
+/*		#fileList {*/
+/*			margin-top: 20px;*/
+/*		}*/
 		#uploadButton {
 			margin-top: 20px;
 			background-color: #007bff;
@@ -36,11 +71,33 @@
 			padding: 10px 20px;
 			cursor: pointer;
 		}
+/*		#clientFileList {*/
+/*			border: 2px dashed #ddd;*/
+/*			border-radius: 10px;*/
+/*			padding: 10px;*/
+/*			width: 100%; /* Same width as drop box */
+/*			height: 200px;*/
+/*			overflow-y: auto; /* Enable vertical scrollbar when needed */
+/*			margin-top: 10px;*/
+/*		}*/
 		.message {
 			margin-top: 20px;
 			margin-left: 20px;
 			font-weight: bold;
 			display: none;
+		}
+		
+		.file-item {
+			cursor: pointer;
+			padding: 5px;
+			color: white;
+		}
+
+		.selected {
+			background-color: #f0f0f0;
+		}
+		.remove-button {
+			float: right;
 		}
 
 		.success {
@@ -50,13 +107,25 @@
 		.error {
 			color: red;
 		}
+
+		/* Diagonal gradient */
+		.gradient-diagonal {
+			background: linear-gradient(45deg, #597add, #5ed1ff);
+		}
 	</style>
 </head>
-<body>
+<body class="gradient-diagonal">
+	<h1 style="margin-left: 40px;">File Manager</h1>
 	<div class="container">
-		<h1>File Manager</h1>
-		<div id="dropZone" class="box">Drop files here</div>
-		<ul id="fileList"></ul>
+		<div class="upload_container">
+			<h2>File system</h2>
+			<div id="clientFileList" class="file-list"></div>
+		</div>
+		<div class="inner_container">
+			<h2>Upload</h2>
+			<div id="dropZone" class="box">Drop files here</div>
+			<div id="fileList" class="file-list"></div>
+		</div>
 		<button id="uploadButton" onclick="uploadFiles()">Upload Files</button>
 		<div id="message" class="message"></div>
 	</div>
