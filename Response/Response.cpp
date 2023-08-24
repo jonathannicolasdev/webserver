@@ -6,7 +6,7 @@
 /*   By: iamongeo <iamongeo@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/26 18:42:23 by iamongeo          #+#    #+#             */
-/*   Updated: 2023/08/24 16:36:15 by iamongeo         ###   ########.fr       */
+/*   Updated: 2023/08/24 17:22:24 by iamongeo         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -132,13 +132,14 @@ const std::string _discover_content_type(const std::string &path)
 void _build_redirect_http_header(const std::string& redirectLocation, std::string& header) {
 
     // Include the Location header within the HTML content
-    header = "HTTP/1.1 301 Moved Permanently\r\n";
+    //header = "HTTP/1.1 301 Moved Permanently\r\n";
+    header = "HTTP/1.1 " + status_msgs[301] + "\r\n";
     header += "Content-Type: text/html\r\n";
     header += "Location: " + redirectLocation + "\r\n";
     header += "\r\n";
 }
 
-
+// Assumes the file existe is valide and accessible.
 void _build_get_http_header(const std::string &filepath, std::string &header,
 							const std::string &content_length, const std::string &content_type, bool is_attachment)
 {
@@ -184,7 +185,7 @@ bool Response::_process_get_request(const Request &req, const ServerConfig &srv_
 	(void)req;
 	(void)srv_cfg;
 	(void)loc_cfg;
-	std::cout << "_location_path : " << _location_path << std::endl;
+//	std::cout << "_location_path : " << _location_path << std::endl;
 
 	if (_requested_endpoint)
 	{
@@ -298,7 +299,8 @@ bool Response::_process_post_request(const Request &req, const ServerConfig &srv
 	if (req.getMultiformFlag())
 	{
 		std::cout << "IS MULTIPART !" << std::endl;
-		std::vector<DataPart> dataparts = req.extract_multipart();
+		std::vector<DataPart> dataparts;
+		req.extract_multipart(dataparts);
 		for (size_t i = 0; i < dataparts.size(); i++)
 		{
 			if (dataparts[i].getFilename() == "")
@@ -314,11 +316,11 @@ bool Response::_process_post_request(const Request &req, const ServerConfig &srv
 			string_replace_space_by__(filepath);
 			if (fileExists(filepath))
 			{
-				std::cerr << "ERROR : File already exists" << std::endl;
+//				std::cerr << "ERROR : File already exists" << std::endl;
 				_error_code = 409;
 				break;
 			}
-			std::cout << "Creating New Uploaded file : " << filepath << std::endl;
+//			std::cout << "Creating New Uploaded file : " << filepath << std::endl;
 
 			std::ofstream file(filepath.c_str(), std::ios::binary);
 			if (file.fail())
@@ -374,16 +376,22 @@ bool Response::_process_delete_request(const Request &req, const ServerConfig &s
 	(void)req;
 	(void)srv_cfg;
 	(void)loc_cfg;
-	if (pathType(_internal_path) == 1)
+
+	if (access(_internal_path.c_str(), F_OK) < 0)
+	{
+		_error_code = 404;
+		return (false);
+	}
+	if (pathType(_internal_path) == FILE_TYPE_FILE)
 	{
 		if (remove(_internal_path.c_str()) == 0)
 			_error_code = 204;
 		else
 			_error_code = 403;
-		std::cout << "A DELETE WAS DONE !! TIME TO REMOOOOOVE" << std::endl;
+//		std::cout << "A DELETE WAS DONE !! TIME TO REMOOOOOVE" << std::endl;
 	}
 	else
-		_error_code = 404;
+		_error_code = 405;
 	return (false);
 }
 
@@ -400,7 +408,7 @@ bool Response::_isredirect(const LocationConfig &loc_cfg)
 //		if (location[0] != '/')
 //			location.insert(location.begin(), '/');
 			
-		std::cout << "**********************************" << std::endl;
+//		std::cout << "**********************************" << std::endl;
 		_build_redirect_http_header(location, header);
 		std::cout << location << std::endl;
 		std::cout << header << std::endl;
@@ -441,18 +449,18 @@ std::string &Response::_parse_internal_path(const Request &req, const LocationCo
 	//		&& req_path.find('/') == loc_path.length()))
 	{
 		_requested_endpoint = true;
-		std::cout << "loc_path == req_path : " << loc_path << " vs " << req_path << " || compare : " << req_path.compare(0, loc_path.length(), loc_path) << std::endl;
+		//std::cout << "loc_path == req_path : " << loc_path << " vs " << req_path << " || compare : " << req_path.compare(0, loc_path.length(), loc_path) << std::endl;
 		if (_requested_endpoint && (loc_cfg.GetAutoIndex() == "on"))
 		{
 			std::cout << "IS AUTOINDEX" << std::endl;
 			_requested_autoindex = true;
 		}
-		else 
-			std::cout << "IS NOT AUTOINDEX" << std::endl;
-		std::cout << "IS REQUESTED ENDPOINT !!" << std::endl;
+//		else 
+//			std::cout << "IS NOT AUTOINDEX" << std::endl;
+//		std::cout << "IS REQUESTED ENDPOINT !!" << std::endl;
 	}
-	else
-		std::cout << "loc_path != req_path : " << loc_path << " vs " << req_path << ". compare : " << req_path.compare(0, req_path.length(), loc_path) << std::endl;
+	//else
+	//	std::cout << "loc_path != req_path : " << loc_path << " vs " << req_path << ". compare : " << req_path.compare(0, req_path.length(), loc_path) << std::endl;
 	std::cout << "Full internal path : " << _internal_path << std::endl;
 	return (_internal_path);
 }
@@ -553,7 +561,7 @@ static int	_build_autoindex_body(const Request& req, const std::string& dirpath,
 		ent_str = ent->d_name;
 		if (ent->d_type == DT_DIR)
 			ent_str += '/';
-		std::cout << "read dirent : " << (site_path + ent_str) << std::endl;
+//		std::cout << "read dirent : " << (site_path + ent_str) << std::endl;
 		body += "	<a href=" + (site_path + ent_str) + ">" + ent_str + "</a><br>\r\n";
 	}
 
@@ -609,15 +617,16 @@ int Response::prepare_response(const ServerHTTP &srv, const Request &req, const 
 	if (best_match == NULL)
 	{
 		std::cout << "no location found";
+		_error_code = 500;
+		return (-1);
 	}
 	else
 	{
 		//		const LocationConfig* bestLocation = cfg.GetLocations().at(locationIndex);
 		// bestLocation.print();
-		std::cout << "Beast location match :" << std::endl;
-		best_match->print();
+		//std::cout << "Beast location match :" << std::endl;
+		//best_match->print();
 
-		/// IAN EXTRA
 		if (!_validate_request(req, cfg, *best_match))
 		{
 			std::cerr << "Failed to validate request !!" << std::endl;
@@ -648,23 +657,20 @@ int Response::prepare_response(const ServerHTTP &srv, const Request &req, const 
 
 		std::cout << "cwd : " << ServerConfig::cwd << std::endl;
 		_parse_location_path(cfg, *best_match);
-		std::cout << "Parsed location path : " << _location_path << std::endl;
+		_parse_internal_path(req, *best_match);
+		
+//		std::cout << "Parsed location path : " << _location_path << std::endl;
 		//_location_path = ServerConfig::cwd + (*best_match).GetPath();
 		//		_location_path = ServerConfig::cwd + (*best_match).GetRoot();
 
-		std::cout << std::endl
-				  << "Best match path : " << (*best_match).GetPath() << std::endl;
-		std::cout << "Requested path : " << req.get_path() << std::endl;
+//		std::cout << std::endl
+//				  << "Best match path : " << (*best_match).GetPath() << std::endl;
+//		std::cout << "Requested path : " << req.get_path() << std::endl;
 		std::cout << "Location path : " << _location_path << std::endl;
 		
-		_parse_internal_path(req, *best_match);
-
-			
 
 		if (_check_if_cgi_exec(req, *best_match))
 			return (_process_cgi_request(req, cfg, *best_match));
-
-
 
 
 		if (req.get_method() == "GET")
