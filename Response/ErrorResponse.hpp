@@ -23,6 +23,8 @@
 # include "ServerConfig.hpp"
 
 
+class Response;
+
 class ErrorResponse: public Response
 {
 	private:
@@ -43,7 +45,7 @@ class ErrorResponse: public Response
 		ErrorResponse(const ServerHTTP& srv, const Request& req, const ServerConfig& cfg);
 		~ErrorResponse(void);
 
-		static const std::map<int, std::string>	status_msgs;
+//		static const std::map<int, std::string>	status_msgs;
 
 		int prepare_response(int error_code);
 

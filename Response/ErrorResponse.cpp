@@ -12,60 +12,6 @@
 
 #include "ErrorResponse.hpp"
 
-//std::map<int, std::string> ErrorResponse::status_msgs = {
-const std::map<int, std::string> status_msgs_init(void)
-{
-	std::map<int, std::string>	map;
-
-	// 1xx status messages, INFORMATIONAL
-	map[100] = "100 Continue";
-	map[101] = "101 Switching Protocols";
-
-	// 2xx status messages, SUCCESS
-	map[200] = "200 OK";
-	map[201] = "201 Created";
-	map[202] = "202 Accepted";
-	map[203] = "203 Non-Authoritative Information";
-	map[204] = "204 No Content";
-	map[205] = "205 Reset Content";
-
-	// 3xx status messages, REDIRECTIONS
-	map[300] = "300 Multiple Choices";
-	map[301] = "301 Moved Permanently";
-	map[302] = "302 Found";
-	map[303] = "303 See Other";
-	map[305] = "305 Use Proxy";
-	map[307] = "307 Temporary Redirect";
-
-	// 4xx status messages, CLIENT ERR;
-	map[400] = "400 Bad Request";
-	map[402] = "402 Payment Required";
-	map[403] = "403 Forbidden";
-	map[404] = "404 Not Found";
-	map[405] = "405 Method Not Allowed";
-	map[406] = "406 Not Acceptable";
-	map[408] = "408 Request Timeout";
-	map[409] = "409 Conflict";
-	map[410] = "410 Gone";
-	map[411] = "411 Length Required";
-	map[413] = "413 Payload Too Large";
-	map[414] = "414 URI Too Long";
-	map[415] = "415 Unsupported Media Type";
-	map[417] = "417 Expectation Failed";
-	map[426] = "426 Upgrade Required";
-
-	// 5xx status messages, SERVER ERR;
-	map[500] = "500 Internal Server Error";
-	map[501] = "501 Not Implemented";
-	map[502] = "502 Bad Gateway";
-	map[503] = "503 Service Unavailable";
-	map[504] = "504 Gateway Timeout";
-	map[505] = "505 HTTP Version Not Supported";
-	return (map);
-}
-
-const std::map<int, std::string> ErrorResponse::status_msgs = status_msgs_init();
-
 
 //ErrorResponse::ErrorResponse(void) {}
 ErrorResponse::ErrorResponse(const ServerHTTP& srv, const Request& req, const ServerConfig& cfg):
@@ -84,7 +30,7 @@ bool	_get_status_message(int error_code, std::string& ret_string)
 	std::map<int, std::string>::const_iterator	it;
 	const std::string		status_msg;
 
-	if ((it = ErrorResponse::status_msgs.find(error_code)) == ErrorResponse::status_msgs.end())
+	if ((it = status_msgs.find(error_code)) == status_msgs.end())
 		return (false);
 
 	ret_string = it->second;

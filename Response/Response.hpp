@@ -6,7 +6,7 @@
 /*   By: iamongeo <iamongeo@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/26 18:40:57 by iamongeo          #+#    #+#             */
-/*   Updated: 2023/08/23 20:19:40 by iamongeo         ###   ########.fr       */
+/*   Updated: 2023/08/24 00:19:03 by iamongeo         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,6 +26,8 @@
 //# include "ServerHTTP.hpp"
 # include "ServerConfig.hpp"
 # include "webserv_utils.hpp"
+
+extern std::map<int, std::string> status_msgs;
 
 class ServerHTTP;
 

@@ -36,60 +36,30 @@
 			padding: 10px 20px;
 			cursor: pointer;
 		}
+		.message {
+			margin-top: 20px;
+			margin-left: 20px;
+			font-weight: bold;
+			display: none;
+		}
+
+		.success {
+			color: green;
+		}
+
+		.error {
+			color: red;
+		}
 	</style>
 </head>
 <body>
 	<div class="container">
 		<h1>File Manager</h1>
-		<div class="box" id="dropBox" ondrop="handleDrop(event)" ondragover="handleDragOver(event)">
-			Drag and drop files here
-		</div>
+		<div id="dropZone" class="box">Drop files here</div>
 		<ul id="fileList"></ul>
 		<button id="uploadButton" onclick="uploadFiles()">Upload Files</button>
+		<div id="message" class="message"></div>
 	</div>
-	<script>
-		function handleDragOver(event) {
-			event.preventDefault();
-			event.dataTransfer.dropEffect = "copy";
-		}
-
-		function handleDrop(event) {
-			event.preventDefault();
-			const fileList = document.getElementById("fileList");
-			for (const file of event.dataTransfer.files) {
-				const listItem = document.createElement("li");
-				listItem.textContent = file.name;
-				fileList.appendChild(listItem);
-			}
-		}
-
-		function uploadFiles() {
-			const fileInput = document.getElementById("fileInput");
-			const fileList = fileInput.files;
-
-			const formData = new FormData();
-
-			for (const file of fileList) {
-				const fileName = file.textContent;
-				console.log(fileName);
-
-				const fileBlob = new Blob([], { type: "application/octet-stream" });
-				fileBlob.name = fileName;
-				formData.append("files[]", fileBlob, fileName);
-			}
-
-			const xhr = new XMLHttpRequest();
-			xhr.open("POST", "/uploads", true);
-
-			xhr.onload = function() {
-				if (xhr.status === 200) {
-					console.log("Files uploaded successfully!");
-				} else {
-					console.error("Error uploading files");
-				}
-			};
-			xhr.send(formData);
-		}
-	</script>
+	<script type="text/javascript" src="scripts/file_manager.js"></script>
 </body>
 </html>

@@ -1,6 +1,6 @@
 server {
-  listen 8080;
-  listen 65535;
+  listen 8081;
+  listen 65534;
 
   root /www/;
   
@@ -46,6 +46,11 @@ server {
     root /cgi-bin/;
     cgi .py python3
   }
+  
+  location /scripts {
+    allow_methods GET;
+    root /js_scripts/;
+  }
 
   # Max body size of 100mb to start
   location /uploads {
@@ -60,7 +65,7 @@ server {
 
 server {
   
-  listen 8080
+  listen 8081
   root /www2;
 	server_name pulsar;
 
