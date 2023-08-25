@@ -24,7 +24,7 @@ public:
 
 	ServerConfig();
 
-	std::string GetHostIp() const;
+	std::string GetHostIp() const;	
 	void		SetHostIp(std::string hostIp);
 	std::string GetRoot() const;
 	void		SetRoot(std::string root);

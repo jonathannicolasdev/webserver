@@ -29,14 +29,6 @@ server {
     root /my_errors;
   }
 
-  location /admin {
-    root /admin/;
-    index index.html;
-  }
-  location /autoindex/admin {
-    root /admin/;
-    index index.html;
-  }
   location /imgs {
     root /assets/;
   }
