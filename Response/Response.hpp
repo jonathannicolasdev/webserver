@@ -46,7 +46,6 @@ class Response
 
 		bool	_process_get_request(const LocationConfig& loc_cfg);
 		bool	_process_post_request(const Request& req, const LocationConfig& loc_cfg);
-		//bool	_process_delete_request(const std::string& filepath);
 		bool 	_process_delete_request(const std::string& filepath, const LocationConfig& loc_cfg);
 		bool	_isredirect(const LocationConfig &loc_cfg);
 		bool	_validate_request(const Request& req, const LocationConfig& loc_cfg);
@@ -60,7 +59,6 @@ class Response
 		Response(void);    
 		virtual ~Response(void);
 
-		//int prepare_response(const Request& req);
 		int prepare_response(const Request& req, const ServerConfig& cfg);
 		const std::string&	get_response(void) const;
 		bool	empty(void) const;

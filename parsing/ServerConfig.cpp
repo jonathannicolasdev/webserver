@@ -83,9 +83,6 @@ bool ServerConfig::AddListenPort(const std::string& listenPort)
 	size_t		pos, pos2;
 	std::string	parsed_listen;
 
-	//if (!this->listenPort.empty())
-	//	this->listenPort += ",";
-
 	pos = listenPort.find_first_of("0123456789:.");
 	pos2 = listenPort.find_first_not_of("0123456789:.", pos);
 	if (pos2 == std::string::npos)
@@ -110,7 +107,6 @@ bool ServerConfig::AddListenPort(const std::string& listenPort)
 			this->listenPort += parsed_listen;
 		return (true);
 	}
-	//this->listenPort += parsed_listen;
 }
 
 
@@ -161,7 +157,6 @@ void ServerConfig::print() const
 			locations[i].print();
 		}
 	}
-
 	std::map<int, string> error_pages = GetError_pages();
 	if (error_pages.size() > 0)
 	{
@@ -172,7 +167,6 @@ void ServerConfig::print() const
 			std::cout << "\t\t " << it->first << "  " << it->second << std::endl;
 		}
 	}
-	std::cout << "-------------------------------------------\n" << std::endl;
 }
 
 std::ostream&    operator<<(std::ostream& o, const ServerConfig& cfg)
