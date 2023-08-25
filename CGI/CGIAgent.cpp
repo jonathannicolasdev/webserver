@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   CGIAgent.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: marvin <marvin@student.42.fr>              +#+  +:+       +#+        */
+/*   By: iamongeo <iamongeo@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/16 19:30:10 by iamongeo          #+#    #+#             */
-/*   Updated: 2023/08/23 03:20:59 by marvin           ###   ########.fr       */
+/*   Updated: 2023/08/24 22:06:30 by iamongeo         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -361,7 +361,8 @@ int     CGIAgent::run(void)
 	else
 	{
 		/// PARENT PROCESS EXECUTING CGI
-		_parent_process(pid, cgi_send_pipe, cgi_read_pipe, "text/html");
+		if (_parent_process(pid, cgi_send_pipe, cgi_read_pipe, "text/html") < 0)
+			return (close_pipes(cgi_send_pipe, cgi_read_pipe, true));
 	}
 	return (close_pipes(cgi_send_pipe, cgi_read_pipe, false));
 }

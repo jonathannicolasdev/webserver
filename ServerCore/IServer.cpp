@@ -20,17 +20,10 @@ IServer::IServer(uint16_t _port, bool _close_rqst,
     _port(_port), _close_request(_close_rqst), _is_running(_is_running),
     _is_dispatch_switch(_is_dispatch_switch), _is_reactive(_is_reactive), _status(_status)
 {
- //   std::cout << "IServer passthrough constructor." << std::endl;
-   // std::cout << "ServerHTTP Constructor" << std::endl;
 	std::memset(&this->_server_addr, 0, sizeof(this->_server_addr));
 	this->_server_addr.sin_family = AF_INET;
- //   std::cout << "Setting up listen on any address on port : " << this->_port << std::endl;
 	this->_server_addr.sin_port = htons(this->_port);
-	//this->_server_addr.sin_port = _port;
 	this->_server_addr.sin_addr.s_addr = INADDR_ANY;
-//	if (inet_aton(addr.c_str(), &this->_server_addr.sin_addr) < 0)
-	//if (this->_server_addr.sin_addr.s_addr < 0)
-//		throw std::runtime_error(std::string("Network address given is invalid."));
 }
 
 IServer::~IServer(void)

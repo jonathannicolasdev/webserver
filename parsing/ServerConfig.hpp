@@ -20,7 +20,7 @@ class ServerConfig
 {
 public:
 
-	static const std::string	cwd;// = std::filesystem::current_path();
+	static const std::string	cwd;
 
 	ServerConfig();
 
@@ -40,11 +40,8 @@ public:
 	void		AddListenPort(const std::string& listenPort);
 	void		SetServerName(std::string serverName);
 	std::string GetServerName() const;
-	//size_t		GetMaxBodySize() const;
 	std::string	GetMaxBodySize() const;
 	void		SetMaxBodySize(const std::string& max_body_size);
-	//int			SetMaxBodySize(const std::string& max_body_size);
- //   int getBestLocationMatch(const std::string& path) const;
 	const LocationConfig* getBestLocationMatch(const std::string& path) const;
 
 	void print() const;
@@ -58,8 +55,7 @@ private:
 	std::string					indexFile;
 	std::vector<LocationConfig> locations;
 	std::map<int, string>		error_pages;
-	std::string				maxBodySize; // max_body_size
-	//size_t						maxBodySize; // max_body_size
+	std::string				maxBodySize;
 };
 
 std::ostream&    operator<<(std::ostream& o, const ServerConfig& cfg);

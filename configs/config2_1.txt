@@ -41,16 +41,16 @@ server {
     root /assets/;
   }
   location /cgi {
-    allow_methods GET POST;
+    autoindex on
+    allow_methods GET POST TOTO;
     root /cgi-bin/;
-    cgi .py python3
   }
 
   # Max body size of 100mb to start
   location /uploads {
     autoindex on;
     allow_methods GET DELETE POST;
-    max_body_size 55000
+    max_body_size 1000
     root /client_uploads/
   }
   

@@ -6,23 +6,11 @@
 #include <vector>
 #include <algorithm>
 
-/*
-LocationConfig::LocationConfig()
-{
-	// Allowed by default
-	allowMethods.push_back("GET");
-//	allowMethods.push_back("HEAD");
-//	allowMethods.push_back("POST");
-}
-*/
+
 LocationConfig::LocationConfig(ServerConfig& cfg): srv_cfg(cfg),
 	maxBodySize(cfg.GetMaxBodySize())
 {
-	// Allowed by default
-//	allowMethods.push_back("GET");
 	allowMethods.insert("GET");
-//	allowMethods.push_back("HEAD");
-//	allowMethods.push_back("POST");
 }
 
 LocationConfig::LocationConfig(const LocationConfig& other): srv_cfg(other.srv_cfg)
@@ -39,7 +27,7 @@ LocationConfig::LocationConfig(const LocationConfig& other): srv_cfg(other.srv_c
 	split_root = other.split_root;
 	cgiPaths = other.cgiPaths;
 	cgiExts = other.cgiExts;
-	maxBodySize = other.maxBodySize; // max_body_size
+	maxBodySize = other.maxBodySize;
 	upload = other.upload;
 	allowDelete = other.allowDelete; // allow_delete on;
 	return ;
@@ -103,7 +91,7 @@ void LocationConfig::SetRoot(const std::string& root)
 	this->root = root;
 	split_string(root, '/', this->split_root);
 }
-//const std::vector<std::string>& LocationConfig::GetAllowMethods() const
+
 const std::set<std::string>& LocationConfig::GetAllowMethods() const
 {
 	return allowMethods;
@@ -145,28 +133,13 @@ const	std::vector<std::string>& LocationConfig::GetCgiPaths() const
 {
 	return cgiPaths;
 }
-//size_t	LocationConfig::GetMaxBodySize() const
 std::string LocationConfig::GetMaxBodySize() const
 {
 	return maxBodySize;
 }
 
 void	LocationConfig::SetMaxBodySize(const std::string& maxBodySize)
-//int	LocationConfig::SetMaxBodySize(const std::string& maxBodySize)
 {
-	// size_t	temp;
-	// std::vector<std::string>	trimed_str;
-
-	// split_string(maxBodySize, ' ', trimed_str);
-	// if (trimed_str.size() == 0)
-	// 	return (Logger::log(LOG_ERROR, "max_body_size has no value."), -1);
-
-	// if (!is_all_digits(trimed_str[0]))
-	// 	return (Logger::log(LOG_ERROR, "max_body_size should contain only digits."), -1);
-
-	// temp = std::stol(trimed_str[0]);
-	// this->maxBodySize = temp;
-	// return (0);
 	this->maxBodySize = maxBodySize;
 }
 std::string LocationConfig::GetAllowDelete() const
@@ -207,16 +180,13 @@ void LocationConfig::print() const
 	std::cout << "\tLocation: " << LocationConfig::GetPath() << std::endl;
 
 	std::cout << "here we go !" << std::endl;
-//	std::vector<std::string> allowMethods = LocationConfig::GetAllowMethods();
 	if (allowMethods.size() > 0)
 	{
 		std::set<std::string>::iterator	it;
 
 		std::cout << "\t\tmethods: ";
-		//for (size_t i = 0; i < allowMethods.size(); i++)
 		for (it=allowMethods.begin(); it != allowMethods.end(); ++it)
 		{
-			//std::cout << " " << allowMethods[i];
 			std::cout << " " << *it;
 		}
 		std::cout << std::endl;

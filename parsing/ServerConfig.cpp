@@ -8,13 +8,12 @@ std::string _getcwd_str(void)
 
 	if (getcwd(buffer, sizeof(buffer)) == NULL)
 		return ("");
-	//cwd = buffer;
 	return (buffer);
 }
 
-const std::string	ServerConfig::cwd = _getcwd_str();//std::filesystem::current_path();
+const std::string	ServerConfig::cwd = _getcwd_str();
 
-ServerConfig::ServerConfig()//: maxBodySize(0)
+ServerConfig::ServerConfig(): maxBodySize(DEFAULT_MAX_BODY_SIZE)
 {
 }
 
@@ -108,27 +107,12 @@ std::string ServerConfig::GetServerName() const
 }
 
 std::string	ServerConfig::GetMaxBodySize() const
-//size_t	ServerConfig::GetMaxBodySize() const
 {
 	return maxBodySize;
 }
 
 void	ServerConfig::SetMaxBodySize(const std::string& maxBodySize)
-//int	ServerConfig::SetMaxBodySize(const std::string& maxBodySize)
 {
-	// size_t	temp;
-	// std::vector<std::string>	trimed_str;
-
-	// split_string(maxBodySize, ' ', trimed_str);
-	// if (trimed_str.size() == 0)
-	// 	return (Logger::log(LOG_ERROR, "max_body_size has no value."), -1);
-
-	// if (!is_all_digits(trimed_str[0]))
-	// 	return (Logger::log(LOG_ERROR, "max_body_size should contain only digits."), -1);
-
-	// temp = std::stol(trimed_str[0]);
-	// this->maxBodySize = temp;
-	// return (0);
 	this->maxBodySize = maxBodySize;
 }
 
@@ -182,13 +166,10 @@ std::ostream&    operator<<(std::ostream& o, const ServerConfig& cfg)
 }
 
 
-//int ServerConfig::getBestLocationMatch(const std::string& path) const {
 const LocationConfig* ServerConfig::getBestLocationMatch(const std::string& path) const {
 	size_t biggest_match = 0;
 	const std::vector<LocationConfig>& locations = GetLocations();
 	const LocationConfig*   best_match = NULL;
-//    int bestMatch=-1;
-//    int i=0;
 	for (std::vector<LocationConfig>::const_iterator it = locations.begin(); it != locations.end(); ++it)
 	{
 		std::cout << "Best match path : " << path << " vs *it : " << it->GetPath() << std::endl;
@@ -199,14 +180,13 @@ const LocationConfig* ServerConfig::getBestLocationMatch(const std::string& path
 				if (it->GetPath().length() > biggest_match)
 				{
 					biggest_match = it->GetPath().length();
-					//bestMatch = i;
 					best_match = &(*it);
 				}
 			}
 		}
-//       i++;
 	}
+	if (!best_match)
+		return (&(*locations.begin()));
 	return best_match;
-//    return bestMatch;
 }
 

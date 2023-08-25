@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Response.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: marvin <marvin@student.42.fr>              +#+  +:+       +#+        */
+/*   By: iamongeo <iamongeo@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/26 18:42:23 by iamongeo          #+#    #+#             */
-/*   Updated: 2023/08/24 02:45:13 by marvin           ###   ########.fr       */
+/*   Updated: 2023/08/24 23:21:18 by iamongeo         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -165,16 +165,13 @@ void _build_get_http_header(const std::string &filepath, std::string &header,
 }
 
 /// GET method is confirmed valid at this stage.
-bool Response::_process_get_request(const Request &req, const ServerConfig &srv_cfg, const LocationConfig &loc_cfg)
+bool Response::_process_get_request(const LocationConfig &loc_cfg)
 {
 	std::ifstream fs;
 	std::ostringstream os, content_length;
 	std::string header, body, content_type;
 	struct stat stat_s;
 
-	(void)req;
-	(void)srv_cfg;
-	(void)loc_cfg;
 	std::cout << "_location_path : " << _location_path << std::endl;
 
 	if (_requested_endpoint)
@@ -215,58 +212,35 @@ bool Response::_process_get_request(const Request &req, const ServerConfig &srv_
 	if (!fs.is_open())
 	{
 		/// 500 Internal Error ... Or something else.
-		std::cerr << "ERROR 500 Not Found" << std::endl;
 		Logger::log(LOG_DEBUG, "ERROR 500 Internal Error");
 		// At this point the filepath should be confirmed valid, so not being able to open it is unexpected.
 		_error_code = 500;
 		return (false);
 	}
-	std::cout << "File open correctly for get request." << std::endl;
 	os << fs.rdbuf();
 	fs.close();
 	body = os.str();
 	content_length << body.length();
 
-	/// DEBUG ONLY. ACTUALLY FIND THE CORRECT CONTENT TYPE.
-	// content_type = "image/jpeg";
-	// content_type = req["Content"];//"text/html";
-
 	content_type = _discover_content_type(_internal_path);
 
-	_build_get_http_header(_internal_path, header, content_length.str(), content_type, false); // true);
+	_build_get_http_header(_internal_path, header, content_length.str(), content_type, false);
 	this->_text = header + body;
-	std::cout << std::endl
-			  << "RESPONSE HEADER : " << std::endl;
 	std::cout << header << std::endl;
-//	std::cout << "** ------------------------ [BUILT RESPONSE] -------------------------- **" << std::endl;
-//	std::cout << this->_text << std::endl;
-//	std::cout << "** ---------------------- [BUILT RESPONSE END] -------------------------- **" << std::endl;
-	std::cout << "GET REQUEST HANDLED" << std::endl;
 	return (true);
 }
 
 static bool	_validate_body_size(const std::string& maxBodySize, size_t content_length)
 {
 	size_t	max_body_size;
-//	std::vector<std::string>	trimed_str;
-
-//	split_string(maxBodySize, ' ', trimed_str);
-//	if (trimed_str.size() == 0)
-//		return (Logger::log(LOG_ERROR, "max_body_size has no value."), -1);
-
-//	if (!is_all_digits(maxBodySize))
-//		return (Logger::log(LOG_ERROR, "max_body_size should contain only digits."), -1);
-
 	char	*end_ptr = NULL;
-	max_body_size = std::strtol(maxBodySize.c_str(), &end_ptr, 10);//maxBodySize);
+
+	max_body_size = std::strtol(maxBodySize.c_str(), &end_ptr, 10);
 	return (content_length <= max_body_size);
 }
 
-bool Response::_process_post_request(const Request &req, const ServerConfig &srv_cfg, const LocationConfig &loc_cfg)
+bool Response::_process_post_request(const Request &req, const LocationConfig &loc_cfg)
 {
-	(void)req;
-	(void)srv_cfg;
-	(void)loc_cfg;
 	const std::string &post_data = req.get_body();
 
 	if (!loc_cfg.IsAllowedMethod(req.get_method()))
@@ -294,7 +268,6 @@ bool Response::_process_post_request(const Request &req, const ServerConfig &srv
 		{
 			if (dataparts[i].getFilename() == "")
 				continue;
-
 			
 			filepath = _internal_path;
 			if (string_endswith(_internal_path, "/"))
@@ -323,51 +296,17 @@ bool Response::_process_post_request(const Request &req, const ServerConfig &srv
 			}
 		}
 	}
-	// else
-	// {
-	// 	std::cout << "ooooooooooooooooooo  no multipart" << std::endl;
-
-	// 	// filepath = _internal_path;
-	// 	// if (string_endswith(_internal_path, "/"))
-	// 	// 	filepath += dataparts[i].getFilename();
-	// 	// else
-	// 	// 	filepath += std::string("/") + dataparts[i].getFilename();
-	// 	if (fileExists(_internal_path))
-	// 	{
-	// 		_error_code = 409;
-	// 	}
-	// 	else
-	// 	{
-	// 		std::ofstream file(_internal_path.c_str(), std::ios::binary);
-	// 		if (file.fail())
-	// 		{
-	// 			_error_code = 500;
-	// 		}
-	// 		else
-	// 		{
-	// 			std::cout << "IS NOT MULTIPART !" << std::endl;
-	// 			std::cout << "body length : " << req.get_body().length() << std::endl;
-	// 			//std::cout << req << std::endl;
-	// 			file.write(req.get_body().c_str(), req.get_body().length());
-	// 		}
-	// 	}
-	// }
+	
 	_error_code = 201;
-	//_build_get_http_header("", header, std::to_string(response_body.length()), "text/plain", false);
-	//	std::cout << "response body : " << response_body << std::endl;
-	//_text = header + response_body;
 
 	return (false);
 }
 
-bool Response::_process_delete_request(const Request &req, const ServerConfig &srv_cfg, const LocationConfig &loc_cfg)
+bool Response::_process_delete_request(const std::string& filepath)
 {
-	(void)req;
-	(void)srv_cfg;
-	(void)loc_cfg;
-	if (pathType(_internal_path) == 1)
+	if (pathType(filepath) == 1)
 	{
-		if (remove(_internal_path.c_str()) == 0)
+		if (remove(filepath.c_str()) == 0)
 			_error_code = 204;
 		else
 			_error_code = 403;
@@ -387,18 +326,17 @@ bool Response::_isredirect(const LocationConfig &loc_cfg)
 		location = loc_cfg.GetReturnPath();
 		if (location[0] != '/')
 			location.insert(location.begin(), '/');
-		return true; // Indicate that redirection is taking place
+		return true;// Indicate that redirection is taking place
 	}
-	return false; // Indicate that redirection is not occurring
+	return false;// Indicate that redirection is not occurring
 }
 
-bool Response::_validate_request(const Request &req, const ServerConfig &srv_cfg, const LocationConfig &loc_cfg)
+bool Response::_validate_request(const Request &req, const LocationConfig &loc_cfg)
 {
-	(void)srv_cfg;
 	if (!loc_cfg.IsAllowedMethod(req.get_method()))
 	{
 		std::cout << "request method : " << req.get_method() << ", Is NOT allowed" << std::endl;
-		_error_code = 405; // Method NOT ALLOWED;
+		_error_code = 405;// Method NOT ALLOWED;
 		return (false);
 	}
 	std::cout << "request method : " << req.get_method() << ", IS allowed" << std::endl;
@@ -419,7 +357,6 @@ std::string &Response::_parse_internal_path(const Request &req, const LocationCo
 	join_strings(spec_path_split, '/', _internal_path);
 	if (loc_path == req_path
 		|| (req_path.compare(0, req_path.length(), loc_path) == 0))
-	//		&& req_path.find('/') == loc_path.length()))
 	{
 		_requested_endpoint = true;
 		std::cout << "loc_path == req_path : " << loc_path << " vs " << req_path << " || compare : " << req_path.compare(0, loc_path.length(), loc_path) << std::endl;
@@ -438,45 +375,35 @@ std::string &Response::_parse_internal_path(const Request &req, const LocationCo
 	return (_internal_path);
 }
 
-std::string &Response::_parse_location_path(const ServerConfig &scfg, const LocationConfig &lcfg)
+std::string&	Response::_parse_location_path(const ServerConfig& srv_cfg, const LocationConfig &loc_cfg)
 {
 	_location_path = ServerConfig::cwd;
-	join_strings(scfg.GetSplitRoot(), '/', _location_path);
-	join_strings(lcfg.GetSplitRoot(), '/', _location_path);
+	join_strings(srv_cfg.GetSplitRoot(), '/', _location_path);
+	join_strings(loc_cfg.GetSplitRoot(), '/', _location_path);
 	return (_location_path);
 }
 
 
 /// CGI RELATED METHODS
-bool	Response::_check_if_cgi_exec(const Request& req, const LocationConfig& cfg)
+bool	Response::_check_if_cgi_exec(const Request& req)
 {
-//	std::vector<std::string>::const_iterator	it = cfg.GetCgiPaths().begin();
-//	std::string		path_info = req.get_path();
-
-	(void)req;
-	(void)cfg;
-
 	if (string_endswith(req.get_path(), ".py"))
 		return (true);
-//	size_t	pos = _internal_path.find(".py");
-//	if (pos == _internal_path.npos)
-//		return (false);
-	
-//	path_info = _internal_path.substr(pos + 3);
-	//std::cout << "_check_if_cgi_exec :: path info : " << path_info << std::endl;
-	
-//	for (; it != cfg.GetCgiPaths().end(); ++it)
-//	{		
-//	}
 	return (false);
 }
 
-int	Response::_process_cgi_request(const Request& req, const ServerConfig& srv_cfg, const LocationConfig& loc_cfg)
+int	Response::_process_cgi_request(const Request& req, const LocationConfig& loc_cfg)
 {
 	std::string		rel_internal_path;
 
 	if (loc_cfg.GetCgiPaths().size() != 0)
 		rel_internal_path = loc_cfg.GetCgiPaths()[0];
+
+	if (!loc_cfg.IsAllowedMethod(req.get_method()))
+	{
+		_error_code = 405;// Method NOT ALLOWED;
+		return (-1);
+	}
 
 	CGIAgent	cgi(req, loc_cfg, _internal_path, _text);
 	if (cgi.get_error_code())
@@ -486,9 +413,6 @@ int	Response::_process_cgi_request(const Request& req, const ServerConfig& srv_c
 		return (-1);
 	}
 
-//	(void)req;
-	(void)srv_cfg;
-	//(void)cgi;
 	std::cout << "CGI REQUEST WAS PROCESSED" << std::endl;
 	
 	if (cgi.run() < 0)// Because we give cgi the response._text reference in its constructor, the response is writen right in the response's _text and is ready to get.
@@ -505,7 +429,7 @@ int	Response::_process_cgi_request(const Request& req, const ServerConfig& srv_c
 
 static int	_build_autoindex_body(const Request& req, const std::string& dirpath, std::string& body)
 {
-	DIR				*odir;//opendir(const char *name);
+	DIR				*odir;
 	struct dirent	*ent;
 	std::string		ent_str, site_path;
 	
@@ -537,7 +461,6 @@ static int	_build_autoindex_body(const Request& req, const std::string& dirpath,
 		std::cout << "read dirent : " << (site_path + ent_str) << std::endl;
 		body += "	<a href=" + (site_path + ent_str) + ">" + ent_str + "</a><br>\r\n";
 	}
-
 	
 	body += std::string(\
 	"</body>\r\n") +\
@@ -570,79 +493,45 @@ int	Response::_prepare_autoindex(const Request& req, const std::string& dirpath)
 
 
 /// REQUIRED METHODS BY SERVER ///////////////
-int Response::prepare_response(const ServerHTTP &srv, const Request &req, const ServerConfig &cfg)
+int Response::prepare_response(const Request &req, const ServerConfig &cfg)
 {
-	(void)srv;
-//	(void)req;
-//	(void)cfg;
 	const LocationConfig *best_match;
 
 	_error_code = 0;
-	// std::cout << " ******************* PATH:" << req.get_path() <<"\n";
-	// std::cout << " ******************* SERVERCONFIG :";
-	// std::cout << " ******************* cwd : " << ServerConfig::cwd << std::endl;
-	//cfg.print();
 	std::cout << "Preparing Response." << std::endl;
-	// int locationIndex = cfg.getBestLocationMatch(req.get_path());
-	//	std::cout << "Request path : " << req.get_path() << std::endl;
 	best_match = cfg.getBestLocationMatch(req.get_path());
-	//	if (locationIndex==-1)
 	if (best_match == NULL)
 	{
 		std::cout << "no location found";
+		_error_code = 500;
 	}
 	else
 	{
-		//		const LocationConfig* bestLocation = cfg.GetLocations().at(locationIndex);
-		// bestLocation.print();
 		std::cout << "Beast location match :" << std::endl;
 		best_match->print();
 
-		/// IAN EXTRA
-		if (!_validate_request(req, cfg, *best_match))
+		if (!_validate_request(req, *best_match))
 		{
 			std::cerr << "Failed to validate request !!" << std::endl;
 			return (-1);
 		}
 
-		std::cout << status_msgs[301] << std::endl;
-
+		// Check is redirect
 		if (_isredirect(*best_match))
 		{
-			/*
-			std::string header;
-			std::string response_body="Redirect Error";
-			_build_get_http_header("", header, std::to_string(response_body.length()), "text/plain", false);
-			_text = header + response_body;
-			std::cerr << "Redirect " << std::endl;
-			return (0);
-			*/
-			
 			std::cout << "A REDIRECT WAS DONE !!" << std::endl;
 			return(-1);
 		}
 
-		std::cout << "cwd : " << ServerConfig::cwd << std::endl;
+		// Convert requested path to internal path
 		_parse_location_path(cfg, *best_match);
-		std::cout << "Parsed location path : " << _location_path << std::endl;
-		//_location_path = ServerConfig::cwd + (*best_match).GetPath();
-		//		_location_path = ServerConfig::cwd + (*best_match).GetRoot();
-
-		std::cout << std::endl
-				  << "Best match path : " << (*best_match).GetPath() << std::endl;
-		std::cout << "Requested path : " << req.get_path() << std::endl;
-		std::cout << "Location path : " << _location_path << std::endl;
-		
 		_parse_internal_path(req, *best_match);
 
-			
+		// Check if is CGI request and executeif true
+		if (_check_if_cgi_exec(req))
+			return (_process_cgi_request(req, *best_match));
 
-		if (_check_if_cgi_exec(req, *best_match))
-			return (_process_cgi_request(req, cfg, *best_match));
-
-
-
-
+		// Process the appropriate request method :
 		if (req.get_method() == "GET")
 		{
 			if (_requested_autoindex)
@@ -653,7 +542,7 @@ int Response::prepare_response(const ServerHTTP &srv, const Request &req, const 
 					return (-1);
 				}
 			}
-			else if (!_process_get_request(req, cfg, *best_match))
+			else if (!_process_get_request(*best_match))
 			{
 				std::cout << "WOWOW GOT GET METHOD BUT process_get_request FAILED !" << std::endl;
 				return (-1);
@@ -661,21 +550,21 @@ int Response::prepare_response(const ServerHTTP &srv, const Request &req, const 
 		}
 		else if (req.get_method() == "POST")
 		{
-			if (!_process_post_request(req, cfg, *best_match))
+			if (!_process_post_request(req, *best_match))
 				return (-1);
 		}
 		else if (req.get_method() == "DELETE")
 		{
-			if (!_process_delete_request(req, cfg, *best_match))
+			if (!_process_delete_request(_internal_path))
 				return (-1);
-		//	_process_delete_request(req, cfg, *best_match);
 		}
 		else
+		{
 			std::cerr << "METHOD NOT RECOGNIZED !" << std::endl;
+			_error_code = 405;// Method Not Allowed
+			return (-1);
+		}
 	}
-
-	// DUMMY RESPONSE. DELETE ME
-	//_prepare_dummy_response(_text);
 	return (0);
 }
 
