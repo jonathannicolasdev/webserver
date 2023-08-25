@@ -255,7 +255,7 @@ bool	_merge_servers_with_same_network_interface_and_different_configs(std::vecto
 				std::cout << "Server 2 : " << (*srv2_it)->get_server_name() << std::endl;
 				Logger::log(LOG_DEBUG, "Merging two server configs in one server with same network interface.");
 				if (!(*srv1_it)->add_virtual_server(**srv2_it))
-					return (Logger::log(LOG_CRITICAL, "Critical error occured while creating server cluster with config file."));
+					return (Logger::log(LOG_CRITICAL, "Critical error occured while creating server cluster with config file."), false);
 				delete *srv2_it;
 				built_servers.erase(srv2_it);
 				--srv1_it;

@@ -93,18 +93,23 @@ bool ServerConfig::AddListenPort(const std::string& listenPort)
 		parsed_listen = listenPort.substr(pos);
 	else
 		parsed_listen = listenPort.substr(pos, pos2 - pos);
-	if (listenPort.find(parsed_listen) == std::string::npos)
-	{
-		std::cout << "Listen port:" << this->listenPort << std::endl;
-		if (!listenPort.empty())
-			this->listenPort += ",";
-		this->listenPort += parsed_listen;
-		return (true);
-	}
-	else
+	
+	if (this->listenPort.find(parsed_listen) != std::string::npos
+		|| this->listenPort.find("0.0.0.0:" + parsed_listen) != std::string::npos)
 	{
 		std::cout << "Current full listen port string : " << this->listenPort << std::endl;
 		return (false);
+	}
+	else
+	{
+		std::cout << "Listen port:" << this->listenPort << std::endl;
+		if (!this->listenPort.empty())
+			this->listenPort += ",";
+		if (parsed_listen.find(':') == std::string::npos)
+			this->listenPort += "0.0.0.0:" + parsed_listen;
+		else
+			this->listenPort += parsed_listen;
+		return (true);
 	}
 	//this->listenPort += parsed_listen;
 }
