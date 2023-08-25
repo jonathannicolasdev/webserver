@@ -1,0 +1,243 @@
+body {
+  margin: 0;
+  padding: 0;
+}
+
+input {
+  border-radius: 5px;
+  font-size: 18px;
+  padding: 20px;
+  letter-spacing: 0.05em;
+}
+
+input[type='text'],
+input[type='email'] {
+  border: 2px solid var(--secondary-color);
+}
+
+input[type='submit'] {
+  border: 2px solid var(--primary-color);
+  background: var(--primary-color);
+  color: var(--secondary-color);
+  font-weight: 700;
+}
+
+.button {
+  background: var(--primary-color);
+  color: var(--secondary-color);
+  border: 0;
+  font-weight: 700;
+  border-radius: 5px;
+  font-size: 14px;
+  padding: 5px 10px;
+  letter-spacing: 0.05em;
+}
+
+.navigation {
+  grid-area: navigation;
+  background-color: var(--secondary-color);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.navigation h1 {
+  margin-bottom: 10px;
+}
+
+.navigation ul {
+  display: flex;
+  margin: 0;
+  padding: 0;
+  list-style-type: none;
+}
+
+.navigation ul li {
+  margin: 0 10px;
+}
+
+.hero {
+  grid-area: hero;
+  padding: 60px 20px;
+  background-image: linear-gradient(
+      0deg,
+      rgba(255, 200, 33, 0.6),
+      rgba(255, 200, 33, 0.6)
+    ),
+    url('../assets/photos/hero-home.jpg');
+  background-repeat: no-repeat;
+  background-position: center center;
+  background-size: cover;
+}
+
+.content {
+  grid-area: content;
+}
+
+.card {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.card div {
+  background: rgba(46, 10, 9, 0.9);
+  border-radius: 5px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.cards {
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-template-rows: auto;
+}
+
+.subscribe-section h2 {
+  padding-left: 20px;
+  margin-bottom: 0px;
+}
+
+.subscribe {
+  grid-area: subscribe;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+}
+
+.subscribe input {
+  margin-bottom: 10px;
+}
+
+.subscribe input:last-child {
+  margin-bottom: 0;
+}
+
+.footer {
+  grid-area: footer;
+  background-color: var(--secondary-color);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+}
+
+.footer p {
+  margin-top: 40px;
+}
+
+.social-links a {
+  margin: 0 10px;
+}
+
+.container {
+  display: grid;
+  grid-template-columns: 100%;
+  grid-template-rows: auto;
+  grid-template-areas:
+    'navigation'
+    'hero'
+    'content'
+    'subscribe'
+    'footer';
+}
+
+#post-1 {
+  background-image: linear-gradient(
+      0deg,
+      rgba(46, 10, 9, 0.6),
+      rgba(46, 10, 9, 0.6)
+    ),
+    url('../assets/photos/bogyoke.jpg');
+  background-repeat: no-repeat;
+  background-position: center center;
+  background-size: cover;
+}
+
+#post-2 {
+  background-image: linear-gradient(
+      0deg,
+      rgba(46, 10, 9, 0.6),
+      rgba(46, 10, 9, 0.6)
+    ),
+    url('../assets/photos/maung-shwe.jpg');
+  background-repeat: no-repeat;
+  background-position: center center;
+  background-size: cover;
+}
+
+#post-3 {
+  background-image: linear-gradient(
+      0deg,
+      rgba(46, 10, 9, 0.6),
+      rgba(46, 10, 9, 0.6)
+    ),
+    url('../assets/photos/bogyoke.jpg');
+  background-repeat: no-repeat;
+  background-position: center center;
+  background-size: cover;
+}
+
+@media (min-width: 640px) {
+  .cards {
+    grid-template-columns: 1fr 1fr;
+    gap: 5px;
+    margin: 5px;
+  }
+
+  .card {
+    border-radius: 5px;
+  }
+
+  .subscribe-section {
+    display: flex;
+    justify-content: center;
+  }
+
+  .subscribe-area {
+    width: 500px;
+  }
+}
+
+@media (min-width: 960px) {
+  .cards {
+    grid-template-columns: 1fr 1fr 1fr;
+  }
+
+  .subscribe-area {
+    width: 1000px;
+  }
+
+  .subscribe {
+    flex-direction: row;
+    align-items: center;
+  }
+
+  .subscribe {
+    display: flex;
+  }
+
+  .subscribe input {
+    margin-right: 10px;
+    margin-bottom: 10px;
+    margin-bottom: 0;
+  }
+
+  .subscribe input[type='text'] {
+    width: 300px;
+  }
+  .subscribe input[type='email'] {
+    width: 400px;
+  }
+  .subscribe input[type='submit'] {
+    width: 300px;
+  }
+}

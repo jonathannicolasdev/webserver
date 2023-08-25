@@ -10,6 +10,11 @@ server {
 	server_name localhost;
 	index index.html;
 
+  location /yangon {
+    allow_methods GET;
+    index index.html;
+  }
+  
   location / {
     autoindex on;
     allow_methods GET;
@@ -64,4 +69,25 @@ server {
   location / {
     index index.html;
   }
+}
+
+server {
+  
+  listen 222
+  root /yangon;
+	server_name yangon;
+
+  location / {
+    index index.html;
+  }
+
+  location /assets {
+    root /assets
+  }
+  location /posts {
+    root /posts
+  }
+  location /styles {
+    root /styles 
+  } 
 }

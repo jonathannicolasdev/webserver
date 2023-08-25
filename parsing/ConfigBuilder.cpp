@@ -139,7 +139,11 @@ LocationConfig ConfigBuilder::parseLocation(ServerConfig& srv_cfg, const std::st
         if (directiveLocationKey == "allow_methods")
         {
             for (size_t i = 1; i < words.size(); i++)
+            {
+                if (words[i] != "DELETE" && words[i] != "GET" && words[i] != "POST")
+                    throw std::runtime_error("Invalid Method Set Up In Location");
                 locationConfig.AddAllowMethods(words[i]);
+            }
         }
         if (directiveLocationKey == "return")
         {
@@ -386,76 +390,4 @@ std::vector<ServerConfig> ConfigBuilder::parseConfigFile(const std::string& file
         std::cerr << "Error: " << e.what() << std::endl;
     }
     return serverConfigs;
-
-    /*
-        // Remove leading and trailing whitespaces from the line
-        line = trim(line);
-
-        if (line.empty() || line[0] == '#')
-        {
-            // Skip empty lines and comments
-            continue;
-        }
-        else if (line.find("server {") != std::string::npos)
-        {
-            // Start of server block
-            server = Server();
-            continue;
-        }
-        else if (line.find("}") != std::string::npos)
-        {
-
-
-        // Parse directives within server or location block
-        std::istringstream iss(line);
-        std::string directive, value;
-        std::getline(iss, directive, ' ');
-        std::getline(iss, value);
-
-        if (!inLocationBlock)
-        {
-            // Directives within server block
-            if (directive == "listen")
-            {
-                int port = std::stoi(value);
-                setListenPort(port);
-            }
-            else if (directive == "server_name")
-            {
-                setServerName(value);
-            }
-            else if (directive == "host")
-            {
-                setHost(value);
-            }
-            else if (directive == "root")
-            {
-                setRoot(value);
-            }
-            else if (directive == "index")
-            {
-                setIndexFile(value);
-            }
-        }
-        else
-        {
-            // Directives within location block
-            if (directive == "location")
-            {
-                currentLocation.setPath(value);
-            }
-            else if (directive == "allow_methods")
-            {
-                std::vector<std::string> methods = split(value, ' ');
-                currentLocation.setAllowedMethods(methods);
-            }
-            else if (directive == "autoindex")
-            {
-                bool autoindex = (value == "on");
-                currentLocation.setAutoindex(autoindex);
-            }
-            // Add more directives as needed
-        }
-        configFile.close();
-    }*/
 }
