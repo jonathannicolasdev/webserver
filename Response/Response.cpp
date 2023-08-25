@@ -6,11 +6,7 @@
 /*   By: iamongeo <iamongeo@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/26 18:42:23 by iamongeo          #+#    #+#             */
-<<<<<<< HEAD
-/*   Updated: 2023/08/25 16:22:28 by iamongeo         ###   ########.fr       */
-=======
-/*   Updated: 2023/08/24 18:09:11 by iamongeo         ###   ########.fr       */
->>>>>>> main
+/*   Updated: 2023/08/25 16:37:09 by iamongeo         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -186,14 +182,7 @@ bool Response::_process_get_request(const LocationConfig &loc_cfg)
 	std::string header, body, content_type;
 	struct stat stat_s;
 
-<<<<<<< HEAD
 	std::cout << "_location_path : " << _location_path << std::endl;
-=======
-	(void)req;
-	(void)srv_cfg;
-	(void)loc_cfg;
-//	std::cout << "_location_path : " << _location_path << std::endl;
->>>>>>> main
 
 	if (_requested_endpoint)
 	{
@@ -355,17 +344,7 @@ bool Response::_isredirect(const LocationConfig &loc_cfg)
 	{
 		_error_code = 301;
 		location = loc_cfg.GetReturnPath();
-<<<<<<< HEAD
-		if (location[0] != '/')
-			location.insert(location.begin(), '/');
-		return true;// Indicate that redirection is taking place
-	}
-	return false;// Indicate that redirection is not occurring
-=======
-//		if (location[0] != '/')
-//			location.insert(location.begin(), '/');
-			
-//		std::cout << "**********************************" << std::endl;
+		
 		_build_redirect_http_header(location, header);
 		std::cout << location << std::endl;
 		std::cout << header << std::endl;
@@ -374,7 +353,6 @@ bool Response::_isredirect(const LocationConfig &loc_cfg)
 	}
 	std::cout << " IS NOT REDIRECT " << std::endl;
 	return false; // Indicate that redirection is not occurring
->>>>>>> main
 }
 
 bool Response::_validate_request(const Request &req, const LocationConfig &loc_cfg)
@@ -405,18 +383,12 @@ std::string &Response::_parse_internal_path(const Request &req, const LocationCo
 		|| (req_path.compare(0, req_path.length(), loc_path) == 0))
 	{
 		_requested_endpoint = true;
-		//std::cout << "loc_path == req_path : " << loc_path << " vs " << req_path << " || compare : " << req_path.compare(0, loc_path.length(), loc_path) << std::endl;
 		if (_requested_endpoint && (loc_cfg.GetAutoIndex() == "on"))
 		{
 			std::cout << "IS AUTOINDEX" << std::endl;
 			_requested_autoindex = true;
 		}
-//		else 
-//			std::cout << "IS NOT AUTOINDEX" << std::endl;
-//		std::cout << "IS REQUESTED ENDPOINT !!" << std::endl;
 	}
-	//else
-	//	std::cout << "loc_path != req_path : " << loc_path << " vs " << req_path << ". compare : " << req_path.compare(0, req_path.length(), loc_path) << std::endl;
 	std::cout << "Full internal path : " << _internal_path << std::endl;
 	return (_internal_path);
 }
@@ -550,7 +522,6 @@ int Response::prepare_response(const Request &req, const ServerConfig &cfg)
 	{
 		std::cout << "no location found";
 		_error_code = 500;
-<<<<<<< HEAD
 	}
 	else
 	{
@@ -558,18 +529,6 @@ int Response::prepare_response(const Request &req, const ServerConfig &cfg)
 		best_match->print();
 
 		if (!_validate_request(req, *best_match))
-=======
-		return (-1);
-	}
-	else
-	{
-		//		const LocationConfig* bestLocation = cfg.GetLocations().at(locationIndex);
-		// bestLocation.print();
-		//std::cout << "Beast location match :" << std::endl;
-		//best_match->print();
-
-		if (!_validate_request(req, cfg, *best_match))
->>>>>>> main
 		{
 			std::cerr << "Failed to validate request !!" << std::endl;
 			return (-1);
@@ -578,54 +537,19 @@ int Response::prepare_response(const Request &req, const ServerConfig &cfg)
 		// Check is redirect
 		if (_isredirect(*best_match))
 		{
-<<<<<<< HEAD
-=======
-			/*
-			std::string header;
-			std::string response_body="Redirect Error";
-			_build_get_http_header("", header, std::to_string(response_body.length()), "text/plain", false);
-			_text = header + response_body;
-			std::cerr << "Redirect " << std::endl;
-			return (0);
-			*/
-
-			std::cout << "A REDIRECT WAS DONE !!" << std::endl;
-			//std::cout << this->get_response() << std::endl;
-			return (0);
-			/*
->>>>>>> main
 			std::cout << "A REDIRECT WAS DONE !!" << std::endl;
 			return(-1);
-			*/
 		}
 
 		// Convert requested path to internal path
 		_parse_location_path(cfg, *best_match);
 		_parse_internal_path(req, *best_match);
-<<<<<<< HEAD
 
 		// Check if is CGI request and executeif true
 		if (_check_if_cgi_exec(req))
 			return (_process_cgi_request(req, *best_match));
 
 		// Process the appropriate request method :
-=======
-		
-//		std::cout << "Parsed location path : " << _location_path << std::endl;
-		//_location_path = ServerConfig::cwd + (*best_match).GetPath();
-		//		_location_path = ServerConfig::cwd + (*best_match).GetRoot();
-
-//		std::cout << std::endl
-//				  << "Best match path : " << (*best_match).GetPath() << std::endl;
-//		std::cout << "Requested path : " << req.get_path() << std::endl;
-		std::cout << "Location path : " << _location_path << std::endl;
-		
-
-		if (_check_if_cgi_exec(req, *best_match))
-			return (_process_cgi_request(req, cfg, *best_match));
-
-
->>>>>>> main
 		if (req.get_method() == "GET")
 		{
 			if (_requested_autoindex)
@@ -654,14 +578,9 @@ int Response::prepare_response(const Request &req, const ServerConfig &cfg)
 		}
 		else
 		{
-<<<<<<< HEAD
 			std::cerr << "METHOD NOT RECOGNIZED !" << std::endl;
 			_error_code = 405;// Method Not Allowed
 			return (-1);
-=======
-			_error_code = 405;
-			std::cerr << "METHOD NOT RECOGNIZED !" << std::endl;
->>>>>>> main
 		}
 	}
 	return (0);
