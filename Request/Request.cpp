@@ -353,9 +353,10 @@ std::vector<std::string> extractContents(const std::string &body, const std::str
 	return contents;
 }
 
-std::vector<DataPart> Request::extract_multipart() const
+// Assums dataparts / boundery and content all are present and valide in the request body.
+void Request::extract_multipart(std::vector<DataPart>& dataparts) const
 {
-	std::vector<DataPart> dataparts;
+//	std::vector<DataPart> dataparts;
 	std::string datapart_str;
 	size_t startPos = 0;
 	size_t endPos;
@@ -363,16 +364,16 @@ std::vector<DataPart> Request::extract_multipart() const
 	std::cout <<  "\n\nExtract_multipart strs : " << std::endl;
 
 //	std::cout << body << std::endl;
-	std::cout << "boundary.length() :" << boundary.length() << std::endl;
+//	std::cout << "boundary.length() :" << boundary.length() << std::endl;
 
 	startPos = boundary.length();
 	std::cout << "first startPos : " << startPos << std::endl;
 
-	std::cout << "ooooooooooooooooooo  starting extract:" <<std::endl;
+//	std::cout << "ooooooooooooooooooo  starting extract:" <<std::endl;
 
 	while ((endPos = body.find(boundary, startPos)) != std::string::npos && (endPos != startPos))
 	{
-		std::cout << "ooooooooooooooooooo  part found" << std::endl;
+//		std::cout << "ooooooooooooooooooo  part found" << std::endl;
 
 		startPos = body.find_first_not_of("\r\n", startPos);
 	//	if (endPos != 0)
@@ -392,8 +393,7 @@ std::vector<DataPart> Request::extract_multipart() const
 //		std::cout << "new startPos : " << startPos << std::endl;
 		//startPos = endPos + boundary.length();
 	}
-
-	return dataparts;
+//	return dataparts;
 }
 
 //std::ostream &operator<<(std::ostream &os, const Request &req)

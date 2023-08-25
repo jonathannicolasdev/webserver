@@ -142,7 +142,7 @@ function displayMessage(messageText, messageType) {
     // Hide the message after 5 seconds
     setTimeout(() => {
         messageElement.style.display = "none";
-    }, 2000);
+    }, 5000);
 }
 
 
@@ -154,10 +154,10 @@ function fetchClientUploadList() {
             if (!response.ok) {
                 throw new Error(`HTTP error! Status: ${response.status}`);
             }
-            return response.blob(); // Get the response body as a Blob
+            return response.blob();
         })
         .then(blob => {
-            return blob.text(); // Convert Blob to text
+            return blob.text();
         })
         .then(fileListText => {
             const fileList = fileListText.split(";").filter(Boolean);
@@ -178,9 +178,11 @@ function populateClientFileList(fileList) {
         clientFileList.removeChild(clientFileList.firstChild);
     }
     fileList.forEach(fileName => {
-        const fileListItem = document.createElement("div");
-        fileListItem.textContent = fileName;
-        fileListItem.classList.add("file-item");
+        if (fileName.trim().length)
+        {
+            const fileListItem = document.createElement("div");
+            fileListItem.textContent = fileName;
+            fileListItem.classList.add("file-item");
 
         const removeButton = document.createElement("button");
         removeButton.textContent = "Remove";

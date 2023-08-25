@@ -92,7 +92,8 @@ class Request
 //		Request&			operator<<(char *req_buff);// push raw request from client inside Request instance.
 		Request&			append(const char *req_buff, size_t n);// push raw request from client inside Request instance.
 		
-		std::vector<DataPart> extract_multipart() const;
+		//std::vector<DataPart> extract_multipart() const;
+		void 				extract_multipart(std::vector<DataPart>& dataparts) const;
 
 
 };

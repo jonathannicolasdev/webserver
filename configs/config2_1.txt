@@ -1,6 +1,9 @@
 server {
-  listen 8080;
-  listen 65535;
+  listen 8080, 0.0.0.0:1111;
+#  listen 1111;
+# listen 0.0.0.0:1111;
+# listen 127.0.0.1:1111;
+
 
   root /www/;
   
@@ -8,6 +11,7 @@ server {
 	index index.html;
 
   location / {
+    autoindex on;
     allow_methods GET;
     index index.html;
   }
@@ -23,20 +27,11 @@ server {
     return    https://www.google.com;
   }
 
-  location /my_errors {
+  location /my_errors { 
+    autoindex on;
     root /errors;
   }
 
-  location /admin {
-    auth admin:admin;
-    root /admin/;
-    index index.html;
-  }
-  location /autoindex/admin {
-    auth admin:admin;
-    root /admin/;
-    index index.html;
-  }
   location /imgs {
     root /assets/;
   }
@@ -45,12 +40,15 @@ server {
     allow_methods GET POST TOTO;
     root /cgi-bin/;
   }
+  location /scripts {
+    allow_methods GET;
+    root /js_scripts/;
+  }
 
-  # Max body size of 100mb to start
   location /uploads {
     autoindex on;
     allow_methods GET DELETE POST;
-    max_body_size 1000
+    max_body_size 10000
     root /client_uploads/
   }
   
@@ -59,7 +57,7 @@ server {
 
 server {
   
-  listen 80 8080
+  listen 80 1111;
   root /www2;
 	server_name pulsar;
 

@@ -24,7 +24,7 @@ public:
 
 	ServerConfig();
 
-	std::string GetHostIp() const;
+	std::string GetHostIp() const;	
 	void		SetHostIp(std::string hostIp);
 	std::string GetRoot() const;
 	void		SetRoot(std::string root);
@@ -37,7 +37,7 @@ public:
 	void		AddError_page(int errorCode, std::string error_page);
 	std::string GetListenPort() const;
 	void		SetListenPort(const std::string& listenPort);
-	void		AddListenPort(const std::string& listenPort);
+	bool		AddListenPort(const std::string& listenPort);
 	void		SetServerName(std::string serverName);
 	std::string GetServerName() const;
 	std::string	GetMaxBodySize() const;
@@ -54,8 +54,8 @@ private:
 	std::vector<std::string>	split_root;
 	std::string					indexFile;
 	std::vector<LocationConfig> locations;
-	std::map<int, string>		error_pages;
-	std::string				maxBodySize;
+	std::map<int, std::string>		error_pages;
+	std::string				maxBodySize; // max_body_size
 };
 
 std::ostream&    operator<<(std::ostream& o, const ServerConfig& cfg);

@@ -117,7 +117,9 @@ LocationConfig ConfigBuilder::parseLocation(ServerConfig& srv_cfg, const std::st
     std::istringstream iss(content);
     std::string line;
     std::getline(iss, line); // purge first ligne server {
-    std::vector<std::string> words = split(line, ' ');
+    std::vector<std::string> words = split(line.substr(0, line.find('{')), ' ');
+
+    
     locationConfig.SetPath(words[1]);
     while (std::getline(iss, line))
     {
@@ -241,9 +243,12 @@ ServerConfig ConfigBuilder::parseServer(string content)
     std::getline(iss, line); // purge first ligne server {
     while (std::getline(iss, line))
     {
+        std::cout << "HERE" << std::endl;
         if (line[0] == '}')
             break;
+        std::cout << "HERE2" << std::endl;
         std::vector<std::string> words = split(line, ' ');
+        std::cout << "HERE3" << std::endl;
         std::string directiveServerKey = words[0];
 
         if (directiveServerKey == "listen")
@@ -254,7 +259,10 @@ ServerConfig ConfigBuilder::parseServer(string content)
             /// either a comma, a space or both.
             std::vector<std::string>::iterator  it;
             for (it=(words.begin() + 1); it != words.end(); ++it)
-                serverConfig.AddListenPort(*it);
+            {
+                if (!serverConfig.AddListenPort(*it))
+                    throw std::runtime_error("Invalid Port Set Up");
+            }
             //serverConfig.SetListenPort(words[1]);
             // std::cout << serverConfig.GetListenPort() << ": port\n";
         }
@@ -363,13 +371,15 @@ std::vector<ServerConfig> ConfigBuilder::parseConfigFile(const std::string& file
         configContent = ConfigBuilder::cleanComments(configContent);
         configContent = ConfigBuilder::cleanSpaces(configContent);
 
+
         std::vector<std::string> serverBlocks = extractServerBlock(configContent);
 
         for (size_t i = 0; i < serverBlocks.size(); i++)
         {
-            // std::cout << "SERVER: " << serverBlocks[i] << "\n";
+            //std::cout << "SERVER: " << serverBlocks[i] << "\n";
             serverConfigs.push_back(parseServer(serverBlocks[i]));
         }
+        std::cout << "parseConfigFile : DONE " << std::endl; 
     }
     catch (const std::exception &e)
     {
