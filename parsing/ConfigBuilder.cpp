@@ -159,7 +159,13 @@ LocationConfig ConfigBuilder::parseLocation(ServerConfig& srv_cfg, const std::st
         if (directiveLocationKey == "allow_delete")
         {
             locationConfig.SetAllowDelete(words[1]);
-        }        
+        }
+        if (directiveLocationKey == "allow_download")
+        {
+            std::cout << "SETTING ALLOW DOWNLOADABLE IN LOCATION CONFIG : " << locationConfig.GetPath() << std::endl;
+            locationConfig.SetAllowDownload(words[1]);
+            std::cout << "RESULTING IN GetAllowDownload() : " << locationConfig.GetAllowDownload() << std::endl;
+        }
         if (directiveLocationKey == "upload")
         {
             locationConfig.SetUpload(words[1]);

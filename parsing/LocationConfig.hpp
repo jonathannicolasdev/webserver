@@ -31,7 +31,6 @@ public:
 	void				SetRoot(const std::string& root);
 	const std::vector<std::string>& GetSplitRoot() const;
 	
-	//const std::vector<std::string>& GetAllowMethods() const;
 	const std::set<std::string>& GetAllowMethods() const;
 	void				AddAllowMethods(const std::string& method);
 	bool				IsAllowedMethod(const std::string& method) const;
@@ -41,11 +40,12 @@ public:
 	std::string 		GetAutoIndex() const;
 	void 				SetAutoIndex(const std::string& autoIndex);
 	std::string 		GetMaxBodySize() const;
-	//size_t		 		GetMaxBodySize() const;
 	void				SetMaxBodySize(const std::string& maxBodySize);
-	//int 				SetMaxBodySize(const std::string& maxBodySize);
-	std::string 		GetAllowDelete() const;
+	//std::string 		GetAllowDelete() const;
+	bool				GetAllowDelete() const;
 	void 				SetAllowDelete(const std::string& allowDelete);
+	bool 				GetAllowDownload(void) const;
+	void 				SetAllowDownload(const std::string& allowDownload);
 	std::string 		GetUpload() const;
 	void 				SetUpload(const std::string& upload);
 
@@ -71,6 +71,7 @@ private:
 	//size_t						maxBodySize; // max_body_size
 	std::string upload;
 	std::string allowDelete; // allow_delete on;
+	std::string allowDownload; // allow_delete on;
 
 	// limit_except, auth
 };

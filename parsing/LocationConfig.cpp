@@ -30,6 +30,7 @@ LocationConfig::LocationConfig(const LocationConfig& other): srv_cfg(other.srv_c
 	maxBodySize = other.maxBodySize;
 	upload = other.upload;
 	allowDelete = other.allowDelete; // allow_delete on;
+	allowDownload = other.allowDownload; // allow_download on;
 	return ;
 }
 
@@ -50,6 +51,7 @@ LocationConfig&	LocationConfig::operator=(const LocationConfig& other)
 	maxBodySize = other.maxBodySize; // max_body_size
 	upload = other.upload;
 	allowDelete = other.allowDelete; // allow_delete on;
+	allowDownload = other.allowDownload; // allow_download on;
 	return (*this);
 }
 
@@ -142,15 +144,26 @@ void	LocationConfig::SetMaxBodySize(const std::string& maxBodySize)
 {
 	this->maxBodySize = maxBodySize;
 }
-std::string LocationConfig::GetAllowDelete() const
-{
-	return allowDelete;
-}
 
+bool	LocationConfig::GetAllowDelete() const
+{
+	return (this->allowDelete == "on" || this->allowDelete == "ON");
+	//return allowDelete;
+}
 void LocationConfig::SetAllowDelete(const std::string& allowDelete)
 {
 	this->allowDelete = allowDelete;
 }
+
+bool	LocationConfig::GetAllowDownload(void) const
+{
+	return (this->allowDownload == "on" || this->allowDownload == "ON" );
+}
+void LocationConfig::SetAllowDownload(const std::string& allowDownload)
+{
+	this->allowDownload = allowDownload;
+}
+
 std::string LocationConfig::GetUpload() const
 {
 	return upload;
@@ -208,8 +221,8 @@ void LocationConfig::print() const
 	if (!LocationConfig::GetMaxBodySize().empty())
 		std::cout << "\t\tMaxBodySize: " << LocationConfig::GetMaxBodySize() << std::endl;
 
-	if (!LocationConfig::GetAllowDelete().empty())
-		std::cout << "\t\tAllowDelete: " << LocationConfig::GetAllowDelete() << std::endl;
+	if (LocationConfig::GetAllowDelete())
+		std::cout << "\t\tAllowDelete: " << this->allowDelete << std::endl;
 
 	if (!LocationConfig::GetUpload().empty())
 		std::cout << "\t\tUpload: " << LocationConfig::GetUpload() << std::endl;

@@ -188,7 +188,15 @@ function populateClientFileList(fileList) {
         removeButton.addEventListener("click", () => {
             requestDeleteFile(fileListItem, fileName);
         });
+        const downloadButton = document.createElement("button");
+        downloadButton.textContent = "Download";
+        downloadButton.classList.add("download-button");
+        downloadButton.addEventListener("click", () => {
+            window.location.href = "/uploads/" + fileName;
+            //requestDownloadFile(fileListItem, fileName);
+        });
 
+        fileListItem.appendChild(downloadButton);
         fileListItem.appendChild(removeButton);
         clientFileList.appendChild(fileListItem);
     });
@@ -216,7 +224,26 @@ function requestDeleteFile(fileItem, fileName) {
         .catch(error => {
             console.error("Error deleting file:", error);
         });
+}
+function requestDownloadFile(fileItem, fileName) {
 
+    const requestOptions = {
+        method: "GET"
+    };
+
+    fetch(`/uploads/${fileName}`, requestOptions)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+            return response.text();
+        })
+        .then(responseText => {
+            console.log("File downloaded successfully:", responseText);
+        })
+        .catch(error => {
+            console.error("Error downloading file:", error);
+        });
 }
 
 // Fetch client-uploaded file list when the page loads

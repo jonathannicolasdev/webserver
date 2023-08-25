@@ -6,7 +6,7 @@
 /*   By: iamongeo <iamongeo@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/26 18:42:23 by iamongeo          #+#    #+#             */
-/*   Updated: 2023/08/24 23:21:18 by iamongeo         ###   ########.fr       */
+/*   Updated: 2023/08/25 16:22:28 by iamongeo         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -149,10 +149,10 @@ void _build_get_http_header(const std::string &filepath, std::string &header,
 	// header += std::string("Content-Disposition: attachment; filename=\"example.jpg\"") + "\r\n";
 	if (is_attachment) // Makes GET file downloadable rather then displayable.
 	{
-		header += "Cache-Control: private\r\n";
+//		header += "Cache-Control: private\r\n";
 		header += "Content-Disposition: attachment;";
 
-		header += " filename=\""; // + "example.jpg" + "\"";
+		header += " filename=\"";
 		size_t last_slash = filepath.find_last_of('/');
 		if (last_slash == filepath.npos)
 			header += filepath;
@@ -224,7 +224,8 @@ bool Response::_process_get_request(const LocationConfig &loc_cfg)
 
 	content_type = _discover_content_type(_internal_path);
 
-	_build_get_http_header(_internal_path, header, content_length.str(), content_type, false);
+	std::cout << "IS ATTACHMENT : " << loc_cfg.GetAllowDownload() << std::endl;
+	_build_get_http_header(_internal_path, header, content_length.str(), content_type, loc_cfg.GetAllowDownload());
 	this->_text = header + body;
 	std::cout << header << std::endl;
 	return (true);
@@ -302,11 +303,12 @@ bool Response::_process_post_request(const Request &req, const LocationConfig &l
 	return (false);
 }
 
-bool Response::_process_delete_request(const std::string& filepath)
+bool Response::_process_delete_request(const std::string& filepath, const LocationConfig& loc_cfg)
 {
 	if (pathType(filepath) == 1)
 	{
-		if (remove(filepath.c_str()) == 0)
+		
+		if (loc_cfg.GetAllowDelete() && remove(filepath.c_str()) == 0)
 			_error_code = 204;
 		else
 			_error_code = 403;
@@ -555,7 +557,7 @@ int Response::prepare_response(const Request &req, const ServerConfig &cfg)
 		}
 		else if (req.get_method() == "DELETE")
 		{
-			if (!_process_delete_request(_internal_path))
+			if (!_process_delete_request(_internal_path, *best_match))
 				return (-1);
 		}
 		else

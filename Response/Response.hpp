@@ -6,7 +6,7 @@
 /*   By: iamongeo <iamongeo@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/26 18:40:57 by iamongeo          #+#    #+#             */
-/*   Updated: 2023/08/24 23:20:16 by iamongeo         ###   ########.fr       */
+/*   Updated: 2023/08/25 16:21:17 by iamongeo         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,7 +46,8 @@ class Response
 
 		bool	_process_get_request(const LocationConfig& loc_cfg);
 		bool	_process_post_request(const Request& req, const LocationConfig& loc_cfg);
-		bool	_process_delete_request(const std::string& filepath);
+		//bool	_process_delete_request(const std::string& filepath);
+		bool 	_process_delete_request(const std::string& filepath, const LocationConfig& loc_cfg);
 		bool	_isredirect(const LocationConfig &loc_cfg);
 		bool	_validate_request(const Request& req, const LocationConfig& loc_cfg);
 		std::string&	_parse_internal_path(const Request& req, const LocationConfig& loc_cfg);

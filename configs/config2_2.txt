@@ -1,5 +1,5 @@
 server {
-  listen 8081;
+  listen 8082;
   listen 65534;
 
   root /www/;
@@ -21,23 +21,14 @@ server {
     root /data/;
     index index.html;
     limit_except GET;
-    return    https://www.google.com;
+#    return    https://www.google.com;
+    return    localhost:8081/;
   }
 
   location /my_errors {
     root /errors;
   }
 
-  location /admin {
-    auth admin:admin;
-    root /admin/;
-    index index.html;
-  }
-  location /autoindex/admin {
-    auth admin:admin;
-    root /admin/;
-    index index.html;
-  }
   location /imgs {
     root /assets/;
   }
@@ -54,10 +45,12 @@ server {
 
   # Max body size of 100mb to start
   location /uploads {
+    root /client_uploads/
     autoindex on;
     allow_methods GET DELETE POST;
+    allow_download on;
+    allow_delete off;
     max_body_size 100000000
-    root /client_uploads/
   }
   
   error_page 404 /my_errors/404.html;
