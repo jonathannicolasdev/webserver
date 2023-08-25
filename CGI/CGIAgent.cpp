@@ -6,7 +6,7 @@
 /*   By: iamongeo <iamongeo@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/16 19:30:10 by iamongeo          #+#    #+#             */
-/*   Updated: 2023/08/24 22:06:30 by iamongeo         ###   ########.fr       */
+/*   Updated: 2023/08/25 17:42:20 by iamongeo         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -182,12 +182,10 @@ CGIAgent::CGIAgent(const Request& req, const LocationConfig& loc_srv,
 		_argv.push_back("/usr/bin/python3");
 		_argv.push_back(_script_name.c_str());
 		
-		std::cout << "" << std::endl;
-
 		for (it=env_strs.begin(); it != env_strs.end(); ++it)
 		{
 			_env.push_back(it->c_str());
-			std::cout << "Pushed to _env : " << *(_env.end() - 1) << std::endl;
+//			std::cout << "Pushed to _env : " << *(_env.end() - 1) << std::endl;
 		}
 		
 		
@@ -218,7 +216,7 @@ CGIAgent::_child_process(int *cgi_send_pipe, int *cgi_read_pipe)
 		std::cerr << "script location : " << _dir_path << std::endl;
 		exit(EXIT_FAILURE);
 	}
-	std::cout << "Child pwd after chdir : " << pwd(pwd_str) << std::endl;
+//	std::cout << "Child pwd after chdir : " << pwd(pwd_str) << std::endl;
 
 	close_pipe(&cgi_send_pipe[1]);
 	close_pipe(&cgi_read_pipe[0]);
@@ -234,9 +232,9 @@ CGIAgent::_child_process(int *cgi_send_pipe, int *cgi_read_pipe)
 		std::cout << "Child pipe read closed." << std::endl;
 	}
 	dup2(cgi_read_pipe[1], 1);
-	std::cerr << "_argv[0] : " << _argv[0] << std::endl;
+//	std::cerr << "_argv[0] : " << _argv[0] << std::endl;
 //		std::cerr << "_env[0] : " << _env[0] << std::endl;
-	std::cerr << "Child pipe duped" << std::endl;
+//	std::cerr << "Child pipe duped" << std::endl;
 
 	//std::cout << "CGI CALLING EXECVE" << std::endl;
 	if (execve(_argv[0], (char * const *)&_argv[0], (char * const *)&_env[0]) < 0)
@@ -317,7 +315,7 @@ CGIAgent::_parent_process(int pid, int *cgi_send_pipe, int *cgi_read_pipe, const
 	extract_content_from_pipe(cgi_read_pipe[0], body);
 	//os << pp[0];
 	//std::cout << "Returned from CGI pipe : " << os.str() << std::endl;
-	std::cout << "Returned from CGI pipe : " << std::endl << body << std::endl;
+//	std::cout << "Returned from CGI pipe : " << std::endl << body << std::endl;
 	close_pipe(&cgi_read_pipe[0]);
 //		body = os.str();
 	content_length << body.length();

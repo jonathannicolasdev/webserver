@@ -1,5 +1,6 @@
 import os
 
+assert os.environ["REQUEST_METHOD"] == "POST"
 
 content_length = 0
 query = "OOPS MISSING CONTENT !"

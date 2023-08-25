@@ -1,19 +1,9 @@
 server {
-  listen 8080, 0.0.0.0:1111;
-#  listen 1111;
-# listen 0.0.0.0:1111;
-# listen 127.0.0.1:1111;
-
-
+  listen 80, 0.0.0.0:1111;
   root /www/;
   
 	server_name localhost;
 	index index.html;
-
-  location /yangon {
-    allow_methods GET;
-    index index.html;
-  }
   
   location / {
     autoindex on;
@@ -32,6 +22,12 @@ server {
     return    https://www.google.com;
   }
 
+  location /data2 {
+    root /data/;
+    index index.html;
+    return    http://localhost:222;
+  }
+
   location /my_errors { 
     autoindex on;
     root /errors;
@@ -42,7 +38,7 @@ server {
   }
   location /cgi {
     autoindex on
-    allow_methods GET POST TOTO;
+    allow_methods GET POST;
     root /cgi-bin/;
   }
   location /scripts {
@@ -53,8 +49,10 @@ server {
   location /uploads {
     autoindex on;
     allow_methods GET DELETE POST;
-    max_body_size 10000
+    max_body_size 1000000
     root /client_uploads/
+    allow_delete on;
+    allow_download on;
   }
   
   error_page 404 /my_errors/404.html;
