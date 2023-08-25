@@ -79,13 +79,13 @@ void ServerConfig::SetListenPort(const std::string& listenPort)
 {
 	this->listenPort = listenPort;
 }
-void ServerConfig::AddListenPort(const std::string& listenPort)
+bool ServerConfig::AddListenPort(const std::string& listenPort)
 {
 	size_t		pos, pos2;
 	std::string	parsed_listen;
 
-	if (!this->listenPort.empty())
-		this->listenPort += ",";
+	//if (!this->listenPort.empty())
+	//	this->listenPort += ",";
 
 	pos = listenPort.find_first_of("0123456789:.");
 	pos2 = listenPort.find_first_not_of("0123456789:.", pos);
@@ -94,8 +94,24 @@ void ServerConfig::AddListenPort(const std::string& listenPort)
 	else
 		parsed_listen = listenPort.substr(pos, pos2 - pos);
 	
-	this->listenPort += parsed_listen;
-	std::cout << "Current full listen port string : " << this->listenPort << std::endl;
+	if (this->listenPort.find(parsed_listen) != std::string::npos
+		|| this->listenPort.find("0.0.0.0:" + parsed_listen) != std::string::npos)
+	{
+		std::cout << "Current full listen port string : " << this->listenPort << std::endl;
+		return (false);
+	}
+	else
+	{
+		std::cout << "Listen port:" << this->listenPort << std::endl;
+		if (!this->listenPort.empty())
+			this->listenPort += ",";
+		if (parsed_listen.find(':') == std::string::npos)
+			this->listenPort += "0.0.0.0:" + parsed_listen;
+		else
+			this->listenPort += parsed_listen;
+		return (true);
+	}
+	//this->listenPort += parsed_listen;
 }
 
 

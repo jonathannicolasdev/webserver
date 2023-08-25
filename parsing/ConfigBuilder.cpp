@@ -251,7 +251,10 @@ ServerConfig ConfigBuilder::parseServer(string content)
             /// either a comma, a space or both.
             std::vector<std::string>::iterator  it;
             for (it=(words.begin() + 1); it != words.end(); ++it)
-                serverConfig.AddListenPort(*it);
+            {
+                if (!serverConfig.AddListenPort(*it))
+                    throw std::runtime_error("Invalid Port Set Up");
+            }
             //serverConfig.SetListenPort(words[1]);
             // std::cout << serverConfig.GetListenPort() << ": port\n";
         }
