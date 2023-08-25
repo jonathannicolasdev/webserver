@@ -27,7 +27,8 @@ server {
     return    https://www.google.com;
   }
 
-  location /my_errors {
+  location /my_errors { 
+    autoindex on;
     root /errors;
   }
 

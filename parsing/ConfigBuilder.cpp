@@ -117,7 +117,9 @@ LocationConfig ConfigBuilder::parseLocation(ServerConfig& srv_cfg, const std::st
     std::istringstream iss(content);
     std::string line;
     std::getline(iss, line); // purge first ligne server {
-    std::vector<std::string> words = split(line, ' ');
+    std::vector<std::string> words = split(line.substr(0, line.find('{')), ' ');
+
+    
     locationConfig.SetPath(words[1]);
     while (std::getline(iss, line))
     {
