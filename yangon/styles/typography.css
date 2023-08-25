@@ -1,0 +1,66 @@
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: 'Nunito', Arial, sans-serif;
+  color: var(--secondary-color);
+}
+
+p,
+a,
+input {
+  font-family: 'Rubik', sans-serif;
+  margin: 0;
+}
+
+a {
+  text-decoration: none;
+}
+
+.hero h1 {
+  font-size: 48px;
+  font-weight: 200;
+}
+
+.navigation h1 {
+  color: var(--primary-color);
+  margin: 0;
+}
+
+.navigation a {
+  color: var(--primary-color);
+}
+
+.card {
+  color: var(--white-color);
+}
+
+.card h2 {
+  color: var(--white-color);
+  font-size: 24px;
+  margin: 0;
+}
+
+.card h3 {
+  color: var(--white-color);
+  font-size: 12px;
+  font-weight: 400;
+  letter-spacing: 0.1em;
+}
+
+.card p {
+  font-size: 18px;
+  line-height: 28px;
+  margin-bottom: 20px;
+}
+
+.subscribe h2 {
+  font-size: 24px;
+  margin-top: 0;
+}
+
+.footer p {
+  color: var(--primary-color);
+}

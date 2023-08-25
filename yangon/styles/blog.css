@@ -1,0 +1,28 @@
+@import "./colors.css";
+@import "./typography.css";
+@import "./layout.css";
+
+.author-info {
+  margin: 20px;
+  color: var(--secondary-color);
+}
+
+figure {
+  margin: 0;
+}
+
+figure img {
+  border-radius: 100%;
+  min-width: 64px;
+  height: 64px;
+  margin-right: 20px;
+}
+
+.info-top {
+  display: flex;
+  align-items: center;
+}
+
+.info-bottom {
+  margin: 10px 0px;
+}
