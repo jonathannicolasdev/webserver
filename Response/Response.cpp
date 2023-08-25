@@ -6,7 +6,7 @@
 /*   By: iamongeo <iamongeo@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/26 18:42:23 by iamongeo          #+#    #+#             */
-/*   Updated: 2023/08/25 16:37:09 by iamongeo         ###   ########.fr       */
+/*   Updated: 2023/08/25 16:44:03 by iamongeo         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -538,7 +538,7 @@ int Response::prepare_response(const Request &req, const ServerConfig &cfg)
 		if (_isredirect(*best_match))
 		{
 			std::cout << "A REDIRECT WAS DONE !!" << std::endl;
-			return(-1);
+			return(0);
 		}
 
 		// Convert requested path to internal path

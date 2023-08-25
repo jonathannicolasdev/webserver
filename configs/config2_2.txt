@@ -1,5 +1,5 @@
 server {
-  listen 8082;
+  listen 8083;
   listen 65534;
 
   root /www/;
@@ -20,9 +20,12 @@ server {
   location /data {
     root /data/;
     index index.html;
-    limit_except GET;
-#    return    https://www.google.com;
-    return    localhost:8081/;
+    return    http://localhost:8083/;
+  }
+  location /data2 {
+    root /data/;
+    index index.html;
+    return    https://www.google.com;
   }
 
   location /errors {

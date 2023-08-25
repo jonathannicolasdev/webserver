@@ -201,7 +201,8 @@ function populateClientFileList(fileList) {
         fileListItem.appendChild(downloadButton);
         fileListItem.appendChild(removeButton);
         clientFileList.appendChild(fileListItem);
-    });
+        }
+    })
 }
 
 function requestDeleteFile(fileItem, fileName) {
