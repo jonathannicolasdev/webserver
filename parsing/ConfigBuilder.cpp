@@ -1,11 +1,4 @@
 #include "ConfigBuilder.hpp"
-//#include <iostream>
-//#include <fstream>
-//#include <string>
-//#include <cstdlib>
-//#include <vector>
-//#include <algorithm>
-//#include <cctype> // For isspace function
 
 std::string removeDuplicateSpaces(const std::string &input)
 {
@@ -332,18 +325,6 @@ string ConfigBuilder::readConfigFile(const std::string &filename)
     fileContent = buffer.str();
     configFile.close(); // Close the file
     return fileContent;
-    // std::string line;
-
-    // if (!configFile.is_open())
-    // {
-    //     std::cerr << "Error opening config file: " << filename << std::endl;
-    //     return;
-    // }
-
-    // while (std::getline(configFile, line))
-    // {
-
-    // }
 }
 
 std::vector<std::string> extractServerBlock(const std::string &content)

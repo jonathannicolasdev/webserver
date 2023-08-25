@@ -14,7 +14,6 @@
 #include <sys/stat.h>
 
 
-//std::map<int, std::string> ErrorResponse::status_msgs = {
 const std::map<int, std::string> status_msgs_init(void)
 {
 	std::map<int, std::string>	map;
@@ -85,8 +84,6 @@ enum FileType {
 
 static bool fileExists(const std::string &f)
 {
-//	std::ifstream file(f.c_str());
-//	return (file.good());
 	return (access(f.c_str(), F_OK) == 0);
 }
 
@@ -125,14 +122,11 @@ const std::string _discover_content_type(const std::string &path)
 		return ("image/png");
 	else if (string_endswith(path, ".pdf"))
 		return ("application/pdf");
-	//...
 	return ("");
 }
 
 void _build_redirect_http_header(const std::string& redirectLocation, std::string& header) {
 
-    // Include the Location header within the HTML content
-    //header = "HTTP/1.1 301 Moved Permanently\r\n";
     header = "HTTP/1.1 " + status_msgs[301] + "\r\n";
     header += "Content-Type: text/html\r\n";
     header += "Location: " + redirectLocation + "\r\n";
@@ -156,10 +150,8 @@ void _build_get_http_header(const std::string &filepath, std::string &header,
 	header += "Last-Modified: " + last_modified_time + "\r\n";
 
 	/// Had this to send the file as a downloadable attachment rather then a display item.
-	// header += std::string("Content-Disposition: attachment; filename=\"example.jpg\"") + "\r\n";
 	if (is_attachment) // Makes GET file downloadable rather then displayable.
 	{
-//		header += "Cache-Control: private\r\n";
 		header += "Content-Disposition: attachment;";
 
 		header += " filename=\"";
@@ -171,7 +163,6 @@ void _build_get_http_header(const std::string &filepath, std::string &header,
 		header += "\"\r\n";
 	}
 	header += "\r\n";
-	/// ..., maybe
 }
 
 /// GET method is confirmed valid at this stage.
@@ -206,7 +197,6 @@ bool Response::_process_get_request(const LocationConfig &loc_cfg)
 		std::cerr << "ERROR 404 Not Found" << std::endl;
 		Logger::log(LOG_DEBUG, "ERROR 404 Not Found");
 		_error_code = 404;
-		//...
 		return (false);
 	}
 	else if (access(_internal_path.c_str(), R_OK) < 0)

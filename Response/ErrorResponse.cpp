@@ -13,7 +13,6 @@
 #include "ErrorResponse.hpp"
 
 
-//ErrorResponse::ErrorResponse(void) {}
 ErrorResponse::ErrorResponse(const ServerHTTP& srv, const Request& req, const ServerConfig& cfg):
 	_srv(srv), _req(req), _cfg(cfg)
 {
@@ -72,85 +71,6 @@ void	ErrorResponse::__prepare_error(const std::string& filepath, int error_code)
 
 	this->_text = header + text_buff.str();
 }
-/*
-bool	ErrorResponse::__prepare_error(const std::string& filepath, int error_code)
-{
-	std::ostringstream	err_code_str;
-	std::stringstream	file_buff;
-	std::ifstream		fs;
-//	std::string			filepath = dir_path;
-	std::string			status_msg;
-	std::string			header;
-	std::string			body;
-	std::ostringstream	text_buff;
-	std::ostringstream	content_length;
-	//size_t				header_size, response_size;//, content_length;
-//	std::string			line;//ErrorResponse;
-//	const std::map<int, std::string>&	cfg_error_pages = _cfg.GetError_pages();
-//	std::map<int, std::string>::iterator	epage;
-	if (filepath[filepath.length() - 1] != '/')
-		filepath += '/';
-	err_code_str << error_code;
-	filepath += err_code_str.str() + ".html";
-	std::cout << "error code : " << error_code << ", filepath : " << filepath << std::endl;
-	
-//	fs.open(_cfg.GetRootDir(), std::io::in);
-	//fs.open("default_errors/404.html");// This should the last resort. Search for the config error pages first.
-	fs.open(filepath.c_str());// This should the last resort. Search for the config error pages first.
-	if (!fs.is_open()
-		|| !_get_status_message(error_code, status_msg))
-	{
-		std::cerr << "is file open : " << fs.is_open() << ", status msg : " << status_msg << std::endl;
-		_prepare_default_hardcoded_500_error();
-		return (false);
-	}
-	std::cout << "error code: " << error_code << ", status msg : " << status_msg << std::endl;
-
-	text_buff << "HTTP/1.1 ";//"404 OK\r\n";
-	text_buff << status_msg + "\r\n";
-	text_buff << "Content-type: text/html; charset=utf-8\r\n";
-
-//	file_buff << fs.rdbuf();
-//	body += file_buff.str();
-
-	fs.seekg(0, std::ios::end);
-//	content_length << fs.tellg();
-//	content_length << body.length();
-	text_buff << "Content-length: ";
-	text_buff << fs.tellg();//content_length.str();
-	fs.seekg(0, std::ios::beg);
-	text_buff << "\r\n\r\n";
-//	header_size = text_buff.tellp();
-	text_buff << fs.rdbuf();
-	fs.close();
-//	response_size = text_buff.tellp();
-//	content_length = response_size - header_size;
-//	std::cout << body;
-//	content_length << body.length();
-	//Find content_length
-//	file_buff.seekp(0, std::ios::end);
-//	content_length << file_buff.tellp();
-//	file_buff.seekp(0, std::ios::beg);
-//	std::cout << "Error Page Content Length : " << content_length.str() << std::endl;
-//	body += file_buff.str();
-//	while (std::getline(fs, line))
-//		body += line;
-
-	
-	//this->_text = header + fs.read(0)(//file_buff.str();//body;
-	this->_text = text_buff.str();//file_buff.str();//body;
-	return (true);
-}
-*/
-/*
-/// Add more as needed or just call __prepare_error directly.
-bool	ErrorResponse::_prepare_default_201_error(void) {return (__prepare_error("default_errors/", 201));}
-bool	ErrorResponse::_prepare_default_204_error(void) {return (__prepare_error("default_errors/", 204));}
-bool	ErrorResponse::_prepare_default_301_error(void) {return (__prepare_error("default_errors/", 301));}
-bool	ErrorResponse::_prepare_default_404_error(void) {return (__prepare_error("default_errors/", 404));}
-bool	ErrorResponse::_prepare_default_413_error(void) {return (__prepare_error("default_errors/", 413));}
-bool	ErrorResponse::_prepare_default_500_error(void) {return (__prepare_error("default_errors/", 500));}
-*/
 
 static int	_get_default_error_path(int error_code, std::string& ret_path)
 {
@@ -215,15 +135,11 @@ void	ErrorResponse::prepare_response(int error_code)
 	}
 }
 
-//const std::string&	ErrorResponse::get_response(void) const {return (this->_text);}
-/// END OF REQUIRED METHODS BY SERVER /////////////
-
 void    ErrorResponse::_prepare_default_hardcoded_500_error(void)
 {
 	std::string			header;
 	std::string			body;
 	std::ostringstream	content_length;
-//	std::string			ErrorResponse;
 
 	header = "HTTP/1.1 500 Internal Server Error\r\n";
 	header += "Content-type: text/html\r\n";

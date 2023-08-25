@@ -41,7 +41,6 @@ public:
 	void 				SetAutoIndex(const std::string& autoIndex);
 	std::string 		GetMaxBodySize() const;
 	void				SetMaxBodySize(const std::string& maxBodySize);
-	//std::string 		GetAllowDelete() const;
 	bool				GetAllowDelete() const;
 	void 				SetAllowDelete(const std::string& allowDelete);
 	bool 				GetAllowDownload(void) const;
@@ -68,12 +67,9 @@ private:
 	std::vector<std::string>	cgiPaths;
 	std::vector<std::string>	cgiExts;
 	std::string maxBodySize; // max_body_size
-	//size_t						maxBodySize; // max_body_size
 	std::string upload;
 	std::string allowDelete; // allow_delete on;
 	std::string allowDownload; // allow_delete on;
-
-	// limit_except, auth
 };
 
 #endif
