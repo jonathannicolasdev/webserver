@@ -37,16 +37,54 @@ bool	_get_status_message(int error_code, std::string& ret_string)
 	return (true);
 }
 
-bool	ErrorResponse::__prepare_error(const std::string& dir_path, int error_code)
+void	ErrorResponse::__prepare_error(const std::string& filepath, int error_code)
+{
+	std::string			status_msg, header;
+	std::ifstream		fs;
+	std::ostringstream	text_buff;
+	
+	std::cout << "__prepare_error start with filepath : " << filepath << ", error_code : " << error_code << std::endl;
+
+//	if (access(filepath.c_str(), F_OK | R_OK) || !_get_status_message(error_code, status_msg))
+	if (!_get_status_message(error_code, status_msg))
+	{
+		_prepare_default_hardcoded_500_error();
+		return ;
+	}
+	header = "HTTP/1.1 ";
+	header += status_msg + "\r\n";
+	header += "Content-type: text/html; charset=utf-8\r\n";
+
+	fs.open(filepath.c_str());
+	if (!fs.is_open())
+	{
+//		std::cerr << "failed to open error page file" << std::endl;
+		_prepare_default_hardcoded_500_error();
+		return ;
+	}
+	text_buff << "Content-length: ";
+	fs.seekg(0, std::ios::end);
+	text_buff << fs.tellg();
+	fs.seekg(0, std::ios::beg);
+	text_buff << "\r\n\r\n";
+	text_buff << fs.rdbuf();
+	fs.close();
+
+	this->_text = header + text_buff.str();
+}
+/*
+bool	ErrorResponse::__prepare_error(const std::string& filepath, int error_code)
 {
 	std::ostringstream	err_code_str;
 	std::stringstream	file_buff;
 	std::ifstream		fs;
-	std::string			filepath = dir_path;
+//	std::string			filepath = dir_path;
 	std::string			status_msg;
 	std::string			header;
 	std::string			body;
+	std::ostringstream	text_buff;
 	std::ostringstream	content_length;
+	//size_t				header_size, response_size;//, content_length;
 //	std::string			line;//ErrorResponse;
 //	const std::map<int, std::string>&	cfg_error_pages = _cfg.GetError_pages();
 //	std::map<int, std::string>::iterator	epage;
@@ -68,50 +106,113 @@ bool	ErrorResponse::__prepare_error(const std::string& dir_path, int error_code)
 	}
 	std::cout << "error code: " << error_code << ", status msg : " << status_msg << std::endl;
 
-	header = "HTTP/1.1 ";//"404 OK\r\n";
-	header += status_msg + "\r\n";
-	header += "Content-type: text/html; charset=utf-8\r\n";
+	text_buff << "HTTP/1.1 ";//"404 OK\r\n";
+	text_buff << status_msg + "\r\n";
+	text_buff << "Content-type: text/html; charset=utf-8\r\n";
 
-	file_buff << fs.rdbuf();
-	fs.close();
+//	file_buff << fs.rdbuf();
 //	body += file_buff.str();
 
+	fs.seekg(0, std::ios::end);
+//	content_length << fs.tellg();
+//	content_length << body.length();
+	text_buff << "Content-length: ";
+	text_buff << fs.tellg();//content_length.str();
+	fs.seekg(0, std::ios::beg);
+	text_buff << "\r\n\r\n";
+//	header_size = text_buff.tellp();
+	text_buff << fs.rdbuf();
+	fs.close();
+//	response_size = text_buff.tellp();
+//	content_length = response_size - header_size;
 //	std::cout << body;
 //	content_length << body.length();
 	//Find content_length
-	file_buff.seekp(0, std::ios::end);
-	content_length << file_buff.tellp();
-	file_buff.seekp(0, std::ios::beg);
-	std::cout << "Error Page Content Length : " << content_length.str() << std::endl;
+//	file_buff.seekp(0, std::ios::end);
+//	content_length << file_buff.tellp();
+//	file_buff.seekp(0, std::ios::beg);
+//	std::cout << "Error Page Content Length : " << content_length.str() << std::endl;
 //	body += file_buff.str();
 //	while (std::getline(fs, line))
 //		body += line;
 
-	header += "Content-length: ";
-//	content_length << body.length();
-	header += content_length.str();
-	header += "\r\n\r\n";
 	
-	this->_text = header + file_buff.str();//body;
+	//this->_text = header + fs.read(0)(//file_buff.str();//body;
+	this->_text = text_buff.str();//file_buff.str();//body;
 	return (true);
 }
-
-
+*/
+/*
 /// Add more as needed or just call __prepare_error directly.
 bool	ErrorResponse::_prepare_default_201_error(void) {return (__prepare_error("default_errors/", 201));}
+bool	ErrorResponse::_prepare_default_204_error(void) {return (__prepare_error("default_errors/", 204));}
+bool	ErrorResponse::_prepare_default_301_error(void) {return (__prepare_error("default_errors/", 301));}
 bool	ErrorResponse::_prepare_default_404_error(void) {return (__prepare_error("default_errors/", 404));}
 bool	ErrorResponse::_prepare_default_413_error(void) {return (__prepare_error("default_errors/", 413));}
 bool	ErrorResponse::_prepare_default_500_error(void) {return (__prepare_error("default_errors/", 500));}
-bool	ErrorResponse::_prepare_default_301_error(void) {return (__prepare_error("default_errors/", 301));}
-bool	ErrorResponse::_prepare_default_204_error(void) {return (__prepare_error("default_errors/", 204));}
+*/
+
+static int	_get_default_error_path(int error_code, std::string& ret_path)
+{
+	std::ostringstream				os;
+	std::string						filepath;
+	std::vector<std::string>		path_segments;
+
+	path_segments.push_back(ServerConfig::cwd.c_str());
+	os << error_code;
+	path_segments.push_back("default_errors");
+	filepath = os.str() + ".html";
+	path_segments.push_back(filepath);
+	join_strings(path_segments, '/', ret_path);
+	return (access(ret_path.c_str(), F_OK | R_OK));
+}
+
+static int	_get_custom_error_path(const ServerConfig& cfg, const std::string& cfg_errpath, std::string& ret_path)
+{
+	std::ostringstream				os;
+	std::string						filepath;
+	std::vector<std::string>		custom_path_segments;
+	std::vector<std::string>		path_segments;
+
+	split_string(cfg_errpath, '/', custom_path_segments);
+	path_segments.push_back(ServerConfig::cwd.c_str());
+	path_segments.insert(path_segments.end(), cfg.GetSplitRoot().begin(), cfg.GetSplitRoot().end());
+	path_segments.insert(path_segments.end(),
+		custom_path_segments.begin(), custom_path_segments.end());
+	join_strings(path_segments, '/', ret_path);
+	std::cout << "Custom error filepath found : " << ret_path << std::endl;
+	std::cout << "access test (== 0 is good) : " << access(ret_path.c_str(), F_OK | R_OK) << std::endl;
+	return (access(ret_path.c_str(), F_OK | R_OK));
+}
 
 /// REQUIRED METHODS BY SERVER ///////////////
-int ErrorResponse::prepare_response(int error_code)
+void	ErrorResponse::prepare_response(int error_code)
 {
 	std::cout << "Preparing ErrorResponse." << std::endl;
+	std::map<int, std::string>		error_pages = this->_cfg.GetError_pages();
+	std::map<int, std::string>::iterator	it;
+	std::string						filepath;
+	std::vector<std::string>		path_segments;
 
-	__prepare_error("default_errors/", error_code);
-	return (0);
+	path_segments.push_back(ServerConfig::cwd.c_str());
+
+	it = error_pages.find(error_code);
+	if (it == error_pages.end())
+	{
+		if (_get_default_error_path(error_code, filepath) == 0)
+			__prepare_error(filepath, error_code);
+		else 
+			_prepare_default_hardcoded_500_error();
+	}
+	else
+	{
+		if (_get_custom_error_path(_cfg, it->second, filepath) == 0)
+			__prepare_error(filepath, error_code);
+		else if (_get_default_error_path(error_code, filepath) == 0)
+			__prepare_error(filepath, error_code);
+		else
+			_prepare_default_hardcoded_500_error();
+	}
 }
 
 //const std::string&	ErrorResponse::get_response(void) const {return (this->_text);}

@@ -32,14 +32,17 @@ class ErrorResponse: public Response
 		const Request&			_req;
 		const ServerConfig&		_cfg;
 
+/*
 		bool	_prepare_default_201_error(void);
 		bool    _prepare_default_404_error(void);
 		bool    _prepare_default_500_error(void);
 		bool	_prepare_default_413_error(void);
 		bool	_prepare_default_301_error(void);
 		bool	_prepare_default_204_error(void);
+*/
 		void    _prepare_default_hardcoded_500_error(void);
-		bool	__prepare_error(const std::string& dir_path, int error_code);
+		//bool	__prepare_error(const std::string& dir_path, int error_code);
+		void	__prepare_error(const std::string& filepath, int error_code);
 
 	public:
 		ErrorResponse(const ServerHTTP& srv, const Request& req, const ServerConfig& cfg);
@@ -47,7 +50,7 @@ class ErrorResponse: public Response
 
 //		static const std::map<int, std::string>	status_msgs;
 
-		int prepare_response(int error_code);
+		void	prepare_response(int error_code);
 
 //		const std::string&	get_response(void) const;
 };

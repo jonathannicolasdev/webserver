@@ -57,7 +57,7 @@ private:
 	std::vector<std::string>	split_root;
 	std::string					indexFile;
 	std::vector<LocationConfig> locations;
-	std::map<int, string>		error_pages;
+	std::map<int, std::string>		error_pages;
 	std::string				maxBodySize; // max_body_size
 	//size_t						maxBodySize; // max_body_size
 };

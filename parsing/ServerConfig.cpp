@@ -93,6 +93,7 @@ void ServerConfig::AddListenPort(const std::string& listenPort)
 		parsed_listen = listenPort.substr(pos);
 	else
 		parsed_listen = listenPort.substr(pos, pos2 - pos);
+	
 	this->listenPort += parsed_listen;
 	std::cout << "Current full listen port string : " << this->listenPort << std::endl;
 }

@@ -24,17 +24,16 @@ server {
     return    https://www.google.com;
   }
 
-  location /my_errors {
-    root /errors;
+  location /errors {
+    autoindex on;
+    root /my_errors;
   }
 
   location /admin {
-    auth admin:admin;
     root /admin/;
     index index.html;
   }
   location /autoindex/admin {
-    auth admin:admin;
     root /admin/;
     index index.html;
   }
@@ -44,7 +43,6 @@ server {
   location /cgi {
     allow_methods GET POST;
     root /cgi-bin/;
-    cgi .py python3
   }
   
   location /scripts {
@@ -60,7 +58,7 @@ server {
     root /client_uploads/
   }
   
-  error_page 404 /my_errors/404.html;
+  error_page 404 /my_errors2/404.html;
 }
 
 server {
