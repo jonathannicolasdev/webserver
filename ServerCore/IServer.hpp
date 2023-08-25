@@ -16,14 +16,12 @@
 # include <string>
 # include <cstring>
 # include <iostream>
-//# include <csignal>
 # include <map>
 # include <stdint.h>
 # include <sys/socket.h>
 
 # include <netinet/in.h>
 # include <arpa/inet.h>
-//# include <netinet/ip.h>
 
 # include "ServerConfig.hpp"
 
@@ -81,11 +79,8 @@ class   IServer:	public __BaseSocketOwner
 		friend class	ServerFactory;
 
 	protected:
-//		AServerCuster*				_owner;/// Value should be set to owner cluster if server is
-										// attached to a cluster else defaults to NULL.
 		std::string					_server_name;
 		std::vector<ServerConfig>	_cfgs;
-//		int							_sockfd;
 		uint16_t					_port;
 		struct sockaddr_in			_server_addr;
 		bool						_close_request;
@@ -95,7 +90,6 @@ class   IServer:	public __BaseSocketOwner
 		bool						_is_multi_domain;// If multiple server configs are run from the same port.
 		enum e_server_status_codes	_status;
 
-//		std::map<std::string, std::string>	_locations;
 		std::map<std::string, ServerConfig>	configs;// takes hostname as key and returns its config.
 
 		// A pointer to this struct is returned by get_srv_state() call. The specific
@@ -122,22 +116,13 @@ class   IServer:	public __BaseSocketOwner
 		virtual in_addr_t			get_addr(void) const = 0;
 		virtual bool				is_running(void) const = 0;
 	
-		virtual bool		add_virtual_server(const IServer& other) = 0;// Merges both configs in this server. Adds a reachable domain name on this server with its own configuration and contant. Both need to be open on same network interface.
+		// Merges both configs in this server. Adds a reachable domain name on this server with its
+		// own configuration and contant. Both need to be open on same network interface.
+		virtual bool		add_virtual_server(const IServer& other) = 0;
 		
 		virtual bool		operator==(const IServer& other) const = 0;
-
-//		virtual int			get_socket(void) const = 0;
-//		virtual	std::map<std::string, std::string>&	get_srv_locations(void) = 0;
 };
 
-
 std::string &srv_status_to_str(enum e_server_status_codes status, std::string &ret_str);
-/*
-IServer::IServer(uint16_t _port, bool _close_rqst, bool _is_running, int _status):
-	_port(_port), _close_request(_close_rqst), _is_running(_is_running), _status(_status)
-{
-	std::cout << "IServer interface protected constructor called" << std::endl;
-}
-*/
 
 #endif

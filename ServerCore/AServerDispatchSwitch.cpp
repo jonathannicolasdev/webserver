@@ -12,7 +12,7 @@
 
 #include "AServerDispatchSwitch.hpp"
 
-AServerDispatchSwitch::AServerDispatchSwitch(uint16_t _port,// bool _close_rqst, bool _is_running,
+AServerDispatchSwitch::AServerDispatchSwitch(uint16_t _port,
 	enum e_server_status_codes _status, bool conn_persistance, int conn_timout):
 	AServerReactive(_port, false, false, true, _status),
 	_keep_alive(conn_persistance), _conn_timeout(conn_timout),
@@ -27,15 +27,12 @@ AServerDispatchSwitch::~AServerDispatchSwitch()
 	this->stop();
 }
 
-//if ((connfd = accept(this->_sockfd, (struct sockaddr*)&conn_addr, &addr_len)) < 0)
-
 /// Takes clientfd of newly created client.
 void
 AServerDispatchSwitch::_init_new_client_connection(int clientfd)
 {
 	t_clt_conn			&clientconn = this->_active_connections[clientfd];
 
-//	clientconn = this->_active_connections[clientfd];
 	clientconn.clt_fd = clientfd;
 	clientconn.conn_status = CLT_ACEPTED;
 	clientconn.init_conn_time = std::time(NULL);
@@ -98,7 +95,7 @@ AServerDispatchSwitch::disconnect(int clt_fd, bool force)
 		return (-1);
 	close(clt_fd);
 	this->_active_connections.erase(it);
-	this->react(EVNT_CLOSING_CONNECTION, 0);// clientfd arg ignored;
+	this->react(EVNT_CLOSING_CONNECTION, 0);
 	return (0);
 }
 
@@ -109,7 +106,6 @@ AServerDispatchSwitch::disconnect_all(bool force)
 		this->disconnect(this->_active_connections.begin()->second.clt_fd, force);
 }
 
-// disconnect {max_disconn} oldest active connections.
 int
 AServerDispatchSwitch::disconnect_oldest(int *disconn_clients, int max_disconn)
 {
@@ -192,7 +188,7 @@ AServerDispatchSwitch::stop(void)
 		close(this->_sockfd);
 	this->_status = SRV_UNBOUND;
 	this->_close_request = true;
-	this->react(EVNT_SRV_CLOSE, 0);// clientfd arg ignored;
+	this->react(EVNT_SRV_CLOSE, 0);
 }
 
 void	AServerDispatchSwitch::switch_connection_persistance(void)
@@ -287,7 +283,6 @@ AServerDispatchSwitch::start(void)
 {
 	std::ostringstream	err_msg;
 
-	//listen
 	if (listen(this->_sockfd, MAX_PENDING_CONN) < 0)
 	{
 		err_msg << "Failed to start listening to port " <<  this->_port;
@@ -298,7 +293,7 @@ AServerDispatchSwitch::start(void)
 	this->_status = SRV_LISTENING;
 	this->_srv_start_time = std::time(NULL);	
 	
-	this->react(EVNT_SRV_OPEN, 0);// clientfd arg ignored;
+	this->react(EVNT_SRV_OPEN, 0);
 	return (this->_sockfd);
 }
 
@@ -308,7 +303,6 @@ AServerDispatchSwitch::operator==(const IServer& other) const
 	return ((this->_server_addr.sin_addr.s_addr == other.get_addr())
 		&& (this->_port == other.get_port()));
 }
-
 
 
 std::ostream&	operator<<(std::ostream& ostream, AServerDispatchSwitch& srv)

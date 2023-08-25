@@ -34,7 +34,6 @@ __EventListener::close_poll(void)
 {
 	if (this->_pollfd < 3)
 		return (0);
-		//return (Logger::log(LOG_WARNING, "Trying to close poll but none currently active."));
 	close(this->_pollfd);
 	this->nb_watched = 0;
 	this->_pollfd = 0;
@@ -47,21 +46,14 @@ __EventListener::poll_new_socket(int sockfd)
 	std::cout << "polling new socket with sockfd : " << sockfd << std::endl;
 	if (this->_pollfd < 3)
 		return (0);
-		//return (Logger::log(LOG_WARNING, "Trying to poll new socket but no polling mechanism is initialized."));
 	if (sockfd < 3 || sockfd >= MAX_CONCUR_POLL)
 		return (Logger::log(LOG_WARNING, "Trying to poll out of bounds fd"));
 	
 #ifdef __APPLE__
-//	if (this->_events[sockfd].ident > 2)
-//		return (Logger::log(LOG_WARNING, "Trying to poll a socket twice"));
-//	EV_SET(&this->_events[sockfd], sockfd, EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, 0);
 	EV_SET(&this->_new_event, sockfd, EVFILT_READ | EVFILT_WRITE, EV_ADD | EV_ENABLE, 0, 0, 0);
-//	if ((nb_events = kevent(this->_pollfd, this->_events, MAX_CONCUR_POLL,
 	if (kevent(this->_pollfd, &this->_new_event, 1, NULL, 0, NULL) < 0)
 		return (Logger::log(LOG_ERROR, "Failed to poll new socket"));
 #elif __linux__
-//	if (this->_events[sockfd].data.fd > 2)
-//		return (Logger::log(LOG_WARNING, "Trying to poll a socket twice"));
     this->_new_event.data.fd = sockfd;
     this->_new_event.events = EPOLLIN;
 	if (epoll_ctl(this->_pollfd, EPOLL_CTL_ADD, sockfd, &this->_new_event) < 0)
@@ -80,68 +72,16 @@ __EventListener::unpoll_socket(int sockfd)
 		return (Logger::log(LOG_WARNING, "Trying to remove out of bounds fd from poll"));
 #ifdef __APPLE__
 	EV_SET(&this->_new_event, sockfd, EVFILT_READ | EVFILT_WRITE, EV_DELETE, 0, 0, 0);
-	//EV_SET(&this->_new_event, sockfd, 0, EV_DELETE, 0, 0, 0);
 	if (kevent(this->_pollfd, &this->_new_event, 1, NULL, 0, NULL) < 0)
 		return (Logger::log(LOG_WARNING, std::string("Failed to unpoll socket : ") + std::strerror(errno)));
 #elif __linux__
-	//if (this->_events[sockfd].data.fd < 3)
-	//	return (0);
 	if (epoll_ctl(this->_pollfd, EPOLL_CTL_DEL, sockfd, NULL) < 0)
 		return (Logger::log(LOG_ERROR, "Failed to remove socket from poll"));
-    //this->_new_event.data.fd = 0;
 #endif
 	this->nb_watched--;
 	return (0);
 }
 
-/*
-int
-__EventListener::poll_new_client(int clientfd)
-{
- 	if (this->_pollfd < 3)
-		return (Logger::log(LOG_WARNING, "Trying to poll new client but no polling mechanism is initialized."));
-	if (clientfd < 3 || clientfd >= MAX_CONCUR_POLL)
-		return (Logger::log(LOG_WARNING, "Trying to poll out of bounds fd"));
-	
-#ifdef __APPLE__
-	if (this->_events[clientfd].ident > 2)
-		return (Logger::log(LOG_WARNING, "Trying to poll a client twice"));
-	EV_SET(&this->_events[clientfd], clientfd, EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, 0);
-#elif __linux__
-	if (this->_events[sockfd].data.fd > 2)
-		return (Logger::log(LOG_WARNING, "Trying to poll a socket twice"));
-    this->_events[clientfd].data.fd = clientfd;
-    this->_events[clientfd].events = EPOLLIN | EPOLLRDHUP;
-	if (epoll_ctl(this->_pollfd, EPOLL_CTL_ADD, clientfd, &this->_events[clientfd]) < 0)
-		return (Logger::log(LOG_ERROR, "Failed to poll new socket"));
-#endif
-	this->nb_watched++;
-    return (0);
-}
-
-int
-__EventListener::unpoll_client(int clientfd)
-{
-	if (this->_pollfd < 3)
-		return (Logger::log(LOG_WARNING, "Trying to remove client from poll but no polling mechanism is initialized."));
-	if (clientfd < 3 || clientfd >= MAX_CONCUR_POLL)
-		return (Logger::log(LOG_WARNING, "Trying to remove out of bounds fd from poll"));
-#ifdef __APPLE__
-	if (this->_events[clientfd].ident < 3)
-		return (0);
-	EV_SET(&this->_events[clientfd], clientfd, EVFILT_READ, EV_DELETE, 0, 0, 0);
-	this->_events[clientfd].ident = 0;
-#elif __linux__
-	if (this->_events[clientfd].data.fd < 3)
-		return (0);
-	if (epoll_ctl(this->_pollfd, EPOLL_CTL_DEL, clientfd, NULL) < 0)
-		return (Logger::log(LOG_ERROR, "Failed to remove client from poll"));
-    this->_events[clientfd].data.fd = 0;
-#endif
-	this->nb_watched--;
-	return (0);
-}
-*/
 void
 __EventListener::unpoll_socket_array(int *socketfds, int nb_sockets)
 {
@@ -171,8 +111,7 @@ __EventListener::poll_wait(int timeout)
 		ts_p = &ts;
 	}
 	std::cout << "poll_wait() waiting for kevent() with timeout of " << timeout << "ms" << std::endl;
-	if ((nb_events = kevent(this->_pollfd, NULL, 0,//this->_events, MAX_CONCUR_POLL,
-		this->_changes, MAX_CONCUR_POLL, ts_p)) < 0)
+	if ((nb_events = kevent(this->_pollfd, NULL, 0, this->_changes, MAX_CONCUR_POLL, ts_p)) < 0)
 		if (errno != EINTR)
 			return (Logger::log(LOG_ERROR, std::string("kevent() call failed with error : ") + strerror(errno)));
 

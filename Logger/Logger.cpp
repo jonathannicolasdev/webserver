@@ -31,7 +31,7 @@ std::string	log_level_to_string(enum e_log_level lvl)
 	return ("");
 }
 
-int	Logger::init(const std::string *log_filepath)
+int	Logger::init(const std::string& log_filepath)
 {
 	std::string	fp;
 
@@ -41,10 +41,10 @@ int	Logger::init(const std::string *log_filepath)
 		return (-1);
 	}
 
-	if (!log_filepath)
+	if (log_filepath.empty())
 		fp = LOGFILE_DEFAULT;
 	else
-		fp = *log_filepath;
+		fp = log_filepath;
 
 	Logger::_logfile.open(fp.c_str(), std::ofstream::out | std::ofstream::app);
 	if (!Logger::_logfile.is_open())
@@ -62,7 +62,7 @@ void	Logger::close(void)
 	std::cerr << "Logger closed" << std::endl;
 }
 
-int	Logger::_log_debug(const std::string& msg)//, bool print)
+int	Logger::_log_debug(const std::string& msg)
 {
 	std::string		log_msg;
 
@@ -115,7 +115,7 @@ int	Logger::_log_critical(const std::string& msg, bool print)
 int  Logger::log(enum e_log_level lvl, const std::string& msg, bool print)
 {
 	if (!Logger::_is_init)
-		Logger::init(NULL);
+		Logger::init(LOGFILE_DEFAULT);
 	if (lvl == LOG_DEBUG)
 		return (_log_debug(msg));
 	else if (lvl == LOG_WARNING)
@@ -137,6 +137,6 @@ int  Logger::log(enum e_log_level lvl, const std::string& msg)
 int  Logger::log(const std::string& msg)
 {
 	if (!Logger::_is_init)
-		Logger::init(NULL);
+		Logger::init(LOGFILE_DEFAULT);
 	return (_log_debug(msg));
 }

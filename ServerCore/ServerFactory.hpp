@@ -17,7 +17,6 @@
 # include "AServerCluster.hpp"
 # include "ServerHTTP.hpp"
 # include "ServerConfig.hpp"
-//# include <netdb.h>
 
 #define MAX_LISTEN_PORTS 	32
 #define MAX_SERVERS_ON_PORT	32
@@ -43,14 +42,9 @@ typedef struct s_default_srv_config
 class ServerFactory
 {
 	private:
-//		static const enum e_srv_type 						*__valid_srv_types;
-//		static const std::map<enum e_srv_type, t_srv_cfg>	default_cfgs;
-		//static bool	create_servers_from_cfg(const ServerConfig& scfg, std::vector<IServer*>& built_servers);
 		static bool	create_servers_from_cfg(const ServerConfig& scfg, std::vector<AServerDispatchSwitch*>& built_servers);
-		//static bool	create_servers_from_cfg(const ServerConfig& scfg, std::vector<IServer*>& built_servers, int *nb_srvs);
 
 	public:
-//		static IServer  *create_server(enum e_srv_type srv_type, uint16_t port, const std::string &rootdir);
 		static AServerCluster	*create_cluster_from_cfg(const std::vector<ServerConfig>& cfgs);
 };
 

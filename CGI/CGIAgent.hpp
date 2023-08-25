@@ -27,6 +27,8 @@
 # include "LocationConfig.hpp"
 # include "Request.hpp"
 
+//# include "webserv_utils.cpp"
+
 # define MAX_CGI_TIMEWAIT 2// in sec
 
 struct CGIConfig
@@ -46,19 +48,12 @@ class CGIAgent
 
 
 		std::string					_script_internal_path;
-//		char**						_script_args;
-//		char**						_script_env;
 		std::vector<const char *>	_argv;
 		std::vector<const char *>	_env;
 
 		std::vector<std::string>	env_strs;
 		std::vector<char*>			env_vect;
 		int							_error_code;
-
-		// std::string					_dir_path;
-		// std::string					_script_name;
-		// std::string					_header;
-		// std::string&				_text;
 
 		std::string					_dir_path;
 		std::string					_script_name;
@@ -73,14 +68,10 @@ class CGIAgent
 		int	_parent_process(int pid, int *cgi_send_pipe, int *cgi_read_pipe, const std::string& content_type);
 
 	public:
-//		CGIAgent(void);
-	//	CGIAgent(const Request& req, const LocationConfig& loc_srv, const std::string& rel_internal_path, const std::string& abs_internal_path, std::string& response);
 		CGIAgent(const Request& req, const LocationConfig& loc_srv, const std::string& abs_internal_path, std::string& response);
-		//CGIAgent(const Request& req);
 		~CGIAgent(void);
 
 		int	run(void);
-//		int	run(const std::string& rel_internal_path);
 
 		int	get_error_code() const;
 		const std::string&	get_response() const;

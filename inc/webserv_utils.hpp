@@ -22,6 +22,10 @@
 # include <signal.h>
 # include <limits.h>
 
+# ifndef DEBUG
+#  define DEBUG 0
+# endif
+
 # define UNUSED(o) (void)(o)
 
 bool		is_all_digits(const std::string& s);

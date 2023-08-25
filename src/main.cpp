@@ -19,8 +19,7 @@ int	clean_exit(AServerCluster* clu, int exit_status)
 {
 	if (!clu)
 		return (exit_status);
-	clu->terminate(true);// Forced termination (true)
-//	delete clu;
+	clu->terminate(true);
 	return (exit_status);
 }
 
@@ -29,7 +28,7 @@ void	sigint_handler(int signum)
 	UNUSED(signum);
 	std::cerr << "Received SIGINT signal. Exiting." << std::endl;
 	if (srv_clu)
-		srv_clu->terminate(true);// While set a 
+		srv_clu->terminate(true);
 }
 
 void	sigpipe_handler(int signum)
@@ -43,7 +42,7 @@ void	sigpipe_handler(int signum)
 
 int main(int argc, char **argv, char **envp)
 {
-	ConfigBuilder	configBuilder;// = ConfigBuilder();
+	ConfigBuilder	configBuilder;
 	std::string		config_path;
 	std::vector<ServerConfig> serverConfigs;
 
@@ -59,9 +58,9 @@ int main(int argc, char **argv, char **envp)
 
 	serverConfigs = configBuilder.parseConfigFile(config_path);
 	if (serverConfigs.size() == 0)
-		return (EXIT_FAILURE);// Error message should have been displayed in configBuilder.parseConfigFile()
+		return (EXIT_FAILURE);
 
-	// srv_clu is a global variable declared at the top of this file. Is a pointer to a AServerCluster instance.
+	// The variable srv_clu is a global variable declared at the top of this file. Is a pointer to a AServerCluster instance.
 	// Is global to be accessible by signal handlers.
 	if (!(srv_clu = ServerFactory::create_cluster_from_cfg(serverConfigs)))
 		return (EXIT_FAILURE);
@@ -69,12 +68,14 @@ int main(int argc, char **argv, char **envp)
 	signal(SIGINT, sigint_handler);
 	signal(SIGPIPE, sigpipe_handler);
 
+	Logger::init(LOGFILE_DEFAULT);
 	if (srv_clu->bind() < 0)
 		return (clean_exit(srv_clu, EXIT_FAILURE));
 
 	if (srv_clu->start() < 0)
 		return (clean_exit(srv_clu, EXIT_FAILURE));
 
+	Logger::close();
 	std::cout << "Exiting peacefully" << std::endl;
 	return (clean_exit(srv_clu, EXIT_SUCCESS));
 }

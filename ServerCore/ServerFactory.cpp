@@ -12,7 +12,6 @@
 
 #include "ServerFactory.hpp"
 
-
 bool	_parse_config_ports(const std::string& listen_ports,
 	std::vector<std::string>& listen_addrs, std::vector<int>& ports)
 {
@@ -68,7 +67,6 @@ bool	_check_if_existing_server_with_same_interface_and_config(IServer *new_srv, 
 	{
 		if (*srv_it == new_srv)
 		{
-			//Logger::log(LOG_ERROR, "The Configuration file contains multiple servers with the same network interface and configuration.");
 			Logger::log(LOG_WARNING, "The Configuration file contains a server configuration with multiple similar network interface. Bypassing construction.");
 			return (true);
 		}
@@ -97,22 +95,25 @@ bool	ServerFactory::create_servers_from_cfg(const ServerConfig& scfg, std::vecto
 	std::string			listen_str, serverName, rootDir;
 	std::vector<std::string>	listen_addr;
 	std::vector<int>			listen_ports;
-	std::vector<std::string>::iterator	addr_it;// = listen_addr.begin();
-	std::vector<int>::iterator			port_it;// = listen_ports.begin();
+	std::vector<std::string>::iterator	addr_it;
+	std::vector<int>::iterator			port_it;
 
 	listen_str = scfg.GetListenPort();
 
-	if (!_parse_config_ports(listen_str, listen_addr, listen_ports))//, &nb_ports))
+	if (!_parse_config_ports(listen_str, listen_addr, listen_ports))
 		return (false);
  	addr_it = listen_addr.begin();
  	port_it = listen_ports.begin();
-	for (; port_it != listen_ports.end(); ++addr_it, ++port_it)//, ++(*nb_srvs))
+	for (; port_it != listen_ports.end(); ++addr_it, ++port_it)
 	{
-		std::cout << "Building server" << std::endl;
-		std::cout << " - server name :	" << scfg.GetServerName() << std::endl;
-		std::cout << " - root dir :		" << scfg.GetRoot() << std::endl;
-		std::cout << " - ip addr  :		" << *addr_it << std::endl;
-		std::cout << " - port	 :		" << *port_it << std::endl;
+		// if (DEBUG)
+		// {
+		// 	std::cout << "Building server" << std::endl;
+		// 	std::cout << " - server name :	" << scfg.GetServerName() << std::endl;
+		// 	std::cout << " - root dir :		" << scfg.GetRoot() << std::endl;
+		// 	std::cout << " - ip addr  :		" << *addr_it << std::endl;
+		// 	std::cout << " - port	 :		" << *port_it << std::endl;
+		// }
 		built_servers.push_back(new ServerHTTP(scfg.GetServerName(), scfg.GetRoot(),
 												*addr_it, *port_it, SRVHTTP_DEFAULT_TIMEOUT, &scfg));
 		if (_check_if_existing_server_with_same_interface_and_config(*(built_servers.end() - 1), built_servers))
@@ -135,9 +136,12 @@ bool	_merge_servers_with_same_network_interface_and_different_configs(std::vecto
 		{
 			if (*srv1_it && *srv2_it && **srv1_it == **srv2_it)
 			{
-				std::cout << std::endl << "*----MERGING SERVERS ON SAME NETWORK INTERFACE !!----*" << std::endl;
-				std::cout << "Server 1 : " << (*srv1_it)->get_server_name() << std::endl;
-				std::cout << "Server 2 : " << (*srv2_it)->get_server_name() << std::endl;
+				// if (DEBUG)
+				// {
+				// 	std::cout << std::endl << "*----MERGING SERVERS ON SAME NETWORK INTERFACE !!----*" << std::endl;
+				// 	std::cout << "Server 1 : " << (*srv1_it)->get_server_name() << std::endl;
+				// 	std::cout << "Server 2 : " << (*srv2_it)->get_server_name() << std::endl;
+				// }
 				Logger::log(LOG_DEBUG, "Merging two server configs in one server with same network interface.");
 				if (!(*srv1_it)->add_virtual_server(**srv2_it))
 					return (Logger::log(LOG_CRITICAL, "Critical error occured while creating server cluster with config file."), false);
@@ -161,7 +165,7 @@ ServerFactory::create_cluster_from_cfg(const std::vector<ServerConfig>& cfgs)
 
 	for (cfgs_it = cfgs.begin(); cfgs_it != cfgs.end(); ++cfgs_it)
 	{
-		if (!ServerFactory::create_servers_from_cfg(*cfgs_it, new_servers))//, &nb_srvs))
+		if (!ServerFactory::create_servers_from_cfg(*cfgs_it, new_servers))
 		{
 			_flush_servers_after_error(new_cluster, &new_servers);
 			return (NULL);
@@ -172,8 +176,6 @@ ServerFactory::create_cluster_from_cfg(const std::vector<ServerConfig>& cfgs)
 		_flush_servers_after_error(new_cluster, &new_servers);
 		return (NULL);
 	}
-	// TODO : implement config file parsing to build config map to pass to this function.
-//	std::cerr << "Called unimplemented ServerFactory create_server_from_cfg()." << std::endl;
 
 	for (srvs_it = new_servers.begin(); srvs_it != new_servers.end(); ++srvs_it)
 		new_cluster->add_server(*srvs_it);

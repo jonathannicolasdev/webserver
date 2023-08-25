@@ -22,7 +22,7 @@ ServerHTTP::ServerHTTP(const std::string& servname, const std::string& rootdir,
 	std::ostringstream	os;
 
 	os << port;
-	std::cout << "ServerHTTP constructor" << std::endl;
+//	std::cout << "ServerHTTP constructor" << std::endl;
 
 	_server_name = servname;
 	if (ip != "0.0.0.0")
@@ -56,13 +56,10 @@ ServerHTTP::start(void)
 	this->_status = SRV_LISTENING;
 	this->_srv_start_time = std::time(NULL);
 
-//	this->react(EVNT_SRV_OPEN, 0);// clientfd arg ignored;
+	this->react(EVNT_SRV_OPEN, 0);
 	return (this->_sockfd);
 }
 
-
-
-#define MAX_READ_BUFF 4096
 
 int
 ServerHTTP::receive_request(int clientfd, Request& request)
@@ -102,7 +99,7 @@ ServerHTTP::receive_request(int clientfd, Request& request)
 }
 
 
-/// This method should be noexcept. As long as clientfd is open, should either send
+/// As long as clientfd is open, should either send
 /// the response or an error page.
 int
 ServerHTTP::send_response(int clientfd, const Response& resp) const

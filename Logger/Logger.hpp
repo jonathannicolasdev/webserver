@@ -17,9 +17,8 @@
 # include <fstream>
 # include <sstream>
 # include <ctime>
-//# include <iomanip>
 
-# define LOGFILE_DEFAULT "webserv.log"
+# define LOGFILE_DEFAULT "logs/webs.log"
 
 # define LOG_RESET_COLOR "\033[0m"
 # define LOG_DEBUG_COLOR "\033[1;37m"
@@ -35,7 +34,6 @@ enum e_log_level
 	LOG_CRITICAL
 };
 
-// Logger::close() should be called at program exit.
 class Logger
 {
 	protected:
@@ -50,10 +48,10 @@ class Logger
 
 	public:
 
-		static int	init(const std::string *log_filepath);
+		static int	init(const std::string& log_filepath);
 		static int  log(enum e_log_level lvl, const std::string& msg, bool print);
 		static int  log(enum e_log_level lvl, const std::string& msg);
-		static int  log(const std::string& msg);// without lvl defaults to LOG_DEBUG and print on cout.
+		static int  log(const std::string& msg);
 		static void	close(void);
 };
 

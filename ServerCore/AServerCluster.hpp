@@ -13,8 +13,6 @@
 #ifndef A_SERVER_CLUSTER_HPP
 # define A_SERVER_CLUSTER_HPP
 
-//# include "webserv.hpp"
-//# include <vector>
 # include <fcntl.h>
 # include <set>
 # include <map>
@@ -27,7 +25,6 @@
 #  include <sys/epoll.h>
 # endif
 
-//# define MAX_POLL_EVENTS 64
 # define MAX_CONCUR_POLL 1024
 
 enum e_cluster_status
@@ -48,11 +45,9 @@ class __EventListener
 		int				nb_watched;
 #ifdef __APPLE__
 		struct kevent	_new_event;
-//		struct kevent	_events[MAX_CONCUR_POLL];
 		struct kevent	_changes[MAX_CONCUR_POLL];
 #elif __linux__
 		struct epoll_event	_new_event;
-//		struct epoll_event	_events[MAX_CONCUR_POLL];
 		struct epoll_event	_changes[MAX_CONCUR_POLL];
 #endif
 
@@ -62,15 +57,11 @@ class __EventListener
 		virtual int		close_poll(void);
 		virtual int		poll_new_socket(int sockfd);
 		virtual int		unpoll_socket(int sockfd);
-//		virtual int		poll_new_client(int clientfd);
-//		virtual int		unpoll_client(int clientfd);
 		virtual void	unpoll_socket_array(int *sockfds, int nb_sockets);
 
 		virtual int		poll_wait(int timeout);
 
-		// Get fd of _changes[event_idx] crossplatform
 		virtual int		get_eventfd(int event_idx) const;
-//		virtual int		get_read_size(int event_idx) const;
 };
 
 // AServerCluster (Abstract Server Cluster):
@@ -101,11 +92,8 @@ class	AServerCluster:	public __EventListener, public __BaseSocketOwner
 		int			_timeout;// minimum none 0 timeout in member servers.
 		time_t		_start_time;
 		time_t		_last_maintenance_time;
-		AServerDispatchSwitch*		_currently_serving;// server currently serving a client.
-//		int			_timeout_clientfd[MAX_CONCUR_POLL];// array to receive the fds from timed out clients from servers.
+		AServerDispatchSwitch*		_currently_serving;// The server currently serving a client.
 		
-//		std::vector<AServerDispatchSwitch *>	_servers;//	All servers in cluster
-		//std::set<AServerDispatchSwitch *>	_servers;//	All servers in cluster
 		std::set<AServerDispatchSwitch *>	_server_set;//	All servers in cluster. key == sockfd, value == server instance.
 		std::map<int, AServerDispatchSwitch *>	_servers;//	All servers in cluster. key == sockfd, value == server instance.
 		
@@ -130,26 +118,12 @@ class	AServerCluster:	public __EventListener, public __BaseSocketOwner
 		
 		virtual int		add_server(AServerDispatchSwitch *srv);// = 0;
 
-		virtual int		bind(void);// = 0;
-		virtual int		start(void);// = 0;
-		virtual void	stop(void);// = 0;// stops all its active servers
-		virtual int		reboot(void);// = 0;// stops all its active servers and restarts them.
-		virtual int		terminate(bool force);// = 0;// stops all active servers and deletes them from the cluster.
+		virtual int		bind(void);
+		virtual int		start(void);
+		virtual void	stop(void);// Stops all its active servers
+		virtual int		reboot(void);// Stops all its active servers and restarts them.
+		virtual int		terminate(bool force);// Stops all active servers and deletes them from the cluster.
 		virtual void	track_bad_client(void);// Disconnect the client currently beeing served, on the server currently servicing its request.
-
-		// Potentialy add multiple overloads for stopping / rebooting / starting ... by Server type.
 };
-/*
-int	AServerCluster::_counter = 0;
 
-int	AServerCluster::generate_id(void)
-{
-	return (this->_counter++);
-}
-
-bool	AServerCluster::server_in_cluster(AServerDispatchSwitch *srv)
-{
-	return (std::find(_servers.begin(), _servers.end(), srv) != _servers.end())
-}
-*/
 # endif
