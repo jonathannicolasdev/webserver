@@ -244,6 +244,7 @@ AServerCluster::__cluster_mainloop(void)
 					srv->disconnect(clientfd, true);
 				}
 				_currently_serving = NULL;
+				srv->disconnect(clientfd, false);
 			}
 			else
 				return (Logger::log(LOG_CRITICAL, "POLLING MECH RECEIVED EVENT FROM UNIDENTIFIED FD. THE TRUTH IS OUT THERE !!"));
