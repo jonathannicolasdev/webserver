@@ -161,9 +161,7 @@ LocationConfig ConfigBuilder::parseLocation(ServerConfig& srv_cfg, const std::st
         }
         if (directiveLocationKey == "allow_download")
         {
-            std::cout << "SETTING ALLOW DOWNLOADABLE IN LOCATION CONFIG : " << locationConfig.GetPath() << std::endl;
             locationConfig.SetAllowDownload(words[1]);
-            std::cout << "RESULTING IN GetAllowDownload() : " << locationConfig.GetAllowDownload() << std::endl;
         }
         if (directiveLocationKey == "upload")
         {
@@ -229,23 +227,16 @@ ServerConfig ConfigBuilder::parseServer(string content)
     locationBlocks.pop_back();
 
     for (size_t i = 0; i < locationBlocks.size(); i++)
-    {
-        // std::cout << "LOCATION: " << locationBlocks[i] << "\n";
         serverConfig.AddLocations(parseLocation(serverConfig, locationBlocks[i]));
-    }
 
-    // std::cout << "SERVER: " << serverDirectives;
     std::istringstream iss(serverDirectives);
     std::string line;
     std::getline(iss, line); // purge first ligne server {
     while (std::getline(iss, line))
     {
-        std::cout << "HERE" << std::endl;
         if (line[0] == '}')
             break;
-        std::cout << "HERE2" << std::endl;
         std::vector<std::string> words = split(line, ' ');
-        std::cout << "HERE3" << std::endl;
         std::string directiveServerKey = words[0];
 
         if (directiveServerKey == "listen")
@@ -261,40 +252,30 @@ ServerConfig ConfigBuilder::parseServer(string content)
                     throw std::runtime_error("Invalid Port Set Up");
             }
             //serverConfig.SetListenPort(words[1]);
-            // std::cout << serverConfig.GetListenPort() << ": port\n";
         }
         if (directiveServerKey == "root")
         {
             serverConfig.SetRoot(words[1]);
-            // std::cout << serverConfig.GetRoot() << ": root\n";
         }
         if (directiveServerKey == "host")
         {
             serverConfig.SetHostIp(words[1]);
-            // std::cout << serverConfig.GetHostIp() << ": host IP\n";
         }
         if (directiveServerKey == "error_page")
         {
             serverConfig.AddError_page(std::atoi(words[1].c_str()), words[2]);
-            // std::cout << serverConfig.GetError_pages()[404] << ": error_page\n";
         }
         if (directiveServerKey == "server_name")
         {
             serverConfig.SetServerName(words[1]);
-            // std::cout << serverConfig.GetServerName() << ": serverName\n";
         }
         if (directiveServerKey == "index")
         {
             serverConfig.SetIndexFile(words[1]);
-            // std::cout << serverConfig.GetServerName() << ": serverName\n";
         }
         if (directiveServerKey == "max_body_size")
         {
             serverConfig.SetMaxBodySize(words[1]);
-            // if (serverConfig.SetMaxBodySize(words[1]) < 0)
-            //     serverConfig.SetMaxBodySize("10000000");
-            
-            // std::cout << serverConfig.GetServerName() << ": serverName\n";
         }
         
     }
@@ -306,7 +287,7 @@ string ConfigBuilder::readConfigFile(const std::string &filename)
 {
     std::string fileContent = "";
     std::ifstream configFile(filename.c_str());
-    // std::ifstream configFile = std::ifstream(filename);
+
     // The modification made to use direct initialization for the configFile object
     // instead of copy initialization resolves the private copy constructor error.
 
@@ -315,7 +296,6 @@ string ConfigBuilder::readConfigFile(const std::string &filename)
         Logger::log(LOG_CRITICAL, std::string("The Server configuration file \"") + filename + "\" does not exist or cannot be read.");
         return ("");
     }
-//    std::cout << "Is config file (" << filename << ") in fact open : " << configFile.is_open() <<  std::endl;
     if (!configFile.is_open())
     {
         throw std::runtime_error("Error opening config file: " + filename);
@@ -361,10 +341,8 @@ std::vector<ServerConfig> ConfigBuilder::parseConfigFile(const std::string& file
 
         for (size_t i = 0; i < serverBlocks.size(); i++)
         {
-            //std::cout << "SERVER: " << serverBlocks[i] << "\n";
             serverConfigs.push_back(parseServer(serverBlocks[i]));
         }
-        std::cout << "parseConfigFile : DONE " << std::endl; 
     }
     catch (const std::exception &e)
     {

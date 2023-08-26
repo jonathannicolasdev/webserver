@@ -47,8 +47,6 @@ bool	_parse_config_ports(const std::string& listen_ports,
 		}
 		listen_addrs.push_back(addr);
 		ports.push_back(num_port);
-		std::cout << "listen addr: " << *(listen_addrs.end() - 1) << std::endl;
-		std::cout << "listen port: " << *(ports.end() - 1) << std::endl;
 	}
 	if (ports.empty())
 	{

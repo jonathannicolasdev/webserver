@@ -23,7 +23,7 @@
 # include "Logger.hpp"
 
 
-# define MAX_PENDING_CONN 128
+# define MAX_PENDING_CONN 1024
 
 enum e_conn_status
 {

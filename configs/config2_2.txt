@@ -1,5 +1,5 @@
 server {
-  listen 8083;
+  listen 80;
   listen 65534;
 
   root /www/;
@@ -52,8 +52,8 @@ server {
     autoindex on;
     allow_methods GET DELETE POST;
     allow_download on;
-    allow_delete off;
-    max_body_size 100000000
+    allow_delete on;
+    max_body_size 10000
   }
   
   error_page 404 /my_errors2/404.html;

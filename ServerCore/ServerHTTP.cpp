@@ -22,8 +22,6 @@ ServerHTTP::ServerHTTP(const std::string& servname, const std::string& rootdir,
 	std::ostringstream	os;
 
 	os << port;
-//	std::cout << "ServerHTTP constructor" << std::endl;
-
 	_server_name = servname;
 	if (ip != "0.0.0.0")
 	{
@@ -38,7 +36,9 @@ ServerHTTP::ServerHTTP(const std::string& servname, const std::string& rootdir,
 		_cfgs.push_back(*cfg);
 }
 
-ServerHTTP::~ServerHTTP(void) {std::cout << "ServerHTTP desctructor" << std::endl;}
+ServerHTTP::~ServerHTTP(void)
+{
+}
 
 int
 ServerHTTP::start(void)
@@ -68,7 +68,6 @@ ServerHTTP::receive_request(int clientfd, Request& request)
 	ssize_t				read_size;
 	bool				client_is_late = false;
 
-	std::cout << "Starting to read client socket until return <= 0" << std::endl;
 	while (1)
 	{
 		if (request.is_header_parsed()
@@ -91,10 +90,7 @@ ServerHTTP::receive_request(int clientfd, Request& request)
 	}
 
 	if (read_size == 0)
-	{
-		Logger::log(LOG_DEBUG, "Client has disconnected. Closing client socket.");
 		return (-1);
-	}
 	return (0);
 }
 
@@ -104,7 +100,6 @@ ServerHTTP::receive_request(int clientfd, Request& request)
 int
 ServerHTTP::send_response(int clientfd, const Response& resp) const
 {
-	std::cout << "Sending response page" << std::endl;
 	const std::string&		response = resp.get_response();
 	ssize_t					sent_size;
 	size_t					to_send = response.length();
@@ -139,7 +134,6 @@ int	ServerHTTP::_serve_internal_error(int clientfd, const Request& req, const Se
 
 	std::cerr << "Serving Internal Error Response Page " << std::endl;
 	err.prepare_response(500);
-	std::cout << err.get_response() << std::endl;
 	this->send_response(clientfd, err);
 	return (-1);
 }
@@ -151,13 +145,11 @@ ServerHTTP::serve_request(int clientfd)
 	Request				req;
 	Response			resp;
 
-	std::cout << std::endl << std::endl << "*------------------------{SERVER RECEIVED NEW REQUEST}-------------------------*" << std::endl;
-	
 	_currently_serving = clientfd;
 	if (receive_request(clientfd, req) < 0)
 	{
 		_currently_serving = 0;
-		return (Logger::log(LOG_DEBUG, "Client disconnected. Closing clientfd."), -1);
+		return (-1);
 	}
 	if (req.process_raw_request() < 0)
 	{

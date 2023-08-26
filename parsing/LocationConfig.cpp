@@ -192,7 +192,6 @@ void LocationConfig::print() const
 {
 	std::cout << "\tLocation: " << LocationConfig::GetPath() << std::endl;
 
-	std::cout << "here we go !" << std::endl;
 	if (allowMethods.size() > 0)
 	{
 		std::set<std::string>::iterator	it;

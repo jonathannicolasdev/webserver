@@ -28,7 +28,6 @@ IServer::IServer(uint16_t _port, bool _close_rqst,
 
 IServer::~IServer(void)
 {
-    std::cout << "IServer virtual destructor" << std::endl;
 }
 
 std::string	&srv_status_to_str(enum e_server_status_codes status,

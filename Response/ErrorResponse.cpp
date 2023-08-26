@@ -42,9 +42,6 @@ void	ErrorResponse::__prepare_error(const std::string& filepath, int error_code)
 	std::ifstream		fs;
 	std::ostringstream	text_buff;
 	
-	std::cout << "__prepare_error start with filepath : " << filepath << ", error_code : " << error_code << std::endl;
-
-//	if (access(filepath.c_str(), F_OK | R_OK) || !_get_status_message(error_code, status_msg))
 	if (!_get_status_message(error_code, status_msg))
 	{
 		_prepare_default_hardcoded_500_error();
@@ -57,7 +54,6 @@ void	ErrorResponse::__prepare_error(const std::string& filepath, int error_code)
 	fs.open(filepath.c_str());
 	if (!fs.is_open())
 	{
-//		std::cerr << "failed to open error page file" << std::endl;
 		_prepare_default_hardcoded_500_error();
 		return ;
 	}
@@ -100,15 +96,12 @@ static int	_get_custom_error_path(const ServerConfig& cfg, const std::string& cf
 	path_segments.insert(path_segments.end(),
 		custom_path_segments.begin(), custom_path_segments.end());
 	join_strings(path_segments, '/', ret_path);
-	std::cout << "Custom error filepath found : " << ret_path << std::endl;
-	std::cout << "access test (== 0 is good) : " << access(ret_path.c_str(), F_OK | R_OK) << std::endl;
 	return (access(ret_path.c_str(), F_OK | R_OK));
 }
 
 /// REQUIRED METHODS BY SERVER ///////////////
 void	ErrorResponse::prepare_response(int error_code)
 {
-	std::cout << "Preparing ErrorResponse." << std::endl;
 	std::map<int, std::string>		error_pages = this->_cfg.GetError_pages();
 	std::map<int, std::string>::iterator	it;
 	std::string						filepath;

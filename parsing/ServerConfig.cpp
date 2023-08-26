@@ -93,12 +93,10 @@ bool ServerConfig::AddListenPort(const std::string& listenPort)
 	if (this->listenPort.find(parsed_listen) != std::string::npos
 		|| this->listenPort.find("0.0.0.0:" + parsed_listen) != std::string::npos)
 	{
-		std::cout << "Current full listen port string : " << this->listenPort << std::endl;
 		return (false);
 	}
 	else
 	{
-		std::cout << "Listen port:" << this->listenPort << std::endl;
 		if (!this->listenPort.empty())
 			this->listenPort += ",";
 		if (parsed_listen.find(':') == std::string::npos)
@@ -183,7 +181,6 @@ const LocationConfig* ServerConfig::getBestLocationMatch(const std::string& path
 	const LocationConfig*   best_match = NULL;
 	for (std::vector<LocationConfig>::const_iterator it = locations.begin(); it != locations.end(); ++it)
 	{
-		std::cout << "Best match path : " << path << " vs *it : " << it->GetPath() << std::endl;
 		if (path.find(it->GetPath()) == 0)
 		{
 			if (it->GetPath() == "/" || path.length() == it->GetPath().length() || path[it->GetPath().length()] == '/')

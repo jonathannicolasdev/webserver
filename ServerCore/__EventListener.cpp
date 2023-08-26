@@ -43,7 +43,6 @@ __EventListener::close_poll(void)
 int
 __EventListener::poll_new_socket(int sockfd)
 {
-	std::cout << "polling new socket with sockfd : " << sockfd << std::endl;
 	if (this->_pollfd < 3)
 		return (0);
 	if (sockfd < 3 || sockfd >= MAX_CONCUR_POLL)
@@ -110,13 +109,11 @@ __EventListener::poll_wait(int timeout)
 		ts.tv_nsec = (timeout % 1000) * 1000000;// timeout in nano seconds
 		ts_p = &ts;
 	}
-	std::cout << "poll_wait() waiting for kevent() with timeout of " << timeout << "ms" << std::endl;
 	if ((nb_events = kevent(this->_pollfd, NULL, 0, this->_changes, MAX_CONCUR_POLL, ts_p)) < 0)
 		if (errno != EINTR)
 			return (Logger::log(LOG_ERROR, std::string("kevent() call failed with error : ") + strerror(errno)));
 
 #elif __linux__
-	std::cout << "poll_wait() waiting for epoll_wait()" << std::endl;
 	if ((nb_events = epoll_wait(this->_pollfd, this->_changes, MAX_CONCUR_POLL, timeout)) < 0)
 		return (Logger::log(LOG_ERROR, std::string("poll_wait() call failed with error : ") + strerror(errno)));
 

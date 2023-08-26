@@ -36,10 +36,7 @@ int	Logger::init(const std::string& log_filepath)
 	std::string	fp;
 
 	if (Logger::_is_init)
-	{
-		std::cerr << "Logger already initialized" << std::endl;
 		return (-1);
-	}
 
 	if (log_filepath.empty())
 		fp = LOGFILE_DEFAULT;
@@ -59,7 +56,7 @@ int	Logger::init(const std::string& log_filepath)
 void	Logger::close(void)
 {
 	_logfile.close();
-	std::cerr << "Logger closed" << std::endl;
+	std::cout << "Logger closed" << std::endl;
 }
 
 int	Logger::_log_debug(const std::string& msg)

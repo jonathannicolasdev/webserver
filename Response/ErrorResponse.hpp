@@ -33,7 +33,6 @@ class ErrorResponse: public Response
 		const ServerConfig&		_cfg;
 
 		void    _prepare_default_hardcoded_500_error(void);
-		//bool	__prepare_error(const std::string& dir_path, int error_code);
 		void	__prepare_error(const std::string& filepath, int error_code);
 
 	public:

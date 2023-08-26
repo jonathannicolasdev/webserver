@@ -18,12 +18,10 @@ AServerDispatchSwitch::AServerDispatchSwitch(uint16_t _port,
 	_keep_alive(conn_persistance), _conn_timeout(conn_timout),
 	_currently_serving(0), _client_disconnect_signaled(false)
 {
-	std::cout << "AServerDispatchSwitch constructor" << std::endl;
 }
 
 AServerDispatchSwitch::~AServerDispatchSwitch()
 {
-	std::cout << "AServerDispatchSwitch destructor" << std::endl;
 	this->stop();
 }
 

@@ -6,7 +6,7 @@
 /*   By: iamongeo <iamongeo@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/26 18:42:23 by iamongeo          #+#    #+#             */
-/*   Updated: 2023/08/25 16:44:03 by iamongeo         ###   ########.fr       */
+/*   Updated: 2023/08/25 19:56:29 by iamongeo         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -173,8 +173,6 @@ bool Response::_process_get_request(const LocationConfig &loc_cfg)
 	std::string header, body, content_type;
 	struct stat stat_s;
 
-	std::cout << "_location_path : " << _location_path << std::endl;
-
 	if (_requested_endpoint)
 	{
 		if (loc_cfg.GetIndexFile().empty())
@@ -182,8 +180,6 @@ bool Response::_process_get_request(const LocationConfig &loc_cfg)
 		else
 			_internal_path += loc_cfg.GetIndexFile();
 	}
-
-	std::cout << "GET REQUEST internal path : " << _internal_path << std::endl;
 
 	if (stat(_internal_path.c_str(), &stat_s) < 0
 		|| !(stat_s.st_mode & S_IFREG))
@@ -224,10 +220,9 @@ bool Response::_process_get_request(const LocationConfig &loc_cfg)
 
 	content_type = _discover_content_type(_internal_path);
 
-	std::cout << "IS ATTACHMENT : " << loc_cfg.GetAllowDownload() << std::endl;
 	_build_get_http_header(_internal_path, header, content_length.str(), content_type, loc_cfg.GetAllowDownload());
 	this->_text = header + body;
-	std::cout << header << std::endl;
+	//std::cout << header << std::endl;
 	return (true);
 }
 
@@ -255,15 +250,12 @@ bool Response::_process_post_request(const Request &req, const LocationConfig &l
 		return (false);
 	}
 
-	std::cout << "HANDELING POST REQUEST !" << std::endl;
-
 	std::string response_body = "Received post data:\n" + post_data;
 	std::string header;
 	std::string	filepath = _internal_path;
 	_error_code = 0;
 	if (req.getMultiformFlag())
 	{
-		std::cout << "IS MULTIPART !" << std::endl;
 		std::vector<DataPart> dataparts;
 		req.extract_multipart(dataparts);
 		for (size_t i = 0; i < dataparts.size(); i++)
@@ -280,11 +272,9 @@ bool Response::_process_post_request(const Request &req, const LocationConfig &l
 			string_replace_space_by__(filepath);
 			if (fileExists(filepath))
 			{
-//				std::cerr << "ERROR : File already exists" << std::endl;
 				_error_code = 409;
 				break;
 			}
-//			std::cout << "Creating New Uploaded file : " << filepath << std::endl;
 
 			std::ofstream file(filepath.c_str(), std::ios::binary);
 			if (file.fail())
@@ -328,20 +318,17 @@ bool Response::_isredirect(const LocationConfig &loc_cfg)
 {
 	std::string location;
 	std::string header;
-	std::cout << " CHECK IF REDIRECT " << std::endl;
-	std::cout << " RETURN PATH " + loc_cfg.GetReturnPath() << std::endl;
 	if (!loc_cfg.GetReturnPath().empty())
 	{
 		_error_code = 301;
 		location = loc_cfg.GetReturnPath();
 		
 		_build_redirect_http_header(location, header);
-		std::cout << location << std::endl;
-		std::cout << header << std::endl;
+	//	std::cout << location << std::endl;
+	//	std::cout << header << std::endl;
 	    _text = header;
 		return true; // Indicate that redirection is taking place
 	}
-	std::cout << " IS NOT REDIRECT " << std::endl;
 	return false; // Indicate that redirection is not occurring
 }
 
@@ -349,12 +336,9 @@ bool Response::_validate_request(const Request &req, const LocationConfig &loc_c
 {
 	if (!loc_cfg.IsAllowedMethod(req.get_method()))
 	{
-		std::cout << "request method : " << req.get_method() << ", Is NOT allowed" << std::endl;
 		_error_code = 405;// Method NOT ALLOWED;
 		return (false);
 	}
-	std::cout << "request method : " << req.get_method() << ", IS allowed" << std::endl;
-	//...
 	return (true);
 }
 
@@ -374,12 +358,9 @@ std::string &Response::_parse_internal_path(const Request &req, const LocationCo
 	{
 		_requested_endpoint = true;
 		if (_requested_endpoint && (loc_cfg.GetAutoIndex() == "on"))
-		{
-			std::cout << "IS AUTOINDEX" << std::endl;
 			_requested_autoindex = true;
-		}
 	}
-	std::cout << "Full internal path : " << _internal_path << std::endl;
+	//std::cout << "Full internal path : " << _internal_path << std::endl;
 	return (_internal_path);
 }
 
@@ -421,8 +402,6 @@ int	Response::_process_cgi_request(const Request& req, const LocationConfig& loc
 		return (-1);
 	}
 
-	std::cout << "CGI REQUEST WAS PROCESSED" << std::endl;
-	
 	if (cgi.run() < 0)// Because we give cgi the response._text reference in its constructor, the response is writen right in the response's _text and is ready to get.
 	{
 		_error_code = cgi.get_error_code();
@@ -440,10 +419,7 @@ static int	_build_autoindex_body(const Request& req, const std::string& dirpath,
 	DIR				*odir;
 	struct dirent	*ent;
 	std::string		ent_str, site_path;
-	
 
-	std::cout << "_build_autoindex_body start" << std::endl;
-	
 	odir = opendir(dirpath.c_str());
 	if (!odir)
 		return (Logger::log(LOG_WARNING, std::string("Couldn't open and autoindex directory at ") + dirpath), -1);
@@ -466,7 +442,6 @@ static int	_build_autoindex_body(const Request& req, const std::string& dirpath,
 		ent_str = ent->d_name;
 		if (ent->d_type == DT_DIR)
 			ent_str += '/';
-//		std::cout << "read dirent : " << (site_path + ent_str) << std::endl;
 		body += "	<a href=" + (site_path + ent_str) + ">" + ent_str + "</a><br>\r\n";
 	}
 	
@@ -481,8 +456,6 @@ int	Response::_prepare_autoindex(const Request& req, const std::string& dirpath)
 {
 	std::string		header, cur_timestamp, body;
 	std::ostringstream	os;
-
-	std::cout << "REQUESTED AND PREPARING AUTOINDEX " << std::endl;
 
 	if (_build_autoindex_body(req, dirpath, body) < 0)
 		return (-1);
@@ -506,18 +479,14 @@ int Response::prepare_response(const Request &req, const ServerConfig &cfg)
 	const LocationConfig *best_match;
 
 	_error_code = 0;
-	std::cout << "Preparing Response." << std::endl;
 	best_match = cfg.getBestLocationMatch(req.get_path());
 	if (best_match == NULL)
 	{
-		std::cout << "no location found";
+		std::cerr << "no location found";
 		_error_code = 500;
 	}
 	else
 	{
-		std::cout << "Beast location match :" << std::endl;
-		best_match->print();
-
 		if (!_validate_request(req, *best_match))
 		{
 			std::cerr << "Failed to validate request !!" << std::endl;
@@ -526,10 +495,7 @@ int Response::prepare_response(const Request &req, const ServerConfig &cfg)
 
 		// Check is redirect
 		if (_isredirect(*best_match))
-		{
-			std::cout << "A REDIRECT WAS DONE !!" << std::endl;
 			return(0);
-		}
 
 		// Convert requested path to internal path
 		_parse_location_path(cfg, *best_match);
@@ -551,10 +517,7 @@ int Response::prepare_response(const Request &req, const ServerConfig &cfg)
 				}
 			}
 			else if (!_process_get_request(*best_match))
-			{
-				std::cout << "WOWOW GOT GET METHOD BUT process_get_request FAILED !" << std::endl;
 				return (-1);
-			}
 		}
 		else if (req.get_method() == "POST")
 		{
@@ -568,7 +531,6 @@ int Response::prepare_response(const Request &req, const ServerConfig &cfg)
 		}
 		else
 		{
-			std::cerr << "METHOD NOT RECOGNIZED !" << std::endl;
 			_error_code = 405;// Method Not Allowed
 			return (-1);
 		}
